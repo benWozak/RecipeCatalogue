@@ -1,0 +1,80 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.orm import Session
+from typing import List
+from app.core.database import get_db
+from app.api.auth.auth import get_current_user
+from app.models.user import User
+from app.schemas.meal_plan import MealPlan as MealPlanSchema, MealPlanCreate, MealPlanUpdate
+from app.services.meal_plan_service import MealPlanService
+import uuid
+
+router = APIRouter()
+
+@router.get("/", response_model=List[MealPlanSchema])
+async def get_meal_plans(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    return meal_plan_service.get_user_meal_plans(
+        user_id=current_user.id,
+        skip=skip,
+        limit=limit
+    )
+
+@router.post("/", response_model=MealPlanSchema)
+async def create_meal_plan(
+    meal_plan: MealPlanCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    return meal_plan_service.create_meal_plan(meal_plan, current_user.id)
+
+@router.get("/{meal_plan_id}", response_model=MealPlanSchema)
+async def get_meal_plan(
+    meal_plan_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    meal_plan = meal_plan_service.get_meal_plan(meal_plan_id, current_user.id)
+    if not meal_plan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meal plan not found"
+        )
+    return meal_plan
+
+@router.put("/{meal_plan_id}", response_model=MealPlanSchema)
+async def update_meal_plan(
+    meal_plan_id: uuid.UUID,
+    meal_plan_update: MealPlanUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    meal_plan = meal_plan_service.update_meal_plan(meal_plan_id, meal_plan_update, current_user.id)
+    if not meal_plan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meal plan not found"
+        )
+    return meal_plan
+
+@router.delete("/{meal_plan_id}")
+async def delete_meal_plan(
+    meal_plan_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    success = meal_plan_service.delete_meal_plan(meal_plan_id, current_user.id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meal plan not found"
+        )
+    return {"message": "Meal plan deleted successfully"}

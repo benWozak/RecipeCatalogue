@@ -1,0 +1,87 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from app.core.database import get_db
+from app.api.auth.auth import get_current_user
+from app.models.user import User
+from app.models.recipe import Recipe, Ingredient, Tag
+from app.schemas.recipe import Recipe as RecipeSchema, RecipeCreate, RecipeUpdate
+from app.services.recipe_service import RecipeService
+import uuid
+
+router = APIRouter()
+
+@router.get("/", response_model=List[RecipeSchema])
+async def get_recipes(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    search: Optional[str] = Query(None),
+    tags: Optional[str] = Query(None),
+    difficulty: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    recipe_service = RecipeService(db)
+    return recipe_service.get_user_recipes(
+        user_id=current_user.id,
+        skip=skip,
+        limit=limit,
+        search=search,
+        tags=tags.split(",") if tags else None,
+        difficulty=difficulty
+    )
+
+@router.post("/", response_model=RecipeSchema)
+async def create_recipe(
+    recipe: RecipeCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    recipe_service = RecipeService(db)
+    return recipe_service.create_recipe(recipe, current_user.id)
+
+@router.get("/{recipe_id}", response_model=RecipeSchema)
+async def get_recipe(
+    recipe_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    recipe_service = RecipeService(db)
+    recipe = recipe_service.get_recipe(recipe_id, current_user.id)
+    if not recipe:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found"
+        )
+    return recipe
+
+@router.put("/{recipe_id}", response_model=RecipeSchema)
+async def update_recipe(
+    recipe_id: uuid.UUID,
+    recipe_update: RecipeUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    recipe_service = RecipeService(db)
+    recipe = recipe_service.update_recipe(recipe_id, recipe_update, current_user.id)
+    if not recipe:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found"
+        )
+    return recipe
+
+@router.delete("/{recipe_id}")
+async def delete_recipe(
+    recipe_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    recipe_service = RecipeService(db)
+    success = recipe_service.delete_recipe(recipe_id, current_user.id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Recipe not found"
+        )
+    return {"message": "Recipe deleted successfully"}
