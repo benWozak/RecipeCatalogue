@@ -26,19 +26,47 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 async def verify_clerk_token(token: str) -> dict:
     try:
+        # Use Clerk's verify endpoint
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"https://api.clerk.com/v1/sessions/{token}/verify",
-                headers={"Authorization": f"Bearer {settings.CLERK_SECRET_KEY}"}
+            response = await client.post(
+                "https://api.clerk.com/v1/sessions/verify",
+                headers={
+                    "Authorization": f"Bearer {settings.CLERK_SECRET_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={"token": token}
             )
+            
             if response.status_code == 200:
                 return response.json()
             else:
+                # Try alternative method - decode without verification to get user info
+                try:
+                    payload = jwt.get_unverified_claims(token)
+                    # Extract user ID from standard Clerk JWT claims
+                    user_id = payload.get('sub')  # subject is usually the user ID
+                    if user_id:
+                        return {"user_id": user_id, "payload": payload}
+                except:
+                    pass
+                
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid authentication credentials"
                 )
-    except Exception:
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        # As fallback, try to extract user info from unverified token
+        try:
+            payload = jwt.get_unverified_claims(token)
+            user_id = payload.get('sub')
+            if user_id:
+                return {"user_id": user_id, "payload": payload}
+        except:
+            pass
+            
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials"

@@ -37,10 +37,19 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> U
         # Get or create user
         user = db.query(User).filter(User.clerk_user_id == clerk_user_id).first()
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+            # Auto-create user if they don't exist
+            payload = clerk_data.get("payload", {})
+            email = payload.get("email") or f"{clerk_user_id}@clerk.local"
+            name = payload.get("name") or "Unknown User"
+            
+            user = User(
+                clerk_user_id=clerk_user_id,
+                email=email,
+                name=name
             )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
         
         return user
     
