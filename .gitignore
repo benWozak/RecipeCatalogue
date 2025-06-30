@@ -1,4 +1,5 @@
 # Recipe Catalogue Mono-repo .gitignore
+.claude/** */
 
 # ========================
 # Backend (Python/FastAPI)
