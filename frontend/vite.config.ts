@@ -16,10 +16,10 @@ export default defineConfig({
     },
 
     manifest: {
-      name: 'RecipeCatalogue',
+      name: 'Recipe Catalogue',
       short_name: 'Recipes',
       description: 'A meal plan builder with a collection of recipes',
-      theme_color: '#ffffff',
+      theme_color: '#8b5cf6',
     },
 
     workbox: {

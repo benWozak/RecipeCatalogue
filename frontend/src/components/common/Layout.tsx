@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
 import { Home, BookOpen, Calendar } from "lucide-react";
 import MobileBottomNav from "./MobileBottomNav";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -56,7 +57,8 @@ export default function Layout({ children }: LayoutProps) {
               </nav>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
               <UserButton />
             </div>
           </div>
@@ -69,7 +71,10 @@ export default function Layout({ children }: LayoutProps) {
           <Link to="/" className="text-xl font-bold text-foreground">
             Recipe Catalogue
           </Link>
-          <UserButton />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserButton />
+          </div>
         </div>
       </header>
 
