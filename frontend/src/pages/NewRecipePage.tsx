@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ParsedRecipe } from "@/services/parsingService";
 
 export default function NewRecipePage() {
@@ -38,8 +39,8 @@ export default function NewRecipePage() {
         cookTime: parsed.cook_time?.toString() || "",
         totalTime: parsed.total_time?.toString() || "",
         servings: parsed.servings?.toString() || "",
-        ingredients: parsed.ingredients?.join("\n") || "",
-        instructions: parsed.instructions?.steps?.join("\n") || "",
+        ingredients: typeof parsed.ingredients === 'string' ? parsed.ingredients : '',
+        instructions: typeof parsed.instructions === 'string' ? parsed.instructions : '',
         sourceUrl: parsed.source_url || "",
         sourceType: parsed.source_type || location.state.sourceType || "",
       });
@@ -189,27 +190,19 @@ export default function NewRecipePage() {
 
               <div>
                 <Label htmlFor="ingredients">Ingredients</Label>
-                <Textarea
-                  id="ingredients"
-                  placeholder="Enter ingredients, one per line"
-                  value={formData.ingredients}
-                  onChange={(e) =>
-                    handleInputChange("ingredients", e.target.value)
-                  }
-                  rows={8}
+                <RichTextEditor
+                  content={formData.ingredients}
+                  onChange={(content) => handleInputChange("ingredients", content)}
+                  placeholder="Enter ingredients..."
                 />
               </div>
 
               <div>
                 <Label htmlFor="instructions">Instructions</Label>
-                <Textarea
-                  id="instructions"
-                  placeholder="Enter cooking instructions"
-                  value={formData.instructions}
-                  onChange={(e) =>
-                    handleInputChange("instructions", e.target.value)
-                  }
-                  rows={10}
+                <RichTextEditor
+                  content={formData.instructions}
+                  onChange={(content) => handleInputChange("instructions", content)}
+                  placeholder="Enter cooking instructions..."
                 />
               </div>
 

@@ -163,7 +163,7 @@ docs/_build/
 site/
 
 # Package manager lock files
-# frontend/package-lock.json
+frontend/package-lock.json
 frontend/yarn.lock
 # frontend/pnpm-lock.yaml
 

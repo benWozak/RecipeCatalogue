@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { ArrowLeft, Save, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -5,8 +6,26 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 
 export default function ManualRecipePage() {
+  const [formData, setFormData] = useState({
+    title: '',
+    servings: '',
+    description: '',
+    prepTime: '',
+    cookTime: '',
+    totalTime: '',
+    ingredients: '',
+    instructions: '',
+    sourceName: '',
+    sourceUrl: '',
+  })
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 lg:py-8">
@@ -42,6 +61,8 @@ export default function ManualRecipePage() {
                       id="title"
                       type="text" 
                       placeholder="Enter recipe title"
+                      value={formData.title}
+                      onChange={(e) => handleInputChange('title', e.target.value)}
                       required
                     />
                   </div>
@@ -52,6 +73,8 @@ export default function ManualRecipePage() {
                       type="number" 
                       placeholder="4"
                       min="1"
+                      value={formData.servings}
+                      onChange={(e) => handleInputChange('servings', e.target.value)}
                     />
                   </div>
                 </div>
@@ -63,6 +86,8 @@ export default function ManualRecipePage() {
                     id="description"
                     placeholder="Brief description of your recipe"
                     rows={3}
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
                   />
                 </div>
 
@@ -75,6 +100,8 @@ export default function ManualRecipePage() {
                       type="number" 
                       placeholder="15"
                       min="0"
+                      value={formData.prepTime}
+                      onChange={(e) => handleInputChange('prepTime', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -84,6 +111,8 @@ export default function ManualRecipePage() {
                       type="number" 
                       placeholder="30"
                       min="0"
+                      value={formData.cookTime}
+                      onChange={(e) => handleInputChange('cookTime', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -93,6 +122,8 @@ export default function ManualRecipePage() {
                       type="number" 
                       placeholder="45"
                       min="0"
+                      value={formData.totalTime}
+                      onChange={(e) => handleInputChange('totalTime', e.target.value)}
                     />
                   </div>
                 </div>
@@ -100,28 +131,26 @@ export default function ManualRecipePage() {
                 {/* Ingredients */}
                 <div className="space-y-2">
                   <Label htmlFor="ingredients">Ingredients *</Label>
-                  <Textarea 
-                    id="ingredients"
-                    placeholder="Enter ingredients, one per line&#10;Example:&#10;2 cups flour&#10;1 tsp salt&#10;3 eggs"
-                    rows={8}
-                    required
+                  <RichTextEditor
+                    content={formData.ingredients}
+                    onChange={(content) => handleInputChange('ingredients', content)}
+                    placeholder="Enter ingredients..."
                   />
                   <p className="text-sm text-muted-foreground">
-                    Enter each ingredient on a new line
+                    Use the formatting toolbar to organize your ingredients with lists, headings, etc.
                   </p>
                 </div>
 
                 {/* Instructions */}
                 <div className="space-y-2">
                   <Label htmlFor="instructions">Instructions *</Label>
-                  <Textarea 
-                    id="instructions"
-                    placeholder="Enter cooking instructions, one step per line&#10;Example:&#10;1. Preheat oven to 350°F&#10;2. Mix flour and salt in a bowl&#10;3. Add eggs and mix well"
-                    rows={10}
-                    required
+                  <RichTextEditor
+                    content={formData.instructions}
+                    onChange={(content) => handleInputChange('instructions', content)}
+                    placeholder="Enter cooking instructions..."
                   />
                   <p className="text-sm text-muted-foreground">
-                    Enter each step on a new line. You can number them or use bullet points.
+                    Use the formatting toolbar to organize your instructions with numbered lists, headings, etc.
                   </p>
                 </div>
 
@@ -133,6 +162,8 @@ export default function ManualRecipePage() {
                       id="source-name"
                       type="text" 
                       placeholder="e.g., Grandma's Recipe Book"
+                      value={formData.sourceName}
+                      onChange={(e) => handleInputChange('sourceName', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -141,6 +172,8 @@ export default function ManualRecipePage() {
                       id="source-url"
                       type="url" 
                       placeholder="https://example.com/recipe"
+                      value={formData.sourceUrl}
+                      onChange={(e) => handleInputChange('sourceUrl', e.target.value)}
                     />
                   </div>
                 </div>

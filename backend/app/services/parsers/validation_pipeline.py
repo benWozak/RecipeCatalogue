@@ -104,19 +104,8 @@ class ValidationPipeline:
                 suggestion="Add a descriptive title for the recipe"
             ))
         
-        # Check if ingredients exist - handle both dict and list formats
-        has_ingredients = False
-        if recipe.ingredients:
-            if isinstance(recipe.ingredients, dict):
-                # Check if any category has ingredients
-                for category, ingredient_list in recipe.ingredients.items():
-                    if isinstance(ingredient_list, list) and len(ingredient_list) > 0:
-                        has_ingredients = True
-                        break
-            elif isinstance(recipe.ingredients, list) and len(recipe.ingredients) > 0:
-                has_ingredients = True
-        
-        if not has_ingredients:
+        # Check if ingredients exist (now HTML string)
+        if not recipe.ingredients or recipe.ingredients.strip() == "":
             issues.append(ValidationIssue(
                 type="missing_ingredients",
                 severity="error",
@@ -125,7 +114,8 @@ class ValidationPipeline:
                 suggestion="Add at least one ingredient"
             ))
         
-        if not recipe.instructions or not recipe.instructions.get('steps') or len(recipe.instructions['steps']) == 0:
+        # Check if instructions exist (now HTML string)
+        if not recipe.instructions or recipe.instructions.strip() == "":
             issues.append(ValidationIssue(
                 type="missing_instructions",
                 severity="error",
@@ -163,64 +153,30 @@ class ValidationPipeline:
         """Check quality of extracted content"""
         issues = []
         
-        # Check ingredient quality - handle both dict and list formats
-        if recipe.ingredients:
-            vague_ingredients = 0
-            total_ingredients = 0
-            
-            # Handle structured ingredients (dict format)
-            if isinstance(recipe.ingredients, dict):
-                for category, ingredient_list in recipe.ingredients.items():
-                    if isinstance(ingredient_list, list):
-                        for ingredient in ingredient_list:
-                            total_ingredients += 1
-                            # Handle both string and dict ingredients
-                            if isinstance(ingredient, str):
-                                ingredient_name = ingredient.strip().lower()
-                            elif isinstance(ingredient, dict):
-                                ingredient_name = ingredient.get('name', '').strip().lower()
-                            else:
-                                ingredient_name = str(ingredient).strip().lower()
-                            
-                            if len(ingredient_name) < 3 or ingredient_name in ['ingredient', 'item', 'thing']:
-                                vague_ingredients += 1
-            # Handle legacy flat list format
-            elif isinstance(recipe.ingredients, list):
-                for ingredient in recipe.ingredients:
-                    total_ingredients += 1
-                    if isinstance(ingredient, str):
-                        ingredient_name = ingredient.strip().lower()
-                    elif isinstance(ingredient, dict):
-                        ingredient_name = ingredient.get('name', '').strip().lower()
-                    else:
-                        ingredient_name = str(ingredient).strip().lower()
-                    
-                    if len(ingredient_name) < 3 or ingredient_name in ['ingredient', 'item', 'thing']:
-                        vague_ingredients += 1
-            
-            if total_ingredients > 0 and vague_ingredients > total_ingredients * 0.3:  # More than 30% vague
+        # Check ingredient quality (now HTML string)
+        if recipe.ingredients and recipe.ingredients.strip():
+            # Count <li> elements as a proxy for ingredient count
+            ingredient_count = recipe.ingredients.count('<li>')
+            if ingredient_count == 0:
                 issues.append(ValidationIssue(
-                    type="vague_ingredients",
+                    type="unformatted_ingredients",
                     severity="warning",
-                    message="Some ingredients are vaguely named",
+                    message="Ingredients may not be properly formatted",
                     field="ingredients",
-                    suggestion="Review ingredient names for clarity"
+                    suggestion="Consider formatting as a bulleted list"
                 ))
         
-        # Check instruction quality
-        if recipe.instructions and recipe.instructions.get('steps'):
-            short_instructions = 0
-            for instruction in recipe.instructions['steps']:
-                if len(instruction.strip().split()) < 3:
-                    short_instructions += 1
-            
-            if short_instructions > len(recipe.instructions['steps']) * 0.5:  # More than 50% short
+        # Check instruction quality (now HTML string)
+        if recipe.instructions and recipe.instructions.strip():
+            # Count <li> elements as a proxy for instruction count
+            instruction_count = recipe.instructions.count('<li>')
+            if instruction_count == 0:
                 issues.append(ValidationIssue(
-                    type="short_instructions",
+                    type="unformatted_instructions",
                     severity="warning",
-                    message="Some instructions are very brief",
+                    message="Instructions may not be properly formatted",
                     field="instructions",
-                    suggestion="Consider expanding instruction details"
+                    suggestion="Consider formatting as a numbered or bulleted list"
                 ))
         
         # Check for missing recommended fields

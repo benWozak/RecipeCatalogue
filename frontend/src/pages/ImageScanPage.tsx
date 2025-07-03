@@ -75,7 +75,7 @@ export default function ImageScanPage() {
     setError('')
     
     try {
-      const result = await parsingService.parseImage(selectedFile)
+      const result = await parsingService.parseImage(selectedFile, '')
       
       if (result.success && result.data) {
         navigate('/recipes/new', { 

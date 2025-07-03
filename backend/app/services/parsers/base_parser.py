@@ -21,8 +21,8 @@ class ParsedRecipe(BaseModel):
     cook_time: Optional[int] = None
     total_time: Optional[int] = None
     servings: Optional[int] = None
-    instructions: Dict[str, Any]  # Can contain steps array or categorized steps
-    ingredients: List[str]   # Flat list of ingredients
+    instructions: str  # HTML formatted instructions
+    ingredients: str   # HTML formatted ingredients
     confidence_score: float = 0.0
     media: Optional[Dict[str, Any]] = None
 

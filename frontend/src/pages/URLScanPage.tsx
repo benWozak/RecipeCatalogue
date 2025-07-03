@@ -30,7 +30,7 @@ export default function URLScanPage() {
     setIsLoading(true)
     
     try {
-      const result = await parsingService.parseWebUrl(url)
+      const result = await parsingService.parseWebUrl(url, '')
       
       if (result.success && result.data) {
         navigate('/recipes/new', { 

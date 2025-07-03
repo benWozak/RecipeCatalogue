@@ -6,7 +6,11 @@
       "Bash(python test:*)",
       "Bash(yarn remove:*)",
       "Bash(yarn add:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(rg:*)",
+      "Bash(yarn dev)"
     ],
     "deny": []
   }

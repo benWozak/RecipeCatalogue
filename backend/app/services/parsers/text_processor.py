@@ -6,8 +6,8 @@ from dataclasses import dataclass
 @dataclass
 class RecipePattern:
     """Pattern matching result for recipe components"""
-    ingredients: List[str]  # Flat list of ingredients
-    instructions: Dict[str, Any]  # Can be steps array or categorized
+    ingredients: str  # HTML formatted ingredients
+    instructions: str  # HTML formatted instructions
     title: str
     confidence: float
     servings: Optional[str] = None
@@ -434,15 +434,17 @@ class TextProcessor:
         
         return False
     
-    def _extract_ingredients_structured(self, sections: Dict[str, List[str]], full_text: str) -> List[str]:
-        """Extract ingredients as flat list"""
+    def _extract_ingredients_structured(self, sections: Dict[str, List[str]], full_text: str) -> str:
+        """Extract ingredients as HTML content"""
         # Filter out description text from processing
         description_text = self._extract_description_text(full_text)
         
         all_lines = sections['ingredients'] + sections['other']
         
-        # Structure: flat list of ingredients
-        flat_list = []
+        # Structure: categorized ingredients with HTML formatting
+        current_category = None
+        categorized_ingredients = []
+        current_items = []
         
         for line in all_lines:
             line = line.strip()
@@ -461,18 +463,34 @@ class TextProcessor:
             if self._looks_like_instruction_not_ingredient(line):
                 continue
                 
-            # Skip category headers
+            # Check if it's a category header
             if self._looks_like_category_header(line) and not self._looks_like_instruction_not_ingredient(line):
+                # Save previous category if it has items
+                if current_category and current_items:
+                    categorized_ingredients.append((current_category, current_items))
+                
+                # Start new category
+                current_category = line.rstrip(':')
+                current_items = []
                 continue
                 
             # Check if it looks like an ingredient
             if self._looks_like_ingredient(line):
-                flat_list.append(line)
+                current_items.append(line)
         
-        return flat_list[:20]
+        # Add final category
+        if current_category and current_items:
+            categorized_ingredients.append((current_category, current_items))
+        
+        # If no categories found, treat all as one list
+        if not categorized_ingredients and current_items:
+            categorized_ingredients.append((None, current_items))
+        
+        # Convert to HTML
+        return self._ingredients_to_html(categorized_ingredients)
     
-    def _extract_instructions_structured(self, sections: Dict[str, List[str]]) -> Dict[str, Any]:
-        """Extract instructions with potential categorization"""
+    def _extract_instructions_structured(self, sections: Dict[str, List[str]]) -> str:
+        """Extract instructions as HTML content"""
         all_lines = sections['instructions'] + sections['other'] + sections['ingredients']
         
         instructions = []
@@ -491,7 +509,8 @@ class TextProcessor:
             if self._looks_like_instruction_not_ingredient(line):
                 instructions.append(line)
         
-        return {"steps": instructions[:15]}
+        # Convert to HTML ordered list
+        return self._instructions_to_html(instructions[:15])
     
     def _extract_description_text(self, full_text: str) -> Optional[str]:
         """Extract the main description text to avoid including it in ingredients"""
@@ -509,28 +528,63 @@ class TextProcessor:
         
         return None
     
-    def _calculate_confidence_structured(self, ingredients: List[str], instructions: Dict[str, Any], full_text: str) -> float:
+    def _ingredients_to_html(self, categorized_ingredients: List[Tuple[Optional[str], List[str]]]) -> str:
+        """Convert categorized ingredients to HTML"""
+        if not categorized_ingredients:
+            return ""
+        
+        html_parts = []
+        
+        for category, items in categorized_ingredients:
+            if category:
+                # Add category as heading
+                html_parts.append(f"<h3>{category}</h3>")
+            
+            if items:
+                # Add ingredients as unordered list
+                list_items = "".join(f"<li>{item}</li>" for item in items)
+                html_parts.append(f"<ul>{list_items}</ul>")
+        
+        return "".join(html_parts)
+    
+    def _instructions_to_html(self, instructions: List[str]) -> str:
+        """Convert instructions to HTML ordered list"""
+        if not instructions:
+            return ""
+        
+        # Clean up instructions that already have numbers
+        cleaned_instructions = []
+        for instruction in instructions:
+            # Remove existing numbering (1., 2., etc.)
+            cleaned = re.sub(r'^\d+\.\s*', '', instruction.strip())
+            if cleaned:
+                cleaned_instructions.append(cleaned)
+        
+        if not cleaned_instructions:
+            return ""
+        
+        # Create ordered list
+        list_items = "".join(f"<li>{instruction}</li>" for instruction in cleaned_instructions)
+        return f"<ol>{list_items}</ol>"
+    
+    def _calculate_confidence_structured(self, ingredients: str, instructions: str, full_text: str) -> float:
         """Calculate confidence score for structured recipe extraction"""
         score = 0.0
         
-        # Count total ingredients and instructions
-        total_ingredients = len(ingredients)
-        
-        total_instructions = 0
-        for category_items in instructions.values():
-            if isinstance(category_items, list):
-                total_instructions += len(category_items)
+        # Count HTML elements to estimate content
+        ingredients_count = ingredients.count('<li>')
+        instructions_count = instructions.count('<li>')
         
         # Base score for having content
-        if total_ingredients > 0:
+        if ingredients_count > 0:
             score += 0.3
-        if total_instructions > 0:
+        if instructions_count > 0:
             score += 0.3
         
         # Bonus for reasonable quantities
-        if total_ingredients >= 3:
+        if ingredients_count >= 3:
             score += 0.2
-        if total_instructions >= 2:
+        if instructions_count >= 2:
             score += 0.2
         
         # Check for recipe-related keywords

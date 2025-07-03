@@ -9,11 +9,8 @@ export interface ParsedRecipe {
   prep_time?: number
   cook_time?: number
   total_time?: number
-  ingredients: string[]
-  instructions: {
-    steps: string[]
-    notes?: string
-  }
+  ingredients: string  // HTML formatted ingredients
+  instructions: string  // HTML formatted instructions
   confidence_score: number
   media?: {
     type: string
