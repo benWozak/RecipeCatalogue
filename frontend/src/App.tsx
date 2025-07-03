@@ -1,131 +1,55 @@
-import { useState } from 'react'
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser, useAuth } from '@clerk/clerk-react'
-import reactLogo from './assets/react.svg'
-import appLogo from '/favicon.svg'
+import { BrowserRouter as Router, Routes, Route } from 'react-router'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
+import { Button } from '@/components/ui/button'
+import Layout from './components/common/Layout'
+import HomePage from './pages/HomePage'
+import RecipesPage from './pages/RecipesPage'
+import RecipeDetailPage from './pages/RecipeDetailPage'
+import NewRecipePage from './pages/NewRecipePage'
+import EditRecipePage from './pages/EditRecipePage'
+import MealPlansPage from './pages/MealPlansPage'
+import NewMealPlanPage from './pages/NewMealPlanPage'
+import NotFoundPage from './pages/NotFoundPage'
 import PWABadge from './PWABadge.tsx'
-import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-  const { user } = useUser()
-  const { getToken } = useAuth()
-  const [jwtToken, setJwtToken] = useState<string>('')
-  const [tokenCopied, setTokenCopied] = useState(false)
-
-  const handleGetToken = async () => {
-    try {
-      const token = await getToken()
-      if (token) {
-        setJwtToken(token)
-        console.log('JWT Token:', token)
-      }
-    } catch (error) {
-      console.error('Error getting token:', error)
-    }
-  }
-
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(jwtToken)
-      setTokenCopied(true)
-      setTimeout(() => setTokenCopied(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy token:', error)
-    }
-  }
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={appLogo} className="logo" alt="RecipeCatalogue logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>RecipeCatalogue</h1>
-      
-      <div className="auth-section">
+    <Router>
+      <div className="min-h-screen bg-background text-foreground">
         <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <span>Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}!</span>
-            <UserButton />
-          </div>
-          
-          {/* JWT Token Section for Development */}
-          <div style={{ 
-            border: '2px dashed #ccc', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            backgroundColor: '#f9f9f9',
-            marginBottom: '20px',
-            maxWidth: '600px',
-            margin: '0 auto 20px'
-          }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '16px' }}>🔑 Development JWT Token</h3>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <button 
-                onClick={handleGetToken}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Get JWT Token
-              </button>
-              {jwtToken && (
-                <button 
-                  onClick={copyToClipboard}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: tokenCopied ? '#28a745' : '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {tokenCopied ? 'Copied!' : 'Copy Token'}
-                </button>
-              )}
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold mb-8">Recipe Catalogue</h1>
+              <p className="text-xl text-muted-foreground mb-8">
+                Please sign in to access your recipes
+              </p>
+              <SignInButton mode="modal">
+                <Button size="lg">
+                  Sign In
+                </Button>
+              </SignInButton>
             </div>
-            {jwtToken && (
-              <div style={{ 
-                backgroundColor: '#e9ecef', 
-                padding: '10px', 
-                borderRadius: '4px', 
-                wordBreak: 'break-all',
-                fontSize: '12px',
-                fontFamily: 'monospace'
-              }}>
-                {jwtToken}
-              </div>
-            )}
           </div>
+        </SignedOut>
+        
+        <SignedIn>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/recipes" element={<RecipesPage />} />
+              <Route path="/recipes/new" element={<NewRecipePage />} />
+              <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+              <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
+              <Route path="/meal-plans" element={<MealPlansPage />} />
+              <Route path="/meal-plans/new" element={<NewMealPlanPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Layout>
         </SignedIn>
+        
+        <PWABadge />
       </div>
-
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <PWABadge />
-    </>
+    </Router>
   )
 }
 

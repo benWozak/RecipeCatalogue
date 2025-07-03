@@ -3,7 +3,9 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(pip3 install:*)",
-      "Bash(python test:*)"
+      "Bash(python test:*)",
+      "Bash(yarn remove:*)",
+      "Bash(yarn add:*)"
     ],
     "deny": []
   }
