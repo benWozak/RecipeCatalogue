@@ -117,3 +117,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* PWA Safe Area Support */
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-pl {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-area-pr {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Prevent mobile scrolling bounce */
+  html, body {
+    overscroll-behavior: none;
+  }
+  
+  /* Better touch targets for mobile */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+}
