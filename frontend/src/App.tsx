@@ -5,6 +5,11 @@ import { ThemeProvider } from '@/components/theme-provider'
 import Layout from './components/common/Layout'
 import HomePage from './pages/HomePage'
 import RecipesPage from './pages/RecipesPage'
+import RecipeScanPage from './pages/RecipeScanPage'
+import InstagramScanPage from './pages/InstagramScanPage'
+import URLScanPage from './pages/URLScanPage'
+import ImageScanPage from './pages/ImageScanPage'
+import ManualRecipePage from './pages/ManualRecipePage'
 import RecipeDetailPage from './pages/RecipeDetailPage'
 import NewRecipePage from './pages/NewRecipePage'
 import EditRecipePage from './pages/EditRecipePage'
@@ -39,6 +44,11 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/recipes" element={<RecipesPage />} />
+                <Route path="/recipes/scan" element={<RecipeScanPage />} />
+                <Route path="/recipes/scan/instagram" element={<InstagramScanPage />} />
+                <Route path="/recipes/scan/url" element={<URLScanPage />} />
+                <Route path="/recipes/scan/image" element={<ImageScanPage />} />
+                <Route path="/recipes/scan/manual" element={<ManualRecipePage />} />
                 <Route path="/recipes/new" element={<NewRecipePage />} />
                 <Route path="/recipes/:id" element={<RecipeDetailPage />} />
                 <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
