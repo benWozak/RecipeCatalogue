@@ -22,7 +22,7 @@ class ParsedRecipe(BaseModel):
     total_time: Optional[int] = None
     servings: Optional[int] = None
     instructions: Dict[str, Any]  # Can contain steps array or categorized steps
-    ingredients: Dict[str, Any]   # Can contain flat list or categorized ingredients
+    ingredients: List[str]   # Flat list of ingredients
     confidence_score: float = 0.0
     media: Optional[Dict[str, Any]] = None
 
@@ -125,14 +125,8 @@ class BaseParser(ABC):
                 elif len(steps) >= 1:
                     score += 15
         
-        # Ingredients presence and quality - handle both dict and list formats
-        total_ingredients = 0
-        if isinstance(parsed_data.ingredients, dict):
-            for category_items in parsed_data.ingredients.values():
-                if isinstance(category_items, list):
-                    total_ingredients += len(category_items)
-        elif isinstance(parsed_data.ingredients, list):
-            total_ingredients = len(parsed_data.ingredients)
+        # Ingredients presence and quality
+        total_ingredients = len(parsed_data.ingredients) if parsed_data.ingredients else 0
             
         if total_ingredients >= 3:
             score += 25
@@ -168,8 +162,6 @@ class BaseParser(ABC):
             parsed_data.instructions = {"steps": []}
         
         if not parsed_data.ingredients:
-            parsed_data.ingredients = {"ingredients": []}
-        elif isinstance(parsed_data.ingredients, dict) and not any(parsed_data.ingredients.values()):
-            parsed_data.ingredients = {"ingredients": []}
+            parsed_data.ingredients = []
         
         return parsed_data

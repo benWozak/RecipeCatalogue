@@ -29,11 +29,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(recipes_router, prefix="/recipes", tags=["recipes"])
-app.include_router(meal_plans_router, prefix="/meal-plans", tags=["meal-plans"])
-app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(parsing_router, prefix="/parse", tags=["parsing"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(recipes_router, prefix="/api/recipes", tags=["recipes"])
+app.include_router(meal_plans_router, prefix="/api/meal-plans", tags=["meal-plans"])
+app.include_router(users_router, prefix="/api/users", tags=["users"])
+app.include_router(parsing_router, prefix="/api/parse", tags=["parsing"])
 
 @app.get("/")
 async def root():

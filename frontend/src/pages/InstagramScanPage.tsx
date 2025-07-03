@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useAuth } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ export default function InstagramScanPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { getToken } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +32,13 @@ export default function InstagramScanPage() {
     setIsLoading(true)
     
     try {
-      const result = await parsingService.parseInstagramUrl(url)
+      const token = await getToken()
+      if (!token) {
+        setError('Authentication required')
+        return
+      }
+      
+      const result = await parsingService.parseInstagramUrl(url, token)
       
       if (result.success && result.data) {
         navigate('/recipes/new', { 

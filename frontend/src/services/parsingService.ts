@@ -1,4 +1,4 @@
-import { useAuth } from '@clerk/clerk-react'
+// Remove useAuth import since we'll pass the token from components
 
 export interface ParsedRecipe {
   title: string
@@ -32,12 +32,9 @@ export interface ParseResponse {
 }
 
 class ParsingService {
-  private baseUrl = 'http://localhost:8000/api/parsing'
+  private baseUrl = 'http://localhost:8000/api/parse'
 
-  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<Response> {
-    const { getToken } = useAuth()
-    const token = await getToken()
-    
+  private async makeRequest(endpoint: string, token: string, options: RequestInit = {}): Promise<Response> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
@@ -55,9 +52,9 @@ class ParsingService {
     return response
   }
 
-  async parseInstagramUrl(url: string): Promise<ParseResponse> {
+  async parseInstagramUrl(url: string, token: string): Promise<ParseResponse> {
     try {
-      const response = await this.makeRequest('/instagram', {
+      const response = await this.makeRequest('/instagram', token, {
         method: 'POST',
         body: JSON.stringify({ url }),
       })
@@ -75,9 +72,9 @@ class ParsingService {
     }
   }
 
-  async parseWebUrl(url: string): Promise<ParseResponse> {
+  async parseWebUrl(url: string, token: string): Promise<ParseResponse> {
     try {
-      const response = await this.makeRequest('/url', {
+      const response = await this.makeRequest('/url', token, {
         method: 'POST',
         body: JSON.stringify({ url }),
       })
@@ -95,13 +92,10 @@ class ParsingService {
     }
   }
 
-  async parseImage(file: File): Promise<ParseResponse> {
+  async parseImage(file: File, token: string): Promise<ParseResponse> {
     try {
       const formData = new FormData()
       formData.append('file', file)
-
-      const { getToken } = useAuth()
-      const token = await getToken()
 
       const response = await fetch(`${this.baseUrl}/image`, {
         method: 'POST',

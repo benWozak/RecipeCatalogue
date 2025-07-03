@@ -5,7 +5,8 @@
       "Bash(pip3 install:*)",
       "Bash(python test:*)",
       "Bash(yarn remove:*)",
-      "Bash(yarn add:*)"
+      "Bash(yarn add:*)",
+      "Bash(python:*)"
     ],
     "deny": []
   }

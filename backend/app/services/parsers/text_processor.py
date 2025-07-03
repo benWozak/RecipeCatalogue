@@ -6,7 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class RecipePattern:
     """Pattern matching result for recipe components"""
-    ingredients: Dict[str, Any]  # Can be flat list or categorized
+    ingredients: List[str]  # Flat list of ingredients
     instructions: Dict[str, Any]  # Can be steps array or categorized
     title: str
     confidence: float
@@ -434,18 +434,15 @@ class TextProcessor:
         
         return False
     
-    def _extract_ingredients_structured(self, sections: Dict[str, List[str]], full_text: str) -> Dict[str, Any]:
-        """Extract ingredients with category structure"""
+    def _extract_ingredients_structured(self, sections: Dict[str, List[str]], full_text: str) -> List[str]:
+        """Extract ingredients as flat list"""
         # Filter out description text from processing
         description_text = self._extract_description_text(full_text)
         
         all_lines = sections['ingredients'] + sections['other']
         
-        # Structure: either flat list or categorized
-        current_category = "ingredients"
-        categorized = {}
+        # Structure: flat list of ingredients
         flat_list = []
-        has_categories = False
         
         for line in all_lines:
             line = line.strip()
@@ -464,28 +461,15 @@ class TextProcessor:
             if self._looks_like_instruction_not_ingredient(line):
                 continue
                 
-            # Check if it's a category header (for ingredients section)
+            # Skip category headers
             if self._looks_like_category_header(line) and not self._looks_like_instruction_not_ingredient(line):
-                current_category = line
-                has_categories = True
-                if current_category not in categorized:
-                    categorized[current_category] = []
                 continue
                 
             # Check if it looks like an ingredient
             if self._looks_like_ingredient(line):
-                if has_categories:
-                    if current_category not in categorized:
-                        categorized[current_category] = []
-                    categorized[current_category].append(line)
-                else:
-                    flat_list.append(line)
+                flat_list.append(line)
         
-        # Return structured format
-        if has_categories and categorized:
-            return categorized
-        else:
-            return {"ingredients": flat_list[:20]}
+        return flat_list[:20]
     
     def _extract_instructions_structured(self, sections: Dict[str, List[str]]) -> Dict[str, Any]:
         """Extract instructions with potential categorization"""
@@ -525,15 +509,12 @@ class TextProcessor:
         
         return None
     
-    def _calculate_confidence_structured(self, ingredients: Dict[str, Any], instructions: Dict[str, Any], full_text: str) -> float:
+    def _calculate_confidence_structured(self, ingredients: List[str], instructions: Dict[str, Any], full_text: str) -> float:
         """Calculate confidence score for structured recipe extraction"""
         score = 0.0
         
         # Count total ingredients and instructions
-        total_ingredients = 0
-        for category_items in ingredients.values():
-            if isinstance(category_items, list):
-                total_ingredients += len(category_items)
+        total_ingredients = len(ingredients)
         
         total_instructions = 0
         for category_items in instructions.values():
@@ -551,10 +532,6 @@ class TextProcessor:
             score += 0.2
         if total_instructions >= 2:
             score += 0.2
-        
-        # Bonus for having categories
-        if len(ingredients.keys()) > 1:
-            score += 0.1
         
         # Check for recipe-related keywords
         recipe_keywords = [
