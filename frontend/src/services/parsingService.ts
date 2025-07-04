@@ -9,12 +9,11 @@ export interface ParsedRecipe {
   prep_time?: number
   cook_time?: number
   total_time?: number
-  ingredients: string  // HTML formatted ingredients
-  instructions: string  // HTML formatted instructions
+  ingredients: string  // HTML formatted ingredients (e.g., "<ul><li>ingredient</li></ul>")
+  instructions: string  // HTML formatted instructions (e.g., "<ol><li>step</li></ol>")
   confidence_score: number
   media?: {
-    type: string
-    images?: Array<{
+    images?: string[] | Array<{
       url: string
       width?: number
       height?: number

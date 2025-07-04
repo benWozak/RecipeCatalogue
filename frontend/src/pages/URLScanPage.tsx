@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useAuth } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ export default function URLScanPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { getToken } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +32,13 @@ export default function URLScanPage() {
     setIsLoading(true)
     
     try {
-      const result = await parsingService.parseWebUrl(url, '')
+      const token = await getToken()
+      if (!token) {
+        setError('Authentication required')
+        return
+      }
+      
+      const result = await parsingService.parseWebUrl(url, token)
       
       if (result.success && result.data) {
         navigate('/recipes/new', { 
@@ -132,14 +140,15 @@ export default function URLScanPage() {
             <CardContent className="p-6">
               <h3 className="font-semibold mb-3">Supported Websites</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• AllRecipes, Food Network, Bon Appétit</p>
-                <p>• Serious Eats, Epicurious, Tasty</p>
-                <p>• Personal blogs with recipe cards</p>
+                <p>• <strong>500+ recipe websites supported</strong></p>
+                <p>• AllRecipes, Food Network, Bon Appétit, NYT Cooking</p>
+                <p>• Serious Eats, Epicurious, Tasty, Half Baked Harvest</p>
+                <p>• Personal blogs with recipe schema markup</p>
                 <p>• Most websites with structured recipe data</p>
               </div>
               <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  <strong>Tip:</strong> Works best with websites that have clear recipe formatting with ingredients and instructions sections.
+                  <strong>Enhanced Parsing:</strong> Our improved parser automatically detects recipe data and formats ingredients and instructions for easy editing.
                 </p>
               </div>
             </CardContent>

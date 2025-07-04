@@ -117,21 +117,22 @@ class BaseParser(ABC):
             score += 20
         
         # Instructions presence and quality
-        if isinstance(parsed_data.instructions, dict):
-            if parsed_data.instructions.get('steps'):
-                steps = parsed_data.instructions['steps']
-                if len(steps) >= 3:
-                    score += 30
-                elif len(steps) >= 1:
-                    score += 15
+        if isinstance(parsed_data.instructions, str):
+            # Count HTML list items to estimate instruction count
+            instruction_count = parsed_data.instructions.count('<li>')
+            if instruction_count >= 3:
+                score += 30
+            elif instruction_count >= 1:
+                score += 15
         
         # Ingredients presence and quality
-        total_ingredients = len(parsed_data.ingredients) if parsed_data.ingredients else 0
-            
-        if total_ingredients >= 3:
-            score += 25
-        elif total_ingredients >= 1:
-            score += 10
+        if isinstance(parsed_data.ingredients, str):
+            # Count HTML list items to estimate ingredient count
+            ingredient_count = parsed_data.ingredients.count('<li>')
+            if ingredient_count >= 3:
+                score += 25
+            elif ingredient_count >= 1:
+                score += 10
         
         # Timing information
         if parsed_data.prep_time or parsed_data.cook_time or parsed_data.total_time:
@@ -157,11 +158,9 @@ class BaseParser(ABC):
             parsed_data.title = "Untitled Recipe"
         
         if not parsed_data.instructions:
-            parsed_data.instructions = {"steps": []}
-        elif isinstance(parsed_data.instructions, dict) and not parsed_data.instructions.get('steps'):
-            parsed_data.instructions = {"steps": []}
+            parsed_data.instructions = ""
         
         if not parsed_data.ingredients:
-            parsed_data.ingredients = []
+            parsed_data.ingredients = ""
         
         return parsed_data

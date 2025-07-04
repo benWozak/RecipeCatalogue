@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useAuth } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, Camera, Upload, X, AlertCircle, Loader2 } from 'lucide-react'
@@ -13,6 +14,7 @@ export default function ImageScanPage() {
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  const { getToken } = useAuth()
 
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -75,7 +77,13 @@ export default function ImageScanPage() {
     setError('')
     
     try {
-      const result = await parsingService.parseImage(selectedFile, '')
+      const token = await getToken()
+      if (!token) {
+        setError('Authentication required')
+        return
+      }
+      
+      const result = await parsingService.parseImage(selectedFile, token)
       
       if (result.success && result.data) {
         navigate('/recipes/new', { 

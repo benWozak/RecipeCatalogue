@@ -14,7 +14,8 @@
       "mcp__ide__getDiagnostics",
       "Bash(npm run typecheck:*)",
       "Bash(rm:*)",
-      "Bash(yarn lint:*)"
+      "Bash(yarn lint:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [
       "Bash(npm run *)"
