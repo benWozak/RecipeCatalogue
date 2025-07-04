@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { recipeService } from '@/services/recipeService';
 import { useRecipeStore } from '@/stores/recipeStore';
-import { Recipe, RecipeCreate, RecipeUpdate, RecipeFilters } from '@/types/recipe';
+import { RecipeCreate, RecipeUpdate, RecipeFilters } from '@/types/recipe';
 
 // Query keys
 export const recipeKeys = {
@@ -56,7 +56,7 @@ export const useRecipe = (id: string) => {
   const { getToken } = useAuth();
   const { setSelectedRecipe, setError } = useRecipeStore();
 
-  return useQuery({
+  const result = useQuery({
     queryKey: recipeKeys.detail(id),
     queryFn: async () => {
       const token = await getToken();
@@ -69,14 +69,20 @@ export const useRecipe = (id: string) => {
     },
     enabled: !!id && !!getToken,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onSuccess: (data) => {
-      setSelectedRecipe(data);
-      setError(null);
-    },
-    onError: (error) => {
-      setError(error instanceof Error ? error.message : 'Failed to fetch recipe');
-    },
   });
+
+  // Handle side effects with useEffect instead of deprecated callbacks
+  React.useEffect(() => {
+    if (result.isSuccess && result.data) {
+      setSelectedRecipe(result.data);
+      setError(null);
+    }
+    if (result.isError) {
+      setError(result.error instanceof Error ? result.error.message : 'Failed to fetch recipe');
+    }
+  }, [result.isSuccess, result.isError, result.data, result.error, setSelectedRecipe, setError]);
+
+  return result;
 };
 
 // Hook for creating a recipe
@@ -179,7 +185,7 @@ export const useSearchRecipes = (query: string) => {
   const { getToken } = useAuth();
   const { setSearchQuery } = useRecipeStore();
 
-  return useQuery({
+  const result = useQuery({
     queryKey: [...recipeKeys.lists(), 'search', query],
     queryFn: async () => {
       const token = await getToken();
@@ -192,10 +198,16 @@ export const useSearchRecipes = (query: string) => {
     },
     enabled: !!query && !!getToken,
     staleTime: 2 * 60 * 1000, // 2 minutes
-    onSuccess: () => {
-      setSearchQuery(query);
-    },
   });
+
+  // Handle side effects with useEffect instead of deprecated callbacks
+  React.useEffect(() => {
+    if (result.isSuccess) {
+      setSearchQuery(query);
+    }
+  }, [result.isSuccess, query, setSearchQuery]);
+
+  return result;
 };
 
 // Hook for getting recipes by tag

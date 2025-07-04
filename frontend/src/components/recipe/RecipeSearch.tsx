@@ -1,10 +1,16 @@
-import { useState } from 'react';
-import { Search, Filter, X, SlidersHorizontal } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { RecipeFilters } from '@/types/recipe';
+import { useState } from "react";
+import { Search, X, SlidersHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { RecipeFilters } from "@/types/recipe";
 
 interface RecipeSearchProps {
   onSearch: (query: string) => void;
@@ -14,12 +20,12 @@ interface RecipeSearchProps {
   availableTags?: string[];
 }
 
-export function RecipeSearch({ 
-  onSearch, 
-  onFiltersChange, 
-  filters, 
+export function RecipeSearch({
+  onSearch,
+  onFiltersChange,
+  filters,
   searchQuery,
-  availableTags = []
+  availableTags = [],
 }: RecipeSearchProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
@@ -41,19 +47,22 @@ export function RecipeSearch({
   const handleTagFilter = (tag: string) => {
     const currentTags = filters.tags || [];
     const newTags = currentTags.includes(tag)
-      ? currentTags.filter(t => t !== tag)
+      ? currentTags.filter((t) => t !== tag)
       : [...currentTags, tag];
-    
+
     onFiltersChange({ ...filters, tags: newTags });
   };
 
   const clearFilters = () => {
     onFiltersChange({});
-    setLocalSearchQuery('');
-    onSearch('');
+    setLocalSearchQuery("");
+    onSearch("");
   };
 
-  const hasActiveFilters = filters.difficulty || (filters.tags && filters.tags.length > 0) || searchQuery;
+  const hasActiveFilters =
+    filters.difficulty ||
+    (filters.tags && filters.tags.length > 0) ||
+    searchQuery;
 
   return (
     <div className="space-y-4">
@@ -77,7 +86,10 @@ export function RecipeSearch({
               <SlidersHorizontal className="h-4 w-4" />
               Filters
               {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="ml-1 h-5 w-5 rounded-full p-0 text-xs"
+                >
                   !
                 </Badge>
               )}
@@ -87,11 +99,11 @@ export function RecipeSearch({
             <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
               Difficulty
             </div>
-            {['easy', 'medium', 'hard'].map((difficulty) => (
+            {["easy", "medium", "hard"].map((difficulty) => (
               <DropdownMenuItem
                 key={difficulty}
                 onClick={() => handleDifficultyFilter(difficulty)}
-                className={filters.difficulty === difficulty ? 'bg-accent' : ''}
+                className={filters.difficulty === difficulty ? "bg-accent" : ""}
               >
                 <div className="flex items-center justify-between w-full">
                   <span className="capitalize">{difficulty}</span>
@@ -101,7 +113,7 @@ export function RecipeSearch({
                 </div>
               </DropdownMenuItem>
             ))}
-            
+
             {availableTags.length > 0 && (
               <>
                 <DropdownMenuSeparator />
@@ -112,13 +124,11 @@ export function RecipeSearch({
                   <DropdownMenuItem
                     key={tag}
                     onClick={() => handleTagFilter(tag)}
-                    className={filters.tags?.includes(tag) ? 'bg-accent' : ''}
+                    className={filters.tags?.includes(tag) ? "bg-accent" : ""}
                   >
                     <div className="flex items-center justify-between w-full">
                       <span>{tag}</span>
-                      {filters.tags?.includes(tag) && (
-                        <X className="h-3 w-3" />
-                      )}
+                      {filters.tags?.includes(tag) && <X className="h-3 w-3" />}
                     </div>
                   </DropdownMenuItem>
                 ))}

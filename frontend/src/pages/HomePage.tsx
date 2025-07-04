@@ -1,7 +1,14 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Calendar, Plus, Camera, Clock, TrendingUp, ChefHat } from "lucide-react";
+import {
+  BookOpen,
+  Calendar,
+  Plus,
+  Camera,
+  TrendingUp,
+  ChefHat,
+} from "lucide-react";
 import { useRecipes } from "@/hooks/useRecipes";
 import { useRecipeSelectors } from "@/stores/recipeStore";
 import { RecipeCard } from "@/components/recipe";
@@ -16,7 +23,9 @@ function RecentActivity() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-foreground">Recent Activity</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          Recent Activity
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-6">
@@ -51,7 +60,9 @@ function RecentActivity() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div>
-        <h2 className="text-xl font-semibold text-foreground mb-4">Your Recipe Collection</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Your Recipe Collection
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-6">
@@ -66,7 +77,7 @@ function RecentActivity() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -80,7 +91,7 @@ function RecentActivity() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -89,7 +100,9 @@ function RecentActivity() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Easy Recipes</p>
-                  <p className="text-2xl font-bold">{recipesByDifficulty.easy || 0}</p>
+                  <p className="text-2xl font-bold">
+                    {recipesByDifficulty.easy || 0}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -101,7 +114,9 @@ function RecentActivity() {
       {recipes.length > 0 ? (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-foreground">Recent Recipes</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              Recent Recipes
+            </h2>
             <Button variant="outline" asChild>
               <Link to="/recipes">View All</Link>
             </Button>
@@ -114,11 +129,15 @@ function RecentActivity() {
         </div>
       ) : (
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">
+            Recent Activity
+          </h2>
           <Card>
             <CardContent className="p-6 text-center text-muted-foreground">
               <ChefHat className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="mb-4">No recipes yet. Start building your collection!</p>
+              <p className="mb-4">
+                No recipes yet. Start building your collection!
+              </p>
               <div className="flex gap-2 justify-center">
                 <Button asChild>
                   <Link to="/recipes/new">Create Recipe</Link>

@@ -11,8 +11,7 @@ import URLScanPage from './pages/URLScanPage'
 import ImageScanPage from './pages/ImageScanPage'
 import ManualRecipePage from './pages/ManualRecipePage'
 import RecipeDetailPage from './pages/RecipeDetailPage'
-import NewRecipePage from './pages/NewRecipePage'
-import EditRecipePage from './pages/EditRecipePage'
+import RecipeFormPage from './pages/RecipeFormPage'
 import MealPlansPage from './pages/MealPlansPage'
 import NewMealPlanPage from './pages/NewMealPlanPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -49,9 +48,9 @@ function App() {
                 <Route path="/recipes/scan/url" element={<URLScanPage />} />
                 <Route path="/recipes/scan/image" element={<ImageScanPage />} />
                 <Route path="/recipes/scan/manual" element={<ManualRecipePage />} />
-                <Route path="/recipes/new" element={<NewRecipePage />} />
+                <Route path="/recipes/new" element={<RecipeFormPage />} />
                 <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-                <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
+                <Route path="/recipes/:id/edit" element={<RecipeFormPage />} />
                 <Route path="/meal-plans" element={<MealPlansPage />} />
                 <Route path="/meal-plans/new" element={<NewMealPlanPage />} />
                 <Route path="*" element={<NotFoundPage />} />

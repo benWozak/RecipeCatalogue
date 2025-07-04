@@ -7,11 +7,17 @@
       "Bash(yarn remove:*)",
       "Bash(yarn add:*)",
       "Bash(python:*)",
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)",
+      "Bash(yarn install:*)",
+      "Bash(yarn build:*)",
       "Bash(rg:*)",
-      "Bash(yarn dev)"
+      "Bash(yarn dev)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run typecheck:*)",
+      "Bash(rm:*)",
+      "Bash(yarn lint:*)"
     ],
-    "deny": []
+    "deny": [
+      "Bash(npm run *)"
+    ]
   }
 }

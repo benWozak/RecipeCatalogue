@@ -55,7 +55,7 @@ const initialState = {
   hasNextPage: false,
 };
 
-export const useRecipeStore = create<RecipeState>((set, get) => ({
+export const useRecipeStore = create<RecipeState>((set) => ({
   ...initialState,
 
   // Recipe management

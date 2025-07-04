@@ -6,6 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { HtmlRenderer } from '@/components/ui/html-renderer';
 import { useRecipe, useDeleteRecipe } from '@/hooks/useRecipes';
 import { useRecipeStore } from '@/stores/recipeStore';
+import { Recipe, Ingredient, Tag } from '@/types/recipe';
+
+interface MediaImage {
+  url: string;
+  width?: number;
+  height?: number;
+}
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +21,7 @@ export default function RecipeDetailPage() {
   const { data: recipe, isLoading, error: queryError } = useRecipe(id!);
   const deleteRecipe = useDeleteRecipe();
 
-  const currentRecipe = recipe || selectedRecipe;
+  const currentRecipe: Recipe | null = (recipe && typeof recipe === 'object' && recipe !== null && 'id' in recipe ? recipe as Recipe : selectedRecipe) || null;
   const displayError = error || queryError?.message;
 
   const handleDelete = async () => {
@@ -226,9 +233,9 @@ export default function RecipeDetailPage() {
                       Array.isArray(currentRecipe.ingredients) && currentRecipe.ingredients.length > 0 ? (
                         // Structured ingredients from database
                         <ul className="space-y-2">
-                          {currentRecipe.ingredients
-                            .sort((a, b) => a.order_index - b.order_index)
-                            .map((ingredient) => (
+                          {(currentRecipe.ingredients as Ingredient[])
+                            .sort((a: Ingredient, b: Ingredient) => a.order_index - b.order_index)
+                            .map((ingredient: Ingredient) => (
                               <li key={ingredient.id} className="flex items-start gap-2">
                                 <span className="text-muted-foreground">•</span>
                                 <div className="flex-1">
@@ -251,7 +258,7 @@ export default function RecipeDetailPage() {
                         </ul>
                       ) : (
                         // HTML ingredients from parsing (Instagram, web, etc.)
-                        <HtmlRenderer content={currentRecipe.ingredients} />
+                        <HtmlRenderer content={currentRecipe.ingredients as string} />
                       )
                     ) : (
                       <p className="text-muted-foreground">No ingredients listed</p>
@@ -280,7 +287,7 @@ export default function RecipeDetailPage() {
                           }
                           
                           // Fallback: try to render the whole object as HTML
-                          return <HtmlRenderer content={currentRecipe.instructions} />;
+                          return <HtmlRenderer content={currentRecipe.instructions as unknown as string} />;
                         }
                         
                         // Final fallback
@@ -307,7 +314,7 @@ export default function RecipeDetailPage() {
                     <div className="space-y-4">
                       <h4 className="font-medium">Images</h4>
                       <div className="grid grid-cols-1 gap-4">
-                        {currentRecipe.media.images.map((image: any, index: number) => (
+                        {currentRecipe.media.images.map((image: MediaImage, index: number) => (
                           <div key={index} className="relative">
                             <img
                               src={image.url}
@@ -419,7 +426,7 @@ export default function RecipeDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {currentRecipe.tags.map((tag) => (
+                    {currentRecipe.tags.map((tag: Tag) => (
                       <Badge key={tag.id} variant="secondary">
                         {tag.name}
                       </Badge>
