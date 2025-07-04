@@ -1,0 +1,100 @@
+export interface Ingredient {
+  id: string;
+  name: string;
+  amount?: number;
+  unit?: string;
+  notes?: string;
+  order_index: number;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+export interface Recipe {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  prep_time?: number;
+  cook_time?: number;
+  total_time?: number;
+  servings?: number;
+  difficulty?: string;
+  source_type: 'manual' | 'website' | 'instagram' | 'image';
+  source_url?: string;
+  media?: Record<string, any>;
+  instructions?: Record<string, any> | string;
+  ingredients: Ingredient[] | Record<string, any> | string; // Support both structured and HTML ingredients
+  tags: Tag[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RecipeCreate {
+  title: string;
+  description?: string;
+  prep_time?: number;
+  cook_time?: number;
+  total_time?: number;
+  servings?: number;
+  difficulty?: string;
+  source_type?: 'manual' | 'website' | 'instagram' | 'image';
+  source_url?: string;
+  media?: Record<string, any>;
+  instructions?: Record<string, any>;
+  ingredients: Omit<Ingredient, 'id'>[]; // Always send as structured ingredients array
+  tags: Omit<Tag, 'id'>[];
+}
+
+export interface RecipeUpdate {
+  title?: string;
+  description?: string;
+  prep_time?: number;
+  cook_time?: number;
+  total_time?: number;
+  servings?: number;
+  difficulty?: string;
+  source_type?: 'manual' | 'website' | 'instagram' | 'image';
+  source_url?: string;
+  media?: Record<string, any>;
+  instructions?: Record<string, any>;
+  ingredients?: Omit<Ingredient, 'id'>[]; // Always send as structured ingredients array
+  tags?: Omit<Tag, 'id'>[];
+}
+
+export interface RecipeListResponse {
+  recipes: Recipe[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+export interface RecipeFilters {
+  search?: string;
+  tags?: string[];
+  difficulty?: string;
+  skip?: number;
+  limit?: number;
+}
+
+export interface RecipeFormData {
+  title: string;
+  description: string;
+  prep_time: number | null;
+  cook_time: number | null;
+  total_time: number | null;
+  servings: number | null;
+  difficulty: string;
+  source_type: 'manual' | 'website' | 'instagram' | 'image';
+  source_url: string;
+  media: Record<string, any>;
+  instructions: Record<string, any>;
+  ingredients: Record<string, any>; // HTML content for rich text editor
+  tags: Array<{
+    name: string;
+    color: string;
+  }>;
+}
