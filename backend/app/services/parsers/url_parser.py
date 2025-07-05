@@ -5,16 +5,30 @@ from .base_parser import BaseParser, ParsedRecipe
 
 try:
     import httpx
-    from bs4 import BeautifulSoup
-    from recipe_scrapers import scrape_me
     HTTP_AVAILABLE = True
-    RECIPE_SCRAPERS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
+    print(f"Warning: httpx not available: {e}")
     httpx = None
-    BeautifulSoup = None
-    scrape_me = None
     HTTP_AVAILABLE = False
+
+try:
+    from bs4 import BeautifulSoup
+    BS4_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: BeautifulSoup not available: {e}")
+    BeautifulSoup = None
+    BS4_AVAILABLE = False
+
+try:
+    from recipe_scrapers import scrape_me
+    RECIPE_SCRAPERS_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: recipe-scrapers not available: {e}")
+    scrape_me = None
     RECIPE_SCRAPERS_AVAILABLE = False
+
+# Ensure HTTP_AVAILABLE is properly set
+HTTP_AVAILABLE = HTTP_AVAILABLE and BS4_AVAILABLE
 
 
 class URLParser(BaseParser):
@@ -29,13 +43,9 @@ class URLParser(BaseParser):
         if RECIPE_SCRAPERS_AVAILABLE:
             try:
                 result = await self._parse_with_recipe_scrapers(url)
-                print(f"Recipe-scrapers succeeded for {url}")
                 return result
             except Exception as e:
                 # If recipe-scrapers fails, fall back to manual parsing
-                print(f"Recipe-scrapers failed for {url}: {str(e)}")
-                import traceback
-                print(f"Full traceback: {traceback.format_exc()}")
                 pass
         
         # Fallback to manual parsing
@@ -91,6 +101,7 @@ class URLParser(BaseParser):
             instructions = self._split_instructions(instructions)
             instructions_html = self._instructions_to_html(instructions)
             
+            
             # Parse timing information
             prep_time = None
             cook_time = None
@@ -128,9 +139,25 @@ class URLParser(BaseParser):
             except:
                 pass
             
+            # Create structured image data
+            images = []
+            if image_url:
+                images.append({
+                    "url": image_url,
+                    "alt": "Recipe image",
+                    "source": "recipe-scrapers"
+                })
+            
+            # Safely get description with fallback
+            description = ""
+            try:
+                description = scraper.description() or ""
+            except (NotImplementedError, AttributeError):
+                description = ""
+            
             parsed_data = ParsedRecipe(
                 title=scraper.title() or "Recipe from Web",
-                description=scraper.description() or "",
+                description=description,
                 source_type="website",
                 source_url=url,
                 prep_time=prep_time,
@@ -139,7 +166,7 @@ class URLParser(BaseParser):
                 servings=servings,
                 instructions=instructions_html,
                 ingredients=ingredients_html,
-                media={"images": [image_url]} if image_url else None
+                media={"images": images} if images else None
             )
             
             return self._validate_parsed_data(parsed_data)
@@ -264,6 +291,10 @@ class URLParser(BaseParser):
         # Try to find servings
         servings = self._extract_servings_from_html(soup)
         
+        # Extract images from page
+        image_urls = self._extract_images_from_page(soup, url)
+        images = [{"url": img_url, "alt": "Recipe image", "source": "page-fallback"} for img_url in image_urls]
+        
         parsed_data = ParsedRecipe(
             title=title_text,
             description=description,
@@ -274,7 +305,8 @@ class URLParser(BaseParser):
             total_time=total_time,
             servings=servings,
             instructions=self._instructions_to_html(instructions),
-            ingredients=self._ingredients_to_html([(None, ingredients)])
+            ingredients=self._ingredients_to_html([(None, ingredients)]),
+            media={"images": images} if images else None
         )
         
         return self._validate_parsed_data(parsed_data)
@@ -480,7 +512,6 @@ class URLParser(BaseParser):
                     target_id = href[1:]  # Remove the #
                     target_element = soup.find(id=target_id)
                     if target_element:
-                        print(f"Found recipe section via jump link: #{target_id}")
                         return target_element
         
         # Also look for buttons with data attributes
@@ -494,7 +525,6 @@ class URLParser(BaseParser):
                         target_id = target[1:]
                         target_element = soup.find(id=target_id)
                         if target_element:
-                            print(f"Found recipe section via button: #{target_id}")
                             return target_element
         
         return None
@@ -540,6 +570,10 @@ class URLParser(BaseParser):
         instructions = self._extract_instructions_from_section(recipe_section)
         instructions_html = self._instructions_to_html(instructions)
         
+        # Extract images from recipe section
+        image_urls = self._extract_images_from_section(recipe_section, url)
+        images = [{"url": img_url, "alt": "Recipe image", "source": "recipe-section"} for img_url in image_urls]
+        
         parsed_data = ParsedRecipe(
             title=title,
             description=description,
@@ -550,7 +584,8 @@ class URLParser(BaseParser):
             total_time=total_time,
             servings=servings,
             instructions=instructions_html,
-            ingredients=ingredients_html
+            ingredients=ingredients_html,
+            media={"images": images} if images else None
         )
         
         return self._validate_parsed_data(parsed_data)
@@ -704,3 +739,220 @@ class URLParser(BaseParser):
                     break
         
         return instructions
+    
+    def _extract_images_from_section(self, section: BeautifulSoup, base_url: str) -> List[str]:
+        """Extract images from recipe section with quality filtering"""
+        images = []
+        
+        # Recipe-specific image selectors
+        image_selectors = [
+            '.recipe-image img',
+            '.recipe-photo img', 
+            '.wprm-recipe-image img',
+            '.wp-block-recipe-image img',
+            '.recipe-card-image img',
+            '[itemprop="image"]',
+            '.entry-content img',
+            'img'  # Fallback to all images in section
+        ]
+        
+        for selector in image_selectors:
+            img_elements = section.select(selector)
+            for img in img_elements:
+                img_url = self._get_image_url(img, base_url)
+                if img_url and self._is_valid_recipe_image(img, img_url):
+                    if img_url not in images:  # Avoid duplicates
+                        images.append(img_url)
+                        if len(images) >= 3:  # Limit to 3 images
+                            break
+            if images:
+                break  # Stop after finding images with first successful selector
+        
+        return images
+    
+    def _extract_images_from_page(self, soup: BeautifulSoup, base_url: str) -> List[str]:
+        """Extract images from entire page with comprehensive detection"""
+        images = []
+        
+        # 1. Try meta tags first (usually highest quality)
+        meta_images = self._extract_meta_tag_images(soup, base_url)
+        images.extend(meta_images)
+        
+        # 2. Try JSON-LD structured data
+        if not images:
+            jsonld_images = self._extract_jsonld_images(soup, base_url)
+            images.extend(jsonld_images)
+        
+        # 3. Look for recipe-specific images in the page
+        if len(images) < 2:  # Get a few more if we don't have enough
+            recipe_images = self._extract_recipe_images_from_page(soup, base_url)
+            for img in recipe_images:
+                if img not in images:
+                    images.append(img)
+                    if len(images) >= 3:
+                        break
+        
+        return images[:3]  # Limit to 3 images max
+    
+    def _extract_meta_tag_images(self, soup: BeautifulSoup, base_url: str) -> List[str]:
+        """Extract images from meta tags (Open Graph, Twitter, etc.)"""
+        images = []
+        
+        # Open Graph image
+        og_image = soup.find('meta', property='og:image')
+        if og_image and og_image.get('content'):
+            img_url = self._make_absolute_url(og_image.get('content'), base_url)
+            if img_url:
+                images.append(img_url)
+        
+        # Twitter Card image
+        twitter_image = soup.find('meta', attrs={'name': 'twitter:image'})
+        if twitter_image and twitter_image.get('content'):
+            img_url = self._make_absolute_url(twitter_image.get('content'), base_url)
+            if img_url and img_url not in images:
+                images.append(img_url)
+        
+        # Schema.org meta image
+        schema_image = soup.find('meta', attrs={'itemprop': 'image'})
+        if schema_image and schema_image.get('content'):
+            img_url = self._make_absolute_url(schema_image.get('content'), base_url)
+            if img_url and img_url not in images:
+                images.append(img_url)
+        
+        return images
+    
+    def _extract_jsonld_images(self, soup: BeautifulSoup, base_url: str) -> List[str]:
+        """Extract images from JSON-LD structured data"""
+        images = []
+        
+        json_ld_scripts = soup.find_all('script', {'type': 'application/ld+json'})
+        for script in json_ld_scripts:
+            try:
+                data = json.loads(script.string)
+                if isinstance(data, list):
+                    data = data[0]
+                
+                if data.get('@type') == 'Recipe':
+                    image_data = data.get('image')
+                    if image_data:
+                        if isinstance(image_data, str):
+                            img_url = self._make_absolute_url(image_data, base_url)
+                            if img_url:
+                                images.append(img_url)
+                        elif isinstance(image_data, list):
+                            for img in image_data:
+                                img_url = img if isinstance(img, str) else img.get('url', '')
+                                img_url = self._make_absolute_url(img_url, base_url)
+                                if img_url and img_url not in images:
+                                    images.append(img_url)
+                                    if len(images) >= 3:
+                                        break
+                        elif isinstance(image_data, dict):
+                            img_url = image_data.get('url', '')
+                            img_url = self._make_absolute_url(img_url, base_url)
+                            if img_url:
+                                images.append(img_url)
+            except:
+                continue
+        
+        return images
+    
+    def _extract_recipe_images_from_page(self, soup: BeautifulSoup, base_url: str) -> List[str]:
+        """Extract recipe images from page content"""
+        images = []
+        
+        # Look for images in recipe-related containers
+        recipe_containers = [
+            '.recipe', '.recipe-card', '.recipe-content', '.recipe-container',
+            '.entry-content', '.post-content', '.main-content',
+            '[itemtype*="Recipe"]', '.wp-block-recipe'
+        ]
+        
+        for container_selector in recipe_containers:
+            containers = soup.select(container_selector)
+            for container in containers:
+                img_elements = container.find_all('img')
+                for img in img_elements:
+                    img_url = self._get_image_url(img, base_url)
+                    if img_url and self._is_valid_recipe_image(img, img_url):
+                        if img_url not in images:
+                            images.append(img_url)
+                            if len(images) >= 3:
+                                return images
+        
+        return images
+    
+    def _get_image_url(self, img_element, base_url: str) -> Optional[str]:
+        """Extract image URL from img element, handling various attributes"""
+        # Try different image URL attributes
+        url_attrs = ['src', 'data-src', 'data-lazy-src', 'data-original']
+        
+        for attr in url_attrs:
+            img_url = img_element.get(attr)
+            if img_url:
+                return self._make_absolute_url(img_url, base_url)
+        
+        return None
+    
+    def _make_absolute_url(self, url: str, base_url: str) -> Optional[str]:
+        """Convert relative URLs to absolute URLs"""
+        if not url:
+            return None
+        
+        # Already absolute
+        if url.startswith(('http://', 'https://')):
+            return url
+        
+        # Protocol relative
+        if url.startswith('//'):
+            base_protocol = 'https:' if base_url.startswith('https:') else 'http:'
+            return base_protocol + url
+        
+        # Relative URL
+        from urllib.parse import urljoin
+        return urljoin(base_url, url)
+    
+    def _is_valid_recipe_image(self, img_element, img_url: str) -> bool:
+        """Determine if an image is likely a valid recipe image"""
+        # Skip very small images (likely icons or thumbnails)
+        width = img_element.get('width')
+        height = img_element.get('height')
+        
+        if width and height:
+            try:
+                w, h = int(width), int(height)
+                if w < 200 or h < 150:  # Skip small images
+                    return False
+            except:
+                pass
+        
+        # Skip images that are likely ads or social media icons
+        src_lower = img_url.lower()
+        if any(skip in src_lower for skip in [
+            'avatar', 'profile', 'icon', 'logo', 'banner', 'ad-', 'advertisement',
+            'social', 'facebook', 'twitter', 'instagram', 'pinterest'
+        ]):
+            return False
+        
+        # Check alt text for recipe relevance
+        alt_text = img_element.get('alt', '').lower()
+        if alt_text:
+            # Positive indicators
+            if any(good in alt_text for good in [
+                'recipe', 'food', 'dish', 'cooking', 'baked', 'cooked',
+                'ingredients', 'meal', 'dinner', 'lunch', 'breakfast'
+            ]):
+                return True
+            
+            # Negative indicators
+            if any(bad in alt_text for bad in [
+                'author', 'profile', 'logo', 'icon', 'social', 'share',
+                'advertisement', 'ad', 'banner'
+            ]):
+                return False
+        
+        # Check image file extension
+        if any(ext in src_lower for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+            return True
+        
+        return True  # Default to true if no negative indicators

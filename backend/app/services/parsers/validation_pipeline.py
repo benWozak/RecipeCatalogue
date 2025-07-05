@@ -213,10 +213,13 @@ class ValidationPipeline:
                 suggestion="Verify timing information"
             ))
         
-        # Check servings vs ingredients - handle both dict and list formats
+        # Check servings vs ingredients - handle HTML string format
         if recipe.ingredients and recipe.servings:
             ingredient_count = 0
-            if isinstance(recipe.ingredients, dict):
+            if isinstance(recipe.ingredients, str):
+                # Count <li> elements as ingredients in HTML format
+                ingredient_count = recipe.ingredients.count('<li>')
+            elif isinstance(recipe.ingredients, dict):
                 for category, ingredient_list in recipe.ingredients.items():
                     if isinstance(ingredient_list, list):
                         ingredient_count += len(ingredient_list)

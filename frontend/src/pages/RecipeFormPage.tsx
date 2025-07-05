@@ -428,6 +428,47 @@ export default function RecipeFormPage() {
           </Card>
         )}
 
+        {/* Recipe Images Preview - only show for parsed recipes with images */}
+        {parsedData?.media?.images && parsedData.media.images.length > 0 && !isEditMode && (
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                <h3 className="font-medium text-sm text-muted-foreground">Recipe Images</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {parsedData.media.images.map((image: any, index: number) => (
+                    <div key={index} className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                      <img
+                        src={typeof image === 'string' ? image : image.url}
+                        alt={typeof image === 'object' && image.alt ? image.alt : `Recipe image ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                        loading="lazy"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.parentElement!.classList.add('bg-muted');
+                          target.parentElement!.innerHTML = '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">Image failed to load</div>';
+                        }}
+                      />
+                      {typeof image === 'object' && image.source && (
+                        <div className="absolute bottom-1 right-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {image.source === 'recipe-scrapers' ? 'Auto' : 
+                             image.source === 'page-fallback' ? 'Page' : 
+                             image.source === 'recipe-section' ? 'Section' : 'Other'}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {parsedData.media.images.length} image{parsedData.media.images.length !== 1 ? 's' : ''} found automatically
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">

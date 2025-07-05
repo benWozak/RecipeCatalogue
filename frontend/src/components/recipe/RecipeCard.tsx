@@ -35,7 +35,15 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
   };
 
   // Get the first image for thumbnail
-  const thumbnailImage = recipe.media?.images?.[0] || recipe.media?.video_thumbnail;
+  const getFirstImage = () => {
+    if (recipe.media?.images && Array.isArray(recipe.media.images) && recipe.media.images.length > 0) {
+      const firstImage = recipe.media.images[0];
+      return typeof firstImage === 'string' ? firstImage : firstImage?.url;
+    }
+    return recipe.media?.video_thumbnail;
+  };
+  
+  const thumbnailImage = getFirstImage();
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden">
@@ -44,10 +52,18 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
         <div className="relative aspect-video overflow-hidden">
           <Link to={`/recipes/${recipe.id}`}>
             <img
-              src={typeof thumbnailImage === 'string' ? thumbnailImage : thumbnailImage.url}
+              src={thumbnailImage}
               alt={recipe.title}
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
               loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                if (target.parentElement) {
+                  target.parentElement.classList.add('bg-muted');
+                  target.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">No image</div>';
+                }
+              }}
             />
           </Link>
           {recipe.media?.video_url && (

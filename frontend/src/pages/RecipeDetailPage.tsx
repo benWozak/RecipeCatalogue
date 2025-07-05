@@ -312,23 +312,46 @@ export default function RecipeDetailPage() {
                 <CardContent>
                   {currentRecipe.media.images && currentRecipe.media.images.length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="font-medium">Images</h4>
+                      <h4 className="font-medium">Images ({currentRecipe.media.images.length})</h4>
                       <div className="grid grid-cols-1 gap-4">
-                        {currentRecipe.media.images.map((image: MediaImage, index: number) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={image.url}
-                              alt={`Recipe image ${index + 1}`}
-                              className="w-full h-auto rounded-lg object-cover max-h-96"
-                              loading="lazy"
-                            />
-                            {image.width && image.height && (
-                              <span className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                                {image.width}×{image.height}
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                        {currentRecipe.media.images.map((image: any, index: number) => {
+                          const imageUrl = typeof image === 'string' ? image : image?.url;
+                          const imageAlt = typeof image === 'object' && image?.alt ? image.alt : `Recipe image ${index + 1}`;
+                          const imageSource = typeof image === 'object' && image?.source ? image.source : null;
+                          
+                          return (
+                            <div key={index} className="relative">
+                              <img
+                                src={imageUrl}
+                                alt={imageAlt}
+                                className="w-full h-auto rounded-lg object-cover max-h-96"
+                                loading="lazy"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  if (target.parentElement) {
+                                    target.parentElement.classList.add('bg-muted', 'border', 'border-dashed');
+                                    target.parentElement.innerHTML = '<div class="flex items-center justify-center h-32 text-muted-foreground text-sm">Image failed to load</div>';
+                                  }
+                                }}
+                              />
+                              <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
+                                {imageSource && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {imageSource === 'recipe-scrapers' ? 'Auto-detected' : 
+                                     imageSource === 'page-fallback' ? 'Page scan' : 
+                                     imageSource === 'recipe-section' ? 'Recipe section' : imageSource}
+                                  </Badge>
+                                )}
+                                {typeof image === 'object' && image?.width && image?.height && (
+                                  <span className="bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                    {image.width}×{image.height}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
