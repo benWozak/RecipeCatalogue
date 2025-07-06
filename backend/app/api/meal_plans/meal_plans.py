@@ -6,7 +6,6 @@ from app.api.auth.auth import get_current_user
 from app.models.user import User
 from app.schemas.meal_plan import MealPlan as MealPlanSchema, MealPlanCreate, MealPlanUpdate
 from app.services.meal_plan_service import MealPlanService
-import uuid
 
 router = APIRouter()
 
@@ -35,7 +34,7 @@ async def create_meal_plan(
 
 @router.get("/{meal_plan_id}", response_model=MealPlanSchema)
 async def get_meal_plan(
-    meal_plan_id: uuid.UUID,
+    meal_plan_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -50,7 +49,7 @@ async def get_meal_plan(
 
 @router.put("/{meal_plan_id}", response_model=MealPlanSchema)
 async def update_meal_plan(
-    meal_plan_id: uuid.UUID,
+    meal_plan_id: str,
     meal_plan_update: MealPlanUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -66,7 +65,7 @@ async def update_meal_plan(
 
 @router.delete("/{meal_plan_id}")
 async def delete_meal_plan(
-    meal_plan_id: uuid.UUID,
+    meal_plan_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

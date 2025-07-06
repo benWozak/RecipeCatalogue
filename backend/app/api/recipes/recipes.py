@@ -7,7 +7,6 @@ from app.models.user import User
 from app.models.recipe import Recipe, Ingredient, Tag
 from app.schemas.recipe import Recipe as RecipeSchema, RecipeCreate, RecipeUpdate
 from app.services.recipe_service import RecipeService
-import uuid
 
 router = APIRouter()
 
@@ -42,7 +41,7 @@ async def create_recipe(
 
 @router.get("/{recipe_id}", response_model=RecipeSchema)
 async def get_recipe(
-    recipe_id: uuid.UUID,
+    recipe_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -57,7 +56,7 @@ async def get_recipe(
 
 @router.put("/{recipe_id}", response_model=RecipeSchema)
 async def update_recipe(
-    recipe_id: uuid.UUID,
+    recipe_id: str,
     recipe_update: RecipeUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -73,7 +72,7 @@ async def update_recipe(
 
 @router.delete("/{recipe_id}")
 async def delete_recipe(
-    recipe_id: uuid.UUID,
+    recipe_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

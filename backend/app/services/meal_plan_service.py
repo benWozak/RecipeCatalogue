@@ -3,7 +3,6 @@ from sqlalchemy import and_
 from typing import List, Optional
 from app.models.meal_plan import MealPlan, MealPlanEntry
 from app.schemas.meal_plan import MealPlanCreate, MealPlanUpdate
-import uuid
 
 class MealPlanService:
     def __init__(self, db: Session):
@@ -11,7 +10,7 @@ class MealPlanService:
 
     def get_user_meal_plans(
         self,
-        user_id: uuid.UUID,
+        user_id: str,
         skip: int = 0,
         limit: int = 100
     ) -> List[MealPlan]:
@@ -19,12 +18,12 @@ class MealPlanService:
             MealPlan.user_id == user_id
         ).offset(skip).limit(limit).all()
 
-    def get_meal_plan(self, meal_plan_id: uuid.UUID, user_id: uuid.UUID) -> Optional[MealPlan]:
+    def get_meal_plan(self, meal_plan_id: str, user_id: str) -> Optional[MealPlan]:
         return self.db.query(MealPlan).filter(
             and_(MealPlan.id == meal_plan_id, MealPlan.user_id == user_id)
         ).first()
 
-    def create_meal_plan(self, meal_plan_data: MealPlanCreate, user_id: uuid.UUID) -> MealPlan:
+    def create_meal_plan(self, meal_plan_data: MealPlanCreate, user_id: str) -> MealPlan:
         meal_plan_dict = meal_plan_data.dict(exclude={'entries'})
         meal_plan = MealPlan(**meal_plan_dict, user_id=user_id)
         
@@ -41,9 +40,9 @@ class MealPlanService:
 
     def update_meal_plan(
         self,
-        meal_plan_id: uuid.UUID,
+        meal_plan_id: str,
         meal_plan_update: MealPlanUpdate,
-        user_id: uuid.UUID
+        user_id: str
     ) -> Optional[MealPlan]:
         meal_plan = self.get_meal_plan(meal_plan_id, user_id)
         if not meal_plan:
@@ -65,7 +64,7 @@ class MealPlanService:
         self.db.refresh(meal_plan)
         return meal_plan
 
-    def delete_meal_plan(self, meal_plan_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+    def delete_meal_plan(self, meal_plan_id: str, user_id: str) -> bool:
         meal_plan = self.get_meal_plan(meal_plan_id, user_id)
         if not meal_plan:
             return False

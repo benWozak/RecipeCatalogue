@@ -2,7 +2,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from enum import Enum
 from pydantic import BaseModel, validator
 from datetime import datetime
-import uuid
+from app.utils.id_utils import generate_id
 from .base_parser import ParsedRecipe
 
 
@@ -62,7 +62,7 @@ class ValidationPipeline:
                               parsing_metadata: Dict[str, Any] = None) -> ParsedRecipeValidation:
         """Validate a parsed recipe and return validation result"""
         
-        validation_id = str(uuid.uuid4())
+        validation_id = generate_id()
         issues = []
         
         # Run validation checks

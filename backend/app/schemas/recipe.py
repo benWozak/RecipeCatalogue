@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from decimal import Decimal
-import uuid
 from enum import Enum
 
 class SourceType(str, Enum):
@@ -22,8 +21,8 @@ class IngredientCreate(IngredientBase):
     pass
 
 class Ingredient(IngredientBase):
-    id: uuid.UUID
-    recipe_id: uuid.UUID
+    id: str
+    recipe_id: str
 
     class Config:
         from_attributes = True
@@ -36,7 +35,7 @@ class TagCreate(TagBase):
     pass
 
 class Tag(TagBase):
-    id: uuid.UUID
+    id: str
 
     class Config:
         from_attributes = True
@@ -74,8 +73,8 @@ class RecipeUpdate(BaseModel):
     tags: Optional[List[TagCreate]] = None
 
 class Recipe(RecipeBase):
-    id: uuid.UUID
-    user_id: uuid.UUID
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: Optional[datetime] = None
     ingredients: List[Ingredient] = []

@@ -3,7 +3,6 @@ from sqlalchemy import and_, or_
 from typing import List, Optional
 from app.models.recipe import Recipe, Ingredient, Tag
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
-import uuid
 
 class RecipeService:
     def __init__(self, db: Session):
@@ -11,7 +10,7 @@ class RecipeService:
 
     def get_user_recipes(
         self,
-        user_id: uuid.UUID,
+        user_id: str,
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None,
@@ -36,12 +35,12 @@ class RecipeService:
         
         return query.offset(skip).limit(limit).all()
 
-    def get_recipe(self, recipe_id: uuid.UUID, user_id: uuid.UUID) -> Optional[Recipe]:
+    def get_recipe(self, recipe_id: str, user_id: str) -> Optional[Recipe]:
         return self.db.query(Recipe).filter(
             and_(Recipe.id == recipe_id, Recipe.user_id == user_id)
         ).first()
 
-    def create_recipe(self, recipe_data: RecipeCreate, user_id: uuid.UUID) -> Recipe:
+    def create_recipe(self, recipe_data: RecipeCreate, user_id: str) -> Recipe:
         recipe_dict = recipe_data.dict(exclude={'ingredients', 'tags'})
         recipe = Recipe(**recipe_dict, user_id=user_id)
         
@@ -72,9 +71,9 @@ class RecipeService:
 
     def update_recipe(
         self, 
-        recipe_id: uuid.UUID, 
+        recipe_id: str, 
         recipe_update: RecipeUpdate, 
-        user_id: uuid.UUID
+        user_id: str
     ) -> Optional[Recipe]:
         recipe = self.get_recipe(recipe_id, user_id)
         if not recipe:
@@ -112,7 +111,7 @@ class RecipeService:
         self.db.refresh(recipe)
         return recipe
 
-    def delete_recipe(self, recipe_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+    def delete_recipe(self, recipe_id: str, user_id: str) -> bool:
         recipe = self.get_recipe(recipe_id, user_id)
         if not recipe:
             return False

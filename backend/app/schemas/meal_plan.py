@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, date
 from enum import Enum
-import uuid
 
 class MealType(str, Enum):
     breakfast = "breakfast"
@@ -11,7 +10,7 @@ class MealType(str, Enum):
     snack = "snack"
 
 class MealPlanEntryBase(BaseModel):
-    recipe_id: uuid.UUID
+    recipe_id: str
     date: date
     meal_type: MealType
     servings: int = 1
@@ -20,8 +19,8 @@ class MealPlanEntryCreate(MealPlanEntryBase):
     pass
 
 class MealPlanEntry(MealPlanEntryBase):
-    id: uuid.UUID
-    meal_plan_id: uuid.UUID
+    id: str
+    meal_plan_id: str
 
     class Config:
         from_attributes = True
@@ -41,8 +40,8 @@ class MealPlanUpdate(BaseModel):
     entries: Optional[List[MealPlanEntryCreate]] = None
 
 class MealPlan(MealPlanBase):
-    id: uuid.UUID
-    user_id: uuid.UUID
+    id: str
+    user_id: str
     created_at: datetime
     entries: List[MealPlanEntry] = []
 
