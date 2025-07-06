@@ -56,7 +56,7 @@ class RecipeBase(BaseModel):
 
 class RecipeCreate(RecipeBase):
     ingredients: List[IngredientCreate] = []
-    tags: List[str] = []
+    tags: List[TagCreate] = []
 
 class RecipeUpdate(BaseModel):
     title: Optional[str] = None
@@ -71,7 +71,7 @@ class RecipeUpdate(BaseModel):
     media: Optional[Dict[str, Any]] = None
     instructions: Optional[Dict[str, Any]] = None
     ingredients: Optional[List[IngredientCreate]] = None
-    tags: Optional[List[str]] = None
+    tags: Optional[List[TagCreate]] = None
 
 class Recipe(RecipeBase):
     id: uuid.UUID

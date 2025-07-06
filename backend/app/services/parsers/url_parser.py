@@ -3,6 +3,11 @@ import re
 from typing import Dict, Any, List, Tuple, Optional
 from .base_parser import BaseParser, ParsedRecipe
 
+
+class WebsiteProtectionError(Exception):
+    """Raised when a website blocks automated access with anti-bot protection"""
+    pass
+
 try:
     import httpx
     HTTP_AVAILABLE = True
@@ -78,10 +83,51 @@ class URLParser(BaseParser):
                 return self._parse_recipe_section(recipe_section, url)
             
             # Fallback to HTML parsing
-            return self._parse_html_recipe(soup, url)
+            result = self._parse_html_recipe(soup, url)
             
+            # Check if we got a very low confidence result, which might indicate
+            # we received a blocked/login page instead of the actual recipe
+            if (result.confidence_score is not None and 
+                result.confidence_score < 0.3 and 
+                (not result.ingredients or len(result.ingredients.strip()) < 50) and
+                (not result.instructions or len(result.instructions.strip()) < 100)):
+                
+                # Check if the page content suggests it's a blocked page
+                page_text = soup.get_text().lower()
+                blocked_indicators = [
+                    'access denied', 'forbidden', 'blocked', 'sign in', 'login', 
+                    'subscribe', 'membership required', 'unauthorized access',
+                    'please enable javascript', 'verify you are human'
+                ]
+                
+                if any(indicator in page_text for indicator in blocked_indicators):
+                    raise WebsiteProtectionError("This website requires authentication or blocks automated access. The recipe may be behind a login wall or subscription.")
+            
+            return result
+            
+        except WebsiteProtectionError as e:
+            # Re-raise the website protection error as-is for special handling
+            raise e
+        except httpx.HTTPStatusError as e:
+            # Handle HTTP status errors specifically
+            if e.response.status_code == 403:
+                raise WebsiteProtectionError("This website blocks automated access. The recipe may be available, but the site prevents our parser from reading it.")
+            elif e.response.status_code == 404:
+                raise Exception("Recipe page not found. The page may have moved or been deleted. Please check the URL and try again.")
+            else:
+                raise Exception(f"HTTP {e.response.status_code} error: {str(e)}")
         except Exception as e:
-            raise Exception(f"Failed to parse recipe from URL: {str(e)}")
+            error_msg = str(e)
+            
+            # Provide helpful suggestions for common issues
+            if "403" in error_msg or "Forbidden" in error_msg:
+                raise WebsiteProtectionError("This website blocks automated access. The recipe may be available, but the site prevents our parser from reading it.")
+            elif "404" in error_msg or "Not Found" in error_msg:
+                raise Exception("Recipe page not found. The page may have moved or been deleted. Please check the URL and try again.")
+            elif "timeout" in error_msg.lower():
+                raise Exception("The website is taking too long to respond. Please try again later.")
+            else:
+                raise Exception(f"Failed to parse recipe from URL: {error_msg}")
     
     async def _parse_with_recipe_scrapers(self, url: str) -> ParsedRecipe:
         """Parse recipe using recipe-scrapers library"""
@@ -89,7 +135,19 @@ class URLParser(BaseParser):
             # Recipe-scrapers is synchronous, so we run it in a thread pool
             import asyncio
             loop = asyncio.get_event_loop()
-            scraper = await loop.run_in_executor(None, scrape_me, url)
+            
+            # Try with different request strategies for recipe-scrapers
+            def scrape_with_headers():
+                # recipe-scrapers uses requests internally, but we can try different approaches
+                try:
+                    return scrape_me(url)
+                except Exception as e:
+                    # If regular scraping fails, the error might be 403
+                    # recipe-scrapers doesn't expose header customization easily
+                    # so we'll let it fail and fall back to manual parsing
+                    raise e
+            
+            scraper = await loop.run_in_executor(None, scrape_with_headers)
             
             # Extract ingredients and convert to HTML
             ingredients = scraper.ingredients() or []

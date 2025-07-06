@@ -17,7 +17,24 @@ export interface ParsedRecipe {
       url: string
       width?: number
       height?: number
+      type?: 'image' | 'thumbnail'
+      source?: string
+      alt?: string
+      video_url?: string
+      video_duration?: number
     }>
+    is_video?: boolean
+    video_url?: string
+    video_duration?: number
+    stored_media?: {
+      media_id: string
+      thumbnails: {
+        small?: string
+        medium?: string
+        large?: string
+      }
+      original?: string
+    }
   }
 }
 
@@ -25,6 +42,8 @@ export interface ParseResponse {
   success: boolean
   data?: ParsedRecipe
   error?: string
+  errorType?: 'website_protection' | 'not_found' | 'timeout' | 'generic'
+  suggestions?: string[]
 }
 
 class ParsingService {
@@ -42,6 +61,15 @@ class ParsingService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+      
+      // For 403 errors, check if it's a structured website protection error
+      if (response.status === 403 && errorData.detail?.error_type === 'website_protection') {
+        const error = new Error(errorData.detail.message) as any
+        error.isWebsiteProtection = true
+        error.suggestions = errorData.detail.suggestions
+        throw error
+      }
+      
       throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
     }
 
@@ -80,10 +108,21 @@ class ParsingService {
         success: true,
         data: data as ParsedRecipe
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Check if it's a website protection error
+      if (error.isWebsiteProtection) {
+        return {
+          success: false,
+          error: error.message,
+          errorType: 'website_protection',
+          suggestions: error.suggestions || []
+        }
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to parse web URL'
+        error: error instanceof Error ? error.message : 'Failed to parse web URL',
+        errorType: 'generic'
       }
     }
   }

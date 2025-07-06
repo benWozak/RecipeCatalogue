@@ -34,16 +34,28 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
-  // Get the first image for thumbnail
-  const getFirstImage = () => {
+  // Get the best thumbnail image - prioritize stored thumbnails
+  const getThumbnailImage = () => {
+    // First, try stored thumbnails (optimized for recipe cards)
+    if (recipe.media?.stored_media?.thumbnails) {
+      // Use medium size for recipe cards (300x300)
+      return recipe.media.stored_media.thumbnails.medium || 
+             recipe.media.stored_media.thumbnails.large || 
+             recipe.media.stored_media.thumbnails.small;
+    }
+    
+    // Fallback to original images array
     if (recipe.media?.images && Array.isArray(recipe.media.images) && recipe.media.images.length > 0) {
       const firstImage = recipe.media.images[0];
       return typeof firstImage === 'string' ? firstImage : firstImage?.url;
     }
+    
+    // Fallback to legacy video_thumbnail field
     return recipe.media?.video_thumbnail;
   };
   
-  const thumbnailImage = getFirstImage();
+  const thumbnailImage = getThumbnailImage();
+  const isVideoContent = recipe.media?.is_video || recipe.media?.video_url;
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden">
@@ -66,9 +78,9 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
               }}
             />
           </Link>
-          {recipe.media?.video_url && (
+          {isVideoContent && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-black/50 rounded-full p-2">
+              <div className="bg-black/50 rounded-full p-3 backdrop-blur-sm">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>

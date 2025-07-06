@@ -7,6 +7,7 @@ from app.models.user import User
 from app.schemas.recipe import RecipeCreate
 from app.services.parsing_service import ParsingService
 from app.services.parsers import ValidationPipeline, ValidationStatus
+from app.services.parsers.url_parser import WebsiteProtectionError
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -47,6 +48,20 @@ async def parse_recipe_from_url(
     try:
         recipe_data = await parsing_service.parse_from_url(request.url, current_user.id)
         return recipe_data
+    except WebsiteProtectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error_type": "website_protection",
+                "message": str(e),
+                "suggestions": [
+                    "Try copying and pasting the recipe text manually",
+                    "Take a screenshot and use image parsing instead",
+                    "Look for the same recipe on a different website",
+                    "Some websites block automated access to protect their content"
+                ]
+            }
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

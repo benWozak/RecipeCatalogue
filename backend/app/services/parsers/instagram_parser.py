@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional, List
 from urllib.parse import urlparse
 from .base_parser import BaseParser, ParsedRecipe
 from .text_processor import TextProcessor, RecipePattern
+from ...utils.storage_utils import storage_utils
 
 
 class InstagramParser(BaseParser):
@@ -50,6 +51,31 @@ class InstagramParser(BaseParser):
             
             # Extract additional metadata
             media_data = self._extract_media_data(post)
+            
+            # Store media with thumbnails if available
+            if media_data.get("images"):
+                try:
+                    # Store the primary image/thumbnail
+                    primary_image = media_data["images"][0]
+                    if primary_image.get("url"):
+                        storage_result = await storage_utils.store_media_from_url(
+                            primary_image["url"],
+                            recipe_id=None  # Will be set later when recipe is saved
+                        )
+                        
+                        if storage_result.get("success"):
+                            # Add stored media info to media_data
+                            media_data["stored_media"] = {
+                                "media_id": storage_result["media_id"],
+                                "thumbnails": {
+                                    "small": storage_utils.get_thumbnail_url(storage_result["media_id"], "small"),
+                                    "medium": storage_utils.get_thumbnail_url(storage_result["media_id"], "medium"),
+                                    "large": storage_utils.get_thumbnail_url(storage_result["media_id"], "large")
+                                },
+                                "original": storage_utils.get_original_url(storage_result["media_id"])
+                            }
+                except Exception as e:
+                    print(f"Failed to store media for Instagram post: {e}")
             
             # Build parsed recipe with structured data
             parsed_data = ParsedRecipe(
@@ -165,24 +191,48 @@ class InstagramParser(BaseParser):
             "images": []
         }
         
-        # Add image URLs if available
+        # Add video URL if this is a video post
+        if post.is_video:
+            try:
+                if hasattr(post, 'video_url'):
+                    media_data["video_url"] = post.video_url
+                    media_data["video_duration"] = getattr(post, 'video_duration', None)
+            except:
+                # Video URL might not be accessible
+                pass
+        
+        # Add image/thumbnail URLs
         try:
             if hasattr(post, 'url'):
+                # For videos, this is typically the thumbnail
+                # For images, this is the actual image
                 media_data["images"].append({
                     "url": post.url,
                     "width": post.dimensions[0] if post.dimensions else None,
-                    "height": post.dimensions[1] if post.dimensions else None
+                    "height": post.dimensions[1] if post.dimensions else None,
+                    "type": "thumbnail" if post.is_video else "image"
                 })
             
-            # Handle sidecar posts (multiple images)
+            # Handle sidecar posts (multiple images/videos)
             if hasattr(post, 'get_sidecar_nodes'):
                 for node in post.get_sidecar_nodes():
                     if hasattr(node, 'display_url'):
-                        media_data["images"].append({
+                        media_item = {
                             "url": node.display_url,
                             "width": node.dimensions[0] if hasattr(node, 'dimensions') and node.dimensions else None,
-                            "height": node.dimensions[1] if hasattr(node, 'dimensions') and node.dimensions else None
-                        })
+                            "height": node.dimensions[1] if hasattr(node, 'dimensions') and node.dimensions else None,
+                            "type": "thumbnail" if getattr(node, 'is_video', False) else "image"
+                        }
+                        
+                        # Add video URL for video nodes if available
+                        if getattr(node, 'is_video', False) and hasattr(node, 'video_url'):
+                            try:
+                                media_item["video_url"] = node.video_url
+                                media_item["video_duration"] = getattr(node, 'video_duration', None)
+                            except:
+                                pass
+                        
+                        media_data["images"].append(media_item)
         except:
             # Media extraction might fail due to privacy settings
             pass

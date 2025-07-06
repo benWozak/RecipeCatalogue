@@ -52,12 +52,18 @@ class RecipeService:
             ingredient = Ingredient(**ingredient_data.dict(), recipe_id=recipe.id)
             self.db.add(ingredient)
 
-        for tag_name in recipe_data.tags:
+        for tag_data in recipe_data.tags:
+            tag_name = tag_data.name if hasattr(tag_data, 'name') else str(tag_data)
+            tag_color = tag_data.color if hasattr(tag_data, 'color') else None
+            
             tag = self.db.query(Tag).filter(Tag.name == tag_name).first()
             if not tag:
-                tag = Tag(name=tag_name)
+                tag = Tag(name=tag_name, color=tag_color)
                 self.db.add(tag)
                 self.db.flush()
+            elif tag_color and not tag.color:
+                # Update color if tag exists but doesn't have a color
+                tag.color = tag_color
             recipe.tags.append(tag)
 
         self.db.commit()
@@ -88,12 +94,18 @@ class RecipeService:
 
         if recipe_update.tags is not None:
             recipe.tags.clear()
-            for tag_name in recipe_update.tags:
+            for tag_data in recipe_update.tags:
+                tag_name = tag_data.name if hasattr(tag_data, 'name') else str(tag_data)
+                tag_color = tag_data.color if hasattr(tag_data, 'color') else None
+                
                 tag = self.db.query(Tag).filter(Tag.name == tag_name).first()
                 if not tag:
-                    tag = Tag(name=tag_name)
+                    tag = Tag(name=tag_name, color=tag_color)
                     self.db.add(tag)
                     self.db.flush()
+                elif tag_color and not tag.color:
+                    # Update color if tag exists but doesn't have a color
+                    tag.color = tag_color
                 recipe.tags.append(tag)
 
         self.db.commit()

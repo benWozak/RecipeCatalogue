@@ -5,19 +5,24 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Globe, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { ArrowLeft, Globe, AlertCircle, CheckCircle, Loader2, Shield, Camera, FileText, ExternalLink } from 'lucide-react'
 import parsingService from '@/services/parsingService'
 
 export default function URLScanPage() {
   const [url, setUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [websiteProtectionError, setWebsiteProtectionError] = useState<{
+    message: string
+    suggestions: string[]
+  } | null>(null)
   const navigate = useNavigate()
   const { getToken } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setWebsiteProtectionError(null)
     
     if (!url.trim()) {
       setError('Please enter a website URL')
@@ -47,6 +52,11 @@ export default function URLScanPage() {
             sourceType: 'web'
           } 
         })
+      } else if (result.errorType === 'website_protection') {
+        setWebsiteProtectionError({
+          message: result.error || 'This website blocks automated access',
+          suggestions: result.suggestions || []
+        })
       } else {
         setError(result.error || 'Failed to parse recipe from website')
       }
@@ -61,6 +71,7 @@ export default function URLScanPage() {
     const value = e.target.value
     setUrl(value)
     setError('')
+    setWebsiteProtectionError(null)
   }
 
   const isValidUrl = url && parsingService.validateWebUrl(url)
@@ -134,6 +145,89 @@ export default function URLScanPage() {
               </form>
             </CardContent>
           </Card>
+
+          {/* Website Protection Error Message */}
+          {websiteProtectionError && (
+            <Card className="mt-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <Shield className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">
+                      Website Protection Detected
+                    </h3>
+                    <p className="text-orange-700 dark:text-orange-300 mb-4">
+                      {websiteProtectionError.message}
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <p className="font-medium text-orange-800 dark:text-orange-200 text-sm">
+                        Try these alternatives:
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="justify-start h-auto p-3 border-orange-200 hover:bg-orange-100 dark:border-orange-700 dark:hover:bg-orange-900/20"
+                          onClick={() => navigate('/recipes/manual')}
+                        >
+                          <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <div className="text-left">
+                            <div className="font-medium">Manual Entry</div>
+                            <div className="text-xs opacity-75">Copy & paste recipe</div>
+                          </div>
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="justify-start h-auto p-3 border-orange-200 hover:bg-orange-100 dark:border-orange-700 dark:hover:bg-orange-900/20"
+                          onClick={() => navigate('/recipes/scan/image')}
+                        >
+                          <Camera className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <div className="text-left">
+                            <div className="font-medium">Image Scan</div>
+                            <div className="text-xs opacity-75">Take a screenshot</div>
+                          </div>
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="justify-start h-auto p-3 border-orange-200 hover:bg-orange-100 dark:border-orange-700 dark:hover:bg-orange-900/20"
+                          onClick={() => window.open(url, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <div className="text-left">
+                            <div className="font-medium">View Original</div>
+                            <div className="text-xs opacity-75">Open in new tab</div>
+                          </div>
+                        </Button>
+                      </div>
+                      
+                      {websiteProtectionError.suggestions.length > 0 && (
+                        <div className="mt-4 p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                          <p className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">
+                            Additional suggestions:
+                          </p>
+                          <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                            {websiteProtectionError.suggestions.map((suggestion, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-orange-500 mt-0.5">•</span>
+                                <span>{suggestion}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Help Section */}
           <Card className="mt-6">

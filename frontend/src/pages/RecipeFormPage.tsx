@@ -428,41 +428,135 @@ export default function RecipeFormPage() {
           </Card>
         )}
 
-        {/* Recipe Images Preview - only show for parsed recipes with images */}
-        {parsedData?.media?.images && parsedData.media.images.length > 0 && !isEditMode && (
+        {/* Recipe Images/Video Preview - only show for parsed recipes with media */}
+        {parsedData?.media && (parsedData.media.images?.length > 0 || parsedData.media.video_url || parsedData.media.stored_media) && !isEditMode && (
           <Card className="mb-6">
             <CardContent className="p-4">
               <div className="space-y-3">
-                <h3 className="font-medium text-sm text-muted-foreground">Recipe Images</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {parsedData.media.images.map((image: any, index: number) => (
-                    <div key={index} className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                      <img
-                        src={typeof image === 'string' ? image : image.url}
-                        alt={typeof image === 'object' && image.alt ? image.alt : `Recipe image ${index + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.parentElement!.classList.add('bg-muted');
-                          target.parentElement!.innerHTML = '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">Image failed to load</div>';
-                        }}
-                      />
-                      {typeof image === 'object' && image.source && (
-                        <div className="absolute bottom-1 right-1">
-                          <Badge variant="secondary" className="text-xs">
-                            {image.source === 'recipe-scrapers' ? 'Auto' : 
-                             image.source === 'page-fallback' ? 'Page' : 
-                             image.source === 'recipe-section' ? 'Section' : 'Other'}
-                          </Badge>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-sm text-muted-foreground">Recipe Media</h3>
+                  {parsedData.media.is_video && (
+                    <Badge variant="outline" className="text-xs">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                      Video
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Show stored thumbnails if available (preferred) */}
+                {parsedData.media.stored_media?.thumbnails && (
+                  <div className="space-y-2">
+                    <div className="text-xs text-green-600 font-medium">✓ Optimized thumbnails generated</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {Object.entries(parsedData.media.stored_media.thumbnails).map(([size, url]: [string, any]) => (
+                        <div key={size} className="space-y-1">
+                          <div className="text-xs text-muted-foreground capitalize">{size} ({
+                            size === 'small' ? '150×150' : 
+                            size === 'medium' ? '300×300' : 
+                            size === 'large' ? '600×600' : 'Custom'
+                          })</div>
+                          <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
+                            <img
+                              src={url}
+                              alt={`${size} thumbnail`}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.classList.add('bg-muted');
+                                target.parentElement!.innerHTML = '<div class="flex items-center justify-center h-full text-muted-foreground text-xs">Failed to load</div>';
+                              }}
+                            />
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Show original images */}
+                {parsedData.media.images && parsedData.media.images.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs text-muted-foreground">
+                      {parsedData.media.stored_media ? 'Original sources:' : 'Images found:'}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {parsedData.media.images.map((image: any, index: number) => {
+                        const imageUrl = typeof image === 'string' ? image : image.url;
+                        const imageType = typeof image === 'object' ? image.type : 'image';
+                        
+                        return (
+                          <div key={index} className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                            <img
+                              src={imageUrl}
+                              alt={typeof image === 'object' && image.alt ? image.alt : `Recipe ${imageType} ${index + 1}`}
+                              className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                              loading="lazy"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.classList.add('bg-muted');
+                                target.parentElement!.innerHTML = '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">Image failed to load</div>';
+                              }}
+                            />
+                            {/* Video play button overlay */}
+                            {imageType === 'thumbnail' && parsedData.media.is_video && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="bg-black/50 rounded-full p-2">
+                                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                  </svg>
+                                </div>
+                              </div>
+                            )}
+                            {/* Source badge */}
+                            <div className="absolute bottom-1 right-1">
+                              <Badge variant="secondary" className="text-xs">
+                                {imageType === 'thumbnail' ? 'Thumb' : 'Image'}
+                                {typeof image === 'object' && image.source && (
+                                  <span className="ml-1">
+                                    {image.source === 'recipe-scrapers' ? '(Auto)' : 
+                                     image.source === 'page-fallback' ? '(Page)' : 
+                                     image.source === 'recipe-section' ? '(Section)' : ''}
+                                  </span>
+                                )}
+                              </Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Video information */}
+                {parsedData.media.video_url && (
+                  <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-3 text-sm">
+                    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                      <span className="font-medium">Video Available</span>
+                      {parsedData.media.video_duration && (
+                        <span className="text-blue-600 dark:text-blue-400">
+                          ({Math.floor(parsedData.media.video_duration / 60)}:{(parsedData.media.video_duration % 60).toString().padStart(2, '0')})
+                        </span>
                       )}
                     </div>
-                  ))}
-                </div>
+                    <div className="text-blue-600 dark:text-blue-400 text-xs mt-1">
+                      Original video content detected from {parsedData.source_type}
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-xs text-muted-foreground">
-                  {parsedData.media.images.length} image{parsedData.media.images.length !== 1 ? 's' : ''} found automatically
+                  {parsedData.media.stored_media ? 
+                    'Thumbnails optimized for fast loading on recipe cards' :
+                    `${parsedData.media.images?.length || 0} image${parsedData.media.images?.length !== 1 ? 's' : ''} found automatically`
+                  }
                 </p>
               </div>
             </CardContent>
