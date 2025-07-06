@@ -88,7 +88,7 @@ class URLParser(BaseParser):
             # Check if we got a very low confidence result, which might indicate
             # we received a blocked/login page instead of the actual recipe
             if (result.confidence_score is not None and 
-                result.confidence_score < 0.3 and 
+                result.confidence_score <= 0.3 and 
                 (not result.ingredients or len(result.ingredients.strip()) < 50) and
                 (not result.instructions or len(result.instructions.strip()) < 100)):
                 
@@ -102,6 +102,10 @@ class URLParser(BaseParser):
                 
                 if any(indicator in page_text for indicator in blocked_indicators):
                     raise WebsiteProtectionError("This website requires authentication or blocks automated access. The recipe may be behind a login wall or subscription.")
+                
+                # If confidence is very low (0.3 or less) and we have minimal content,
+                # it's likely the site is blocking us even without explicit indicators
+                raise WebsiteProtectionError("Unable to parse recipe from this website. The site may be blocking automated access or the recipe content may not be accessible to our parser.")
             
             return result
             
@@ -227,7 +231,17 @@ class URLParser(BaseParser):
                 media={"images": images} if images else None
             )
             
-            return self._validate_parsed_data(parsed_data)
+            validated_data = self._validate_parsed_data(parsed_data)
+            
+            # Check if recipe-scrapers failed to get meaningful content
+            if (validated_data.confidence_score is not None and 
+                validated_data.confidence_score <= 0.2 and 
+                (not validated_data.ingredients or len(validated_data.ingredients.strip()) < 50) and
+                (not validated_data.instructions or len(validated_data.instructions.strip()) < 100)):
+                
+                raise WebsiteProtectionError("Unable to parse recipe from this website. The site may be blocking automated access or the recipe content may not be accessible to our parser.")
+            
+            return validated_data
             
         except Exception as e:
             raise Exception(f"Recipe-scrapers parsing failed: {str(e)}")
@@ -251,7 +265,17 @@ class URLParser(BaseParser):
             ingredients=self._ingredients_to_html([(None, [ing["name"] for ing in ingredients_list])])
         )
         
-        return self._validate_parsed_data(parsed_data)
+        validated_data = self._validate_parsed_data(parsed_data)
+        
+        # Check if JSON-LD parsing failed to get meaningful content
+        if (validated_data.confidence_score is not None and 
+            validated_data.confidence_score <= 0.2 and 
+            (not validated_data.ingredients or len(validated_data.ingredients.strip()) < 50) and
+            (not validated_data.instructions or len(validated_data.instructions.strip()) < 100)):
+            
+            raise WebsiteProtectionError("Unable to parse recipe from this website. The site may be blocking automated access or the recipe content may not be accessible to our parser.")
+        
+        return validated_data
     
     def _parse_html_recipe(self, soup: BeautifulSoup, url: str) -> ParsedRecipe:
         """Parse recipe from HTML using common selectors"""
@@ -646,7 +670,17 @@ class URLParser(BaseParser):
             media={"images": images} if images else None
         )
         
-        return self._validate_parsed_data(parsed_data)
+        validated_data = self._validate_parsed_data(parsed_data)
+        
+        # Check if recipe section parsing failed to get meaningful content
+        if (validated_data.confidence_score is not None and 
+            validated_data.confidence_score <= 0.2 and 
+            (not validated_data.ingredients or len(validated_data.ingredients.strip()) < 50) and
+            (not validated_data.instructions or len(validated_data.instructions.strip()) < 100)):
+            
+            raise WebsiteProtectionError("Unable to parse recipe from this website. The site may be blocking automated access or the recipe content may not be accessible to our parser.")
+        
+        return validated_data
     
     def _extract_time_from_section(self, section: BeautifulSoup, time_types: List[str]) -> Optional[int]:
         """Extract timing information from recipe section"""
