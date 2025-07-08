@@ -127,21 +127,11 @@ export const useRecipeSelectors = () => {
         recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         recipe.description?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesDifficulty = !filters.difficulty || 
-        recipe.difficulty === filters.difficulty;
-      
       const matchesTags = !filters.tags?.length || 
         recipe.tags.some(tag => filters.tags?.includes(tag.name));
       
-      return matchesSearch && matchesDifficulty && matchesTags;
+      return matchesSearch && matchesTags;
     }),
-    
-    // Recipe count by difficulty
-    recipesByDifficulty: (recipes || []).reduce((acc, recipe) => {
-      const difficulty = recipe.difficulty || 'unknown';
-      acc[difficulty] = (acc[difficulty] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
     
     // All unique tags
     allTags: Array.from(

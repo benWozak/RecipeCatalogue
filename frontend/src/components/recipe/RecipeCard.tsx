@@ -13,18 +13,6 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
-  const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case 'easy':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'hard':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
 
   const formatTime = (minutes?: number) => {
     if (!minutes) return null;
@@ -159,14 +147,6 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
             )}
           </div>
           
-          {recipe.difficulty && (
-            <div className="flex items-center gap-1">
-              <ChefHat className="h-4 w-4" />
-              <Badge className={getDifficultyColor(recipe.difficulty)}>
-                {recipe.difficulty}
-              </Badge>
-            </div>
-          )}
         </div>
         
         {recipe.tags.length > 0 && (

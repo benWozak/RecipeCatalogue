@@ -16,7 +16,6 @@ async def get_recipes(
     limit: int = Query(100, ge=1, le=100),
     search: Optional[str] = Query(None),
     tags: Optional[str] = Query(None),
-    difficulty: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -26,8 +25,7 @@ async def get_recipes(
         skip=skip,
         limit=limit,
         search=search,
-        tags=tags.split(",") if tags else None,
-        difficulty=difficulty
+        tags=tags.split(",") if tags else None
     )
 
 @router.post("/", response_model=RecipeSchema)

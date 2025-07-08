@@ -8,7 +8,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { RecipeFilters } from "@/types/recipe";
 
@@ -34,15 +33,6 @@ export function RecipeSearch({
     onSearch(localSearchQuery);
   };
 
-  const handleDifficultyFilter = (difficulty: string) => {
-    const newFilters = { ...filters };
-    if (newFilters.difficulty === difficulty) {
-      delete newFilters.difficulty;
-    } else {
-      newFilters.difficulty = difficulty;
-    }
-    onFiltersChange(newFilters);
-  };
 
   const handleTagFilter = (tag: string) => {
     const currentTags = filters.tags || [];
@@ -60,7 +50,6 @@ export function RecipeSearch({
   };
 
   const hasActiveFilters =
-    filters.difficulty ||
     (filters.tags && filters.tags.length > 0) ||
     searchQuery;
 
@@ -96,27 +85,8 @@ export function RecipeSearch({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
-            <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-              Difficulty
-            </div>
-            {["easy", "medium", "hard"].map((difficulty) => (
-              <DropdownMenuItem
-                key={difficulty}
-                onClick={() => handleDifficultyFilter(difficulty)}
-                className={filters.difficulty === difficulty ? "bg-accent" : ""}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span className="capitalize">{difficulty}</span>
-                  {filters.difficulty === difficulty && (
-                    <X className="h-3 w-3" />
-                  )}
-                </div>
-              </DropdownMenuItem>
-            ))}
-
             {availableTags.length > 0 && (
               <>
-                <DropdownMenuSeparator />
                 <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
                   Tags
                 </div>
@@ -138,17 +108,6 @@ export function RecipeSearch({
         </DropdownMenu>
 
         {/* Active Filters */}
-        {filters.difficulty && (
-          <Badge variant="secondary" className="gap-1">
-            {filters.difficulty}
-            <button
-              onClick={() => handleDifficultyFilter(filters.difficulty!)}
-              className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </Badge>
-        )}
 
         {filters.tags?.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">

@@ -7,7 +7,6 @@ import {
   Plus,
   Camera,
   TrendingUp,
-  ChefHat,
 } from "lucide-react";
 import { useRecipes } from "@/hooks/useRecipes";
 import { useRecipeSelectors } from "@/stores/recipeStore";
@@ -15,7 +14,7 @@ import { RecipeCard } from "@/components/recipe";
 
 function RecentActivity() {
   const { data, isLoading } = useRecipes({ limit: 6 });
-  const { recentRecipes, recipesByDifficulty } = useRecipeSelectors();
+  const { recentRecipes } = useRecipeSelectors();
 
   const totalRecipes = data?.total || 0;
   const recipes = data?.recipes || [];
@@ -92,21 +91,6 @@ function RecentActivity() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <ChefHat className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Easy Recipes</p>
-                  <p className="text-2xl font-bold">
-                    {recipesByDifficulty.easy || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

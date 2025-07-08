@@ -25,7 +25,6 @@ class Recipe(Base):
     cook_time = Column(Integer)
     total_time = Column(Integer)
     servings = Column(Integer)
-    difficulty = Column(String)
     source_type = Column(source_type_enum, default='manual')
     source_url = Column(String)
     media = Column(JSONB)

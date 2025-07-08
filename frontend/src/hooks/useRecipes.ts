@@ -230,25 +230,6 @@ export const useRecipesByTag = (tag: string) => {
   });
 };
 
-// Hook for getting recipes by difficulty
-export const useRecipesByDifficulty = (difficulty: string) => {
-  const { getToken } = useAuth();
-
-  return useQuery({
-    queryKey: [...recipeKeys.lists(), 'difficulty', difficulty],
-    queryFn: async () => {
-      const token = await getToken();
-      if (!token) throw new Error('No authentication token');
-      
-      const response = await recipeService.getRecipesByDifficulty(difficulty, token);
-      if (!response.success) throw new Error(response.error);
-      
-      return response.data!;
-    },
-    enabled: !!difficulty && !!getToken,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
 
 // Custom hook for managing recipe state
 export const useRecipeActions = () => {

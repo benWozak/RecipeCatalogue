@@ -14,8 +14,7 @@ class RecipeService:
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        difficulty: Optional[str] = None
+        tags: Optional[List[str]] = None
     ) -> List[Recipe]:
         query = self.db.query(Recipe).filter(Recipe.user_id == user_id)
         
@@ -29,9 +28,6 @@ class RecipeService:
         
         if tags:
             query = query.join(Recipe.tags).filter(Tag.name.in_(tags))
-        
-        if difficulty:
-            query = query.filter(Recipe.difficulty == difficulty)
         
         return query.offset(skip).limit(limit).all()
 

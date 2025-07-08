@@ -46,7 +46,7 @@ This is a **mono-repo** containing both frontend and backend applications:
   - 🌐 Website URLs (with structured data support)
   - 📷 Images (OCR-powered)
   - 📱 Instagram posts
-- **Recipe Organization**: Tags, categories, difficulty levels
+- **Recipe Organization**: Tags and categories
 - **Rich Media Support**: Multiple images and videos per recipe
 
 ### 🍽️ Meal Planning
@@ -56,7 +56,7 @@ This is a **mono-repo** containing both frontend and backend applications:
 - **Nutritional Info**: Ingredient-based nutrition calculation (planned)
 
 ### 🔍 Smart Search & Discovery
-- **Advanced Search**: Filter by ingredients, cuisine, prep time, difficulty
+- **Advanced Search**: Filter by ingredients, cuisine, and prep time
 - **Recipe Recommendations**: AI-powered suggestions (planned)
 - **Collections**: Curated recipe collections
 - **Social Features**: Share recipes with friends (planned)

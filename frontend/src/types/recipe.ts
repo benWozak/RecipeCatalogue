@@ -22,7 +22,6 @@ export interface Recipe {
   cook_time?: number;
   total_time?: number;
   servings?: number;
-  difficulty?: string;
   source_type: 'manual' | 'website' | 'instagram' | 'image';
   source_url?: string;
   media?: Record<string, any>;
@@ -40,7 +39,6 @@ export interface RecipeCreate {
   cook_time?: number;
   total_time?: number;
   servings?: number;
-  difficulty?: string;
   source_type?: 'manual' | 'website' | 'instagram' | 'image';
   source_url?: string;
   media?: Record<string, any>;
@@ -56,7 +54,6 @@ export interface RecipeUpdate {
   cook_time?: number;
   total_time?: number;
   servings?: number;
-  difficulty?: string;
   source_type?: 'manual' | 'website' | 'instagram' | 'image';
   source_url?: string;
   media?: Record<string, any>;
@@ -75,7 +72,6 @@ export interface RecipeListResponse {
 export interface RecipeFilters {
   search?: string;
   tags?: string[];
-  difficulty?: string;
   skip?: number;
   limit?: number;
 }
@@ -87,7 +83,6 @@ export interface RecipeFormData {
   cook_time: number | null;
   total_time: number | null;
   servings: number | null;
-  difficulty: string;
   source_type: 'manual' | 'website' | 'instagram' | 'image';
   source_url: string;
   media: Record<string, any>;

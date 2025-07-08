@@ -32,7 +32,6 @@ class RecipeService {
       const params = new URLSearchParams();
       
       if (filters.search) params.append('search', filters.search);
-      if (filters.difficulty) params.append('difficulty', filters.difficulty);
       if (filters.tags?.length) {
         filters.tags.forEach(tag => params.append('tags', tag));
       }
@@ -146,9 +145,6 @@ class RecipeService {
     return this.getRecipes({ tags: [tag] }, token);
   }
 
-  async getRecipesByDifficulty(difficulty: string, token: string): Promise<ApiResponse<RecipeListResponse>> {
-    return this.getRecipes({ difficulty }, token);
-  }
 }
 
 export const recipeService = new RecipeService();

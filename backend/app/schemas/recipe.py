@@ -47,7 +47,6 @@ class RecipeBase(BaseModel):
     cook_time: Optional[int] = None
     total_time: Optional[int] = None
     servings: Optional[int] = None
-    difficulty: Optional[str] = None
     source_type: SourceType = SourceType.manual
     source_url: Optional[str] = None
     media: Optional[Dict[str, Any]] = None
@@ -64,7 +63,6 @@ class RecipeUpdate(BaseModel):
     cook_time: Optional[int] = None
     total_time: Optional[int] = None
     servings: Optional[int] = None
-    difficulty: Optional[str] = None
     source_type: Optional[SourceType] = None
     source_url: Optional[str] = None
     media: Optional[Dict[str, Any]] = None

@@ -28,9 +28,9 @@ export interface MealPlanEntryCreate {
 export interface MealPlan {
   id: string;
   user_id: string;
-  name: string; // We'll auto-generate this
-  start_date?: string; // Will be auto-calculated
-  end_date?: string; // Will be auto-calculated
+  name: string; // Auto-generated
+  start_date?: string; // Auto-calculated
+  end_date?: string; // Auto-calculated
   created_at: string;
   entries: MealPlanEntry[];
   weeks?: WeekPlan[]; // Derived from entries for UI
@@ -67,7 +67,7 @@ export interface MealPlanFilters {
 
 // UI-specific types for rotation-based meal planning
 export interface DayMeals {
-  day_of_week: number; // 0=Monday, 6=Sunday
+  day_of_week: number; // 0 = Monday, 6 = Sunday
   day_name: string; // "Monday", "Tuesday", etc.
   meals: {
     [MealType.BREAKFAST]?: MealPlanEntry;
@@ -97,7 +97,6 @@ export interface RecipeForMealPlan {
   thumbnail?: string;
   prep_time?: number;
   cook_time?: number;
-  difficulty?: string;
 }
 
 // For drag and drop functionality

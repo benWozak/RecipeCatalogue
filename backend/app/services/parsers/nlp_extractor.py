@@ -107,7 +107,6 @@ class NLPExtractor:
         # Extract additional information
         cooking_time = self._extract_cooking_time(text)
         temperature = self._extract_temperature(text)
-        difficulty = self._assess_difficulty(enhanced_instructions)
         
         return {
             'title': basic_pattern.title,
@@ -116,7 +115,6 @@ class NLPExtractor:
             'instructions': enhanced_instructions,
             'cooking_time': cooking_time,
             'temperature': temperature,
-            'difficulty': difficulty,
             'hashtags': self.text_processor.extract_hashtags(text),
             'mentions': self.text_processor.extract_mentions(text),
             'recipe_type': self.text_processor.detect_recipe_type(text)
@@ -310,41 +308,6 @@ class NLPExtractor:
         
         return None
     
-    def _assess_difficulty(self, instructions: List[EnhancedInstruction]) -> str:
-        """Assess recipe difficulty based on instructions"""
-        if not instructions:
-            return "unknown"
-        
-        difficulty_score = 0
-        
-        # Base score on number of steps
-        step_count = len(instructions)
-        if step_count <= 3:
-            difficulty_score += 1
-        elif step_count <= 6:
-            difficulty_score += 2
-        else:
-            difficulty_score += 3
-        
-        # Check for complex cooking methods
-        complex_methods = ['braise', 'confit', 'sous vide', 'flambé', 'julienne']
-        for instruction in instructions:
-            if instruction.cooking_method in complex_methods:
-                difficulty_score += 2
-                break
-        
-        # Check for multiple temperature requirements
-        temp_count = sum(1 for inst in instructions if inst.temperature)
-        if temp_count > 1:
-            difficulty_score += 1
-        
-        # Map score to difficulty level
-        if difficulty_score <= 2:
-            return "easy"
-        elif difficulty_score <= 4:
-            return "medium"
-        else:
-            return "hard"
     
     def extract_ingredients_from_text(self, text: str) -> List[EnhancedIngredient]:
         """Extract just ingredients from free text"""

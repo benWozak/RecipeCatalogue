@@ -25,7 +25,6 @@ interface FormData {
   cook_time: number | null;
   total_time: number | null;
   servings: number | null;
-  difficulty: string;
   source_type: 'manual' | 'website' | 'instagram' | 'image';
   source_url: string;
   media: Record<string, unknown>;
@@ -59,7 +58,6 @@ export default function RecipeFormPage() {
     cook_time: null,
     total_time: null,
     servings: null,
-    difficulty: '',
     source_type: 'manual',
     source_url: '',
     media: {},
@@ -88,7 +86,6 @@ export default function RecipeFormPage() {
         cook_time: parsed.cook_time || null,
         total_time: parsed.total_time || null,
         servings: parsed.servings || null,
-        difficulty: '',
         source_type: (parsed.source_type as FormData['source_type']) || 'manual',
         source_url: parsed.source_url || '',
         media: parsed.media || {},
@@ -114,7 +111,6 @@ export default function RecipeFormPage() {
         cook_time?: number;
         total_time?: number;
         servings?: number;
-        difficulty?: string;
         source_type: 'manual' | 'website' | 'instagram' | 'image';
         source_url?: string;
         media?: Record<string, unknown>;
@@ -141,7 +137,6 @@ export default function RecipeFormPage() {
         cook_time: typedRecipe.cook_time || null,
         total_time: typedRecipe.total_time || null,
         servings: typedRecipe.servings || null,
-        difficulty: typedRecipe.difficulty || '',
         source_type: typedRecipe.source_type,
         source_url: typedRecipe.source_url || '',
         media: typedRecipe.media || {},
@@ -258,7 +253,6 @@ export default function RecipeFormPage() {
       cook_time: formData.cook_time || undefined,
       total_time: formData.total_time || undefined,
       servings: formData.servings || undefined,
-      difficulty: formData.difficulty || undefined,
       source_type: formData.source_type,
       source_url: formData.source_url || undefined,
       media: Object.keys(formData.media).length > 0 ? formData.media : undefined,
@@ -619,20 +613,6 @@ export default function RecipeFormPage() {
                     value={formData.servings || ''}
                     onChange={(e) => handleInputChange('servings', e.target.value ? parseInt(e.target.value) : null)}
                   />
-                </div>
-                <div>
-                  <Label htmlFor="difficulty">Difficulty</Label>
-                  <select
-                    id="difficulty"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.difficulty}
-                    onChange={(e) => handleInputChange('difficulty', e.target.value)}
-                  >
-                    <option value="">Select difficulty</option>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
                 </div>
               </div>
 
