@@ -178,7 +178,6 @@ export function MealTypeDropZones({
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {recipe.prep_time && `${recipe.prep_time}m`}
-                            {recipe.difficulty && ` • ${recipe.difficulty}`}
                           </div>
                         </div>
                       </div>
@@ -248,7 +247,6 @@ export function MealTypeDropZones({
                               </div>
                               <div className="text-xs opacity-60">
                                 {assignedRecipe.prep_time && `${assignedRecipe.prep_time}m`}
-                                {assignedRecipe.difficulty && ` • ${assignedRecipe.difficulty}`}
                               </div>
                             </div>
                           </div>

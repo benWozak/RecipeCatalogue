@@ -78,7 +78,8 @@ export function WeeklyMealView({
     weekDays.forEach(day => {
       const dateStr = day.toISOString().split('T')[0];
       dayMealsMap.set(dateStr, {
-        date: dateStr,
+        day_of_week: Array.from(weekDays).indexOf(day),
+        day_name: day.toLocaleDateString('en', { weekday: 'long' }),
         meals: {
           [MealType.BREAKFAST]: undefined,
           [MealType.SNACK]: [],
@@ -206,7 +207,7 @@ export function WeeklyMealView({
         >
           {currentDayMeals && (
             <DayMealCards
-              date={currentDayMeals.date}
+              date={weekDays[currentDayIndex].toISOString().split('T')[0]}
               meals={currentDayMeals.meals}
               onAddMeal={onAddMeal}
               onEditMeal={onEditMeal}
@@ -244,7 +245,7 @@ export function WeeklyMealView({
               {/* Day meals */}
               {dayMeals && (
                 <DayMealCards
-                  date={dayMeals.date}
+                  date={dayStr}
                   meals={dayMeals.meals}
                   onAddMeal={onAddMeal}
                   onEditMeal={onEditMeal}

@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { useUser, useUserStats } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +12,6 @@ export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const { data: userStats, isLoading: statsLoading } = useUserStats();
   const { openUserProfile } = useClerk();
-  const [isEditing, setIsEditing] = useState(false);
 
   if (!isLoaded) {
     return (

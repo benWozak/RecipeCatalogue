@@ -211,7 +211,6 @@ export function RecipeSelectionDialog({
                                 {recipe.prep_time && `${recipe.prep_time}m prep`}
                                 {recipe.prep_time && recipe.cook_time && ' • '}
                                 {recipe.cook_time && `${recipe.cook_time}m cook`}
-                                {recipe.difficulty && ` • ${recipe.difficulty}`}
                               </div>
                             </div>
                           </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAuth } from '@clerk/clerk-react';
 import { ArrowLeft, Edit, Loader2, Calendar, Users, RotateCcw } from 'lucide-react';
-import { MealPlan, decodeMealPlanDate, WeekPlan, getDayName } from '@/types/mealPlan';
+import { MealPlan, decodeMealPlanDate, getDayName } from '@/types/mealPlan';
 import { mealPlanService } from '@/services/mealPlanService';
 
 export default function MealPlanDetailPage() {
@@ -259,7 +259,7 @@ export default function MealPlanDetailPage() {
                             {dayMeals.length === 0 ? (
                               <div className="text-xs text-muted-foreground">No meals</div>
                             ) : (
-                              dayMeals.map((entry, index) => (
+                              dayMeals.map((entry: any, index: number) => (
                                 <div key={index} className="text-xs p-1 bg-background rounded border border-border">
                                   <div className="font-medium">{entry.meal_type}</div>
                                   <div className="text-muted-foreground truncate">

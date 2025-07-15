@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { Calendar, MoreVertical, Edit, Trash2, Users, RotateCcw } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Users, RotateCcw } from 'lucide-react';
 import { MealPlan, decodeMealPlanDate } from '@/types/mealPlan';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,7 @@ export function MealPlanCard({ mealPlan, onEdit, onDelete }: MealPlanCardProps) 
   };
 
   const getRotationDescription = () => {
-    const { weekCount, dayCount } = getRotationInfo();
+    const { weekCount } = getRotationInfo();
     
     if (weekCount === 0) {
       return 'No meals planned';

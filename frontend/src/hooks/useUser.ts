@@ -1,6 +1,6 @@
-import { useUser as useClerkUser } from "@clerk/clerk-react";
+import { useUser as useClerkUser, useAuth } from "@clerk/clerk-react";
 import { useQuery } from "@tanstack/react-query";
-import { UserStats, AppUser } from "@/types/user";
+import { UserStats } from "@/types/user";
 import { recipeService } from "@/services/recipeService";
 import { mealPlanService } from "@/services/mealPlanService";
 
@@ -16,6 +16,7 @@ export function useUser() {
 
 export function useUserStats() {
   const { user, isSignedIn } = useUser();
+  const { getToken } = useAuth();
 
   return useQuery({
     queryKey: ["userStats", user?.id],
@@ -24,7 +25,7 @@ export function useUserStats() {
         throw new Error("User not authenticated");
       }
 
-      const token = await user.getToken();
+      const token = await getToken();
       if (!token) {
         throw new Error("Unable to get auth token");
       }

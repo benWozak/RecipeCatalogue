@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '@clerk/clerk-react';
 import { ArrowLeft, Save, Loader2, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -14,13 +14,12 @@ import {
 import { RecipeSelectionDialog, MealTypeDropZones } from '@/components/meal-plan';
 import { mealPlanService } from '@/services/mealPlanService';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function NewMealPlanPage() {
   const { getToken } = useAuth();
   const navigate = useNavigate();
   
-  const [currentWeek, setCurrentWeek] = useState(1);
   const [totalWeeks, setTotalWeeks] = useState(1);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [selectedDay, setSelectedDay] = useState<{ week: number; day: number } | null>(null);
@@ -147,7 +146,7 @@ export default function NewMealPlanPage() {
 
       // Convert week meal plans to meal plan entries
       const entries: MealPlanEntryCreate[] = [];
-      weekMealPlans.forEach((assignments, key) => {
+      weekMealPlans.forEach((assignments) => {
         assignments.forEach(assignment => {
           entries.push({
             recipe_id: assignment.recipe.id,
