@@ -7,6 +7,7 @@ import {
   Plus,
   Camera,
   TrendingUp,
+  ChefHat,
 } from "lucide-react";
 import { useRecipes } from "@/hooks/useRecipes";
 import { useRecipeSelectors } from "@/stores/recipeStore";
@@ -90,7 +91,6 @@ function RecentActivity() {
               </div>
             </CardContent>
           </Card>
-
         </div>
       </div>
 
@@ -184,29 +184,32 @@ export default function HomePage() {
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="md:grid md:grid-cols-2 flex flex-col gap-4 mb-8">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
-              <Card key={action.title} className="touch-manipulation">
-                <CardContent className="p-6">
-                  <Button
-                    asChild
-                    variant={action.variant}
-                    className="w-full h-auto flex-col gap-3 py-6"
-                  >
-                    <Link to={action.href}>
-                      <Icon size={28} />
-                      <div className="text-center">
-                        <div className="font-semibold">{action.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {action.description}
-                        </div>
-                      </div>
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <Button
+                key={action.title}
+                asChild
+                variant={action.variant}
+                className="w-full h-auto flex-col gap-3 py-6 touch-manipulation"
+              >
+                <Link to={action.href}>
+                  <Icon size={28} />
+                  <div className="text-center">
+                    <div className="font-semibold">{action.title}</div>
+                    <div
+                      className={`text-xs ${
+                        action.variant === "outline"
+                          ? "text-muted-foreground"
+                          : "text-accent-foreground"
+                      }`}
+                    >
+                      {action.description}
+                    </div>
+                  </div>
+                </Link>
+              </Button>
             );
           })}
         </div>
