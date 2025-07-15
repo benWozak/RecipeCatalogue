@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router';
-import { Plus, ChefHat } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { RecipeGrid, RecipeSearch } from '@/components/recipe';
-import { useRecipes } from '@/hooks/useRecipes';
-import { useRecipeStore, useRecipeSelectors } from '@/stores/recipeStore';
-import { RecipeFilters } from '@/types/recipe';
+import { useState, useEffect } from "react";
+import { Link } from "react-router";
+import { Plus, ChefHat } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { RecipeGrid, RecipeSearch } from "@/components/recipe";
+import { useRecipes } from "@/hooks/useRecipes";
+import { useRecipeStore, useRecipeSelectors } from "@/stores/recipeStore";
+import { RecipeFilters } from "@/types/recipe";
 
 export default function RecipesPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<RecipeFilters>({});
-  
+
   const { setLoading, setError } = useRecipeStore();
   const { allTags } = useRecipeSelectors();
-  
+
   // Build the filters for the API call
   const apiFilters: RecipeFilters = {
     ...filters,
@@ -52,11 +52,13 @@ export default function RecipesPage() {
               My Recipes
             </h1>
             <p className="text-muted-foreground mt-1">
-              {totalRecipes > 0 ? `${totalRecipes} recipes in your collection` : 'No recipes yet'}
+              {totalRecipes > 0
+                ? `${totalRecipes} recipes in your collection`
+                : "No recipes yet"}
             </p>
           </div>
           <Button asChild>
-            <Link to="/recipes/new" className="flex items-center gap-2">
+            <Link to="/recipes/scan" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Add Recipe
             </Link>
@@ -81,9 +83,9 @@ export default function RecipesPage() {
               <p className="font-medium">Error loading recipes</p>
             </div>
             <p className="text-sm text-destructive/80 mt-1">{error.message}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => refetch()}
               className="mt-2"
             >
@@ -93,36 +95,35 @@ export default function RecipesPage() {
         )}
 
         {/* Recipe Grid */}
-        <RecipeGrid
-          recipes={recipes}
-          isLoading={isLoading}
-        />
+        <RecipeGrid recipes={recipes} isLoading={isLoading} />
 
         {/* Empty State for New Users */}
-        {!isLoading && recipes.length === 0 && !searchQuery && Object.keys(filters).length === 0 && (
-          <div className="text-center py-12">
-            <div className="bg-card border border-border rounded-lg p-8 text-card-foreground max-w-md mx-auto">
-              <ChefHat className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No recipes yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Start building your recipe collection by adding your first recipe.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button asChild>
-                  <Link to="/recipes/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Recipe
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link to="/recipes/scan">
-                    Scan Recipe
-                  </Link>
-                </Button>
+        {!isLoading &&
+          recipes.length === 0 &&
+          !searchQuery &&
+          Object.keys(filters).length === 0 && (
+            <div className="text-center py-12">
+              <div className="bg-card border border-border rounded-lg p-8 text-card-foreground max-w-md mx-auto">
+                <ChefHat className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">No recipes yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Start building your recipe collection by adding your first
+                  recipe.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <Button asChild>
+                    <Link to="/recipes/scan">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Recipe
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to="/recipes/scan">Scan Recipe</Link>
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );

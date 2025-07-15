@@ -15,6 +15,7 @@ import RecipeFormPage from './pages/RecipeFormPage'
 import MealPlansPage from './pages/MealPlansPage'
 import NewMealPlanPage from './pages/NewMealPlanPage'
 import MealPlanDetailPage from './pages/MealPlanDetailPage'
+import ProfilePage from './pages/ProfilePage'
 import NotFoundPage from './pages/NotFoundPage'
 import PWABadge from './PWABadge.tsx'
 
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/meal-plans" element={<MealPlansPage />} />
                 <Route path="/meal-plans/new" element={<NewMealPlanPage />} />
                 <Route path="/meal-plans/:id" element={<MealPlanDetailPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Layout>

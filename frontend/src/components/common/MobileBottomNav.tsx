@@ -1,32 +1,33 @@
-import { Link, useLocation } from 'react-router'
-import { Home, BookOpen, Calendar, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Link, useLocation } from "react-router";
+import { Home, BookOpen, Calendar, Plus, User } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function MobileBottomNav() {
-  const location = useLocation()
+  const location = useLocation();
 
   const navigation = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Recipes', href: '/recipes', icon: BookOpen },
-    { name: 'Add', href: '/recipes/new', icon: Plus, special: true },
-    { name: 'Plans', href: '/meal-plans', icon: Calendar },
-  ]
+    { name: "Home", href: "/", icon: Home },
+    { name: "Recipes", href: "/recipes", icon: BookOpen },
+    { name: "Add", href: "/recipes/scan", icon: Plus, special: true },
+    { name: "Plans", href: "/meal-plans", icon: Calendar },
+    { name: "Profile", href: "/profile", icon: User },
+  ];
 
   const isActive = (href: string) => {
-    if (href === '/') {
-      return location.pathname === '/'
+    if (href === "/") {
+      return location.pathname === "/";
     }
-    return location.pathname.startsWith(href)
-  }
+    return location.pathname.startsWith(href);
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border lg:hidden">
       <div className="flex items-center justify-around h-16 px-2 safe-area-pb">
         {navigation.map((item) => {
-          const Icon = item.icon
-          const active = isActive(item.href)
-          const isSpecial = item.special
-          
+          const Icon = item.icon;
+          const active = isActive(item.href);
+          const isSpecial = item.special;
+
           return (
             <Link
               key={item.name}
@@ -52,9 +53,9 @@ export default function MobileBottomNav() {
                 </>
               )}
             </Link>
-          )
+          );
         })}
       </div>
     </nav>
-  )
+  );
 }

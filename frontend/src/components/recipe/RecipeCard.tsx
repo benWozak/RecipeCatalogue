@@ -107,17 +107,12 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
           </div>
         )}
 
-        <CardHeader className="pb-3">
+        <CardHeader>
           <div className="flex justify-between items-start">
-            <div className="flex-1 min-w-0">
-              {/* <Link
-              to={`/recipes/${recipe.id}`}
-              className="block hover:text-primary transition-colors"
-            > */}
+            <div className="flex-1 min-w-0 h-24">
               <h3 className="block hover:text-primary transition-colors font-semibold text-lg leading-tight truncate mb-1 text-wrap">
                 {recipe.title}
               </h3>
-              {/* </Link> */}
               {recipe.description && (
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                   {recipe.description}

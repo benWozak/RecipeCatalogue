@@ -165,7 +165,7 @@ export default function HomePage() {
       title: "Add Recipe",
       description: "Create a new recipe",
       icon: Plus,
-      href: "/recipes/new",
+      href: "/recipes/scan",
       variant: "outline" as const,
     },
   ];
