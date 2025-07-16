@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional
 from app.schemas.recipe import RecipeCreate, IngredientCreate
 from app.core.config import settings
 from app.services.parsers import URLParser, InstagramParser, ValidationPipeline, ParsedRecipe
+from app.services.parsers.url_parser import WebsiteProtectionError
 
 class ParsingService:
     def __init__(self, db: Session):
@@ -27,6 +28,9 @@ class ParsingService:
             # Convert to legacy format for API compatibility
             return self._convert_to_legacy_format(validation_result.parsed_recipe)
             
+        except WebsiteProtectionError as e:
+            # Re-raise WebsiteProtectionError to be handled by API layer
+            raise e
         except Exception as e:
             raise Exception(f"Failed to parse recipe from URL: {str(e)}")
 

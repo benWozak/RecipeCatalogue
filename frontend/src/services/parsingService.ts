@@ -160,9 +160,14 @@ class ParsingService {
 
   validateInstagramUrl(url: string): boolean {
     const patterns = [
+      // Direct post/reel/tv URLs (old format)
       /https?:\/\/(?:www\.)?instagram\.com\/p\/[^/?]+/,
       /https?:\/\/(?:www\.)?instagram\.com\/reel\/[^/?]+/,
       /https?:\/\/(?:www\.)?instagram\.com\/tv\/[^/?]+/,
+      // User-specific URLs (new format with username in path)
+      /https?:\/\/(?:www\.)?instagram\.com\/[^/]+\/(p|reel|tv)\/[^/?]+/,
+      // Stories URLs
+      /https?:\/\/(?:www\.)?instagram\.com\/stories\/[^/]+\/[^/?]+/,
     ]
     
     return patterns.some(pattern => pattern.test(url))

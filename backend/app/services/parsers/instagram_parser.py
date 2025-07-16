@@ -99,16 +99,25 @@ class InstagramParser(BaseParser):
         """Extract Instagram post shortcode from URL"""
         # Handle various Instagram URL formats
         patterns = [
+            # Direct post/reel/tv URLs (old format)
             r'instagram\.com/p/([^/?]+)',
             r'instagram\.com/reel/([^/?]+)',
             r'instagram\.com/tv/([^/?]+)',
+            # User-specific URLs (new format with username in path)
+            r'instagram\.com/([^/]+)/(p|reel|tv)/([^/?]+)',
+            # Stories URLs
             r'instagram\.com/stories/[^/]+/([^/?]+)',
         ]
         
         for pattern in patterns:
             match = re.search(pattern, url)
             if match:
-                return match.group(1)
+                # For user-specific URLs, return the shortcode (group 3)
+                if len(match.groups()) == 3:
+                    return match.group(3)
+                # For other URLs, return the shortcode (group 1)
+                else:
+                    return match.group(1)
         
         return None
     
