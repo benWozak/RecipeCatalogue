@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router'
-import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
-import { Button } from '@/components/ui/button'
+import { SignedIn, SignedOut } from '@clerk/clerk-react'
 import { ThemeProvider } from '@/components/theme-provider'
 import Layout from './components/common/Layout'
+import LandingPage from './components/LandingPage'
 import HomePage from './pages/HomePage'
 import RecipesPage from './pages/RecipesPage'
 import RecipeScanPage from './pages/RecipeScanPage'
@@ -25,19 +25,7 @@ function App() {
       <Router>
         <div className="min-h-screen bg-background text-foreground">
           <SignedOut>
-            <div className="min-h-screen flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold mb-8">Recipe Catalogue</h1>
-                <p className="text-xl text-muted-foreground mb-8">
-                  Please sign in to access your recipes
-                </p>
-                <SignInButton mode="modal">
-                  <Button size="lg">
-                    Sign In
-                  </Button>
-                </SignInButton>
-              </div>
-            </div>
+            <LandingPage />
           </SignedOut>
           
           <SignedIn>
