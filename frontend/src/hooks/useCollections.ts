@@ -9,6 +9,12 @@ let globalCollectionsWithStats: CollectionWithStats[] = [];
 const subscribers: Set<(collections: Collection[]) => void> = new Set();
 const statsSubscribers: Set<(collections: CollectionWithStats[]) => void> = new Set();
 
+// Global fetch state to prevent concurrent requests
+let isFetchingCollections = false;
+let isFetchingStats = false;
+let collectionsPromise: Promise<void> | null = null;
+let statsPromise: Promise<void> | null = null;
+
 export function useCollections() {
   const [collections, setCollections] = useState<Collection[]>(globalCollections);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,33 +29,69 @@ export function useCollections() {
     
     subscribers.add(updateCollections);
     
-    // Fetch collections from API
+    // Fetch collections from API with deduplication
     const fetchCollections = async () => {
       if (!user) {
         setIsLoading(false);
         return;
       }
 
-      try {
-        setIsLoading(true);
-        const token = await getToken();
-        if (!token) {
-          throw new Error('Unable to get auth token');
-        }
-
-        const response = await collectionService.getCollections(token);
-        
-        if (response.success && response.data) {
-          globalCollections = response.data;
-          setCollections(response.data);
-          setError(null);
-        } else {
-          setError(new Error(response.error || 'Failed to fetch collections'));
-        }
-      } catch (err) {
-        setError(err as Error);
-      } finally {
+      // If data already exists, use it immediately
+      if (globalCollections.length > 0) {
+        setCollections(globalCollections);
         setIsLoading(false);
+        setError(null);
+        return;
+      }
+
+      // If a fetch is already in progress, wait for it
+      if (isFetchingCollections && collectionsPromise) {
+        try {
+          await collectionsPromise;
+          setCollections(globalCollections);
+          setIsLoading(false);
+          setError(null);
+        } catch (err) {
+          setError(err as Error);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      // Start a new fetch
+      isFetchingCollections = true;
+      setIsLoading(true);
+      
+      collectionsPromise = (async () => {
+        try {
+          const token = await getToken();
+          if (!token) {
+            throw new Error('Unable to get auth token');
+          }
+
+          const response = await collectionService.getCollections(token);
+          
+          if (response.success && response.data) {
+            globalCollections = response.data;
+            notifySubscribers();
+            setError(null);
+          } else {
+            throw new Error(response.error || 'Failed to fetch collections');
+          }
+        } catch (err) {
+          setError(err as Error);
+          throw err;
+        } finally {
+          isFetchingCollections = false;
+          collectionsPromise = null;
+          setIsLoading(false);
+        }
+      })();
+
+      try {
+        await collectionsPromise;
+      } catch (err) {
+        // Error already handled above
       }
     };
 
@@ -59,7 +101,8 @@ export function useCollections() {
     return () => {
       subscribers.delete(updateCollections);
     };
-  }, [user, getToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   return { collections, isLoading, error };
 }
@@ -78,33 +121,69 @@ export function useCollectionsWithStats() {
     
     statsSubscribers.add(updateCollections);
     
-    // Fetch collections with stats from API
+    // Fetch collections with stats from API with deduplication
     const fetchCollections = async () => {
       if (!user) {
         setIsLoading(false);
         return;
       }
 
-      try {
-        setIsLoading(true);
-        const token = await getToken();
-        if (!token) {
-          throw new Error('Unable to get auth token');
-        }
-
-        const response = await collectionService.getCollectionsWithStats(token);
-        
-        if (response.success && response.data) {
-          globalCollectionsWithStats = response.data;
-          setCollections(response.data);
-          setError(null);
-        } else {
-          setError(new Error(response.error || 'Failed to fetch collections'));
-        }
-      } catch (err) {
-        setError(err as Error);
-      } finally {
+      // If data already exists, use it immediately
+      if (globalCollectionsWithStats.length > 0) {
+        setCollections(globalCollectionsWithStats);
         setIsLoading(false);
+        setError(null);
+        return;
+      }
+
+      // If a fetch is already in progress, wait for it
+      if (isFetchingStats && statsPromise) {
+        try {
+          await statsPromise;
+          setCollections(globalCollectionsWithStats);
+          setIsLoading(false);
+          setError(null);
+        } catch (err) {
+          setError(err as Error);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      // Start a new fetch
+      isFetchingStats = true;
+      setIsLoading(true);
+      
+      statsPromise = (async () => {
+        try {
+          const token = await getToken();
+          if (!token) {
+            throw new Error('Unable to get auth token');
+          }
+
+          const response = await collectionService.getCollectionsWithStats(token);
+          
+          if (response.success && response.data) {
+            globalCollectionsWithStats = response.data;
+            notifyStatsSubscribers();
+            setError(null);
+          } else {
+            throw new Error(response.error || 'Failed to fetch collections');
+          }
+        } catch (err) {
+          setError(err as Error);
+          throw err;
+        } finally {
+          isFetchingStats = false;
+          statsPromise = null;
+          setIsLoading(false);
+        }
+      })();
+
+      try {
+        await statsPromise;
+      } catch (err) {
+        // Error already handled above
       }
     };
 
@@ -114,7 +193,8 @@ export function useCollectionsWithStats() {
     return () => {
       statsSubscribers.delete(updateCollections);
     };
-  }, [user, getToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   return { collections, isLoading, error };
 }
