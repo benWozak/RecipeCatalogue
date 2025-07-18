@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router";
 import { UserButton } from "@clerk/clerk-react";
-import { Home, BookOpen, Calendar, User } from "lucide-react";
+import { Home, BookOpen, FolderOpen, Calendar, User } from "lucide-react";
 import MobileBottomNav from "./MobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -14,6 +14,7 @@ export default function Layout({ children }: LayoutProps) {
   const navigation = [
     { name: "Home", href: "/", icon: Home },
     { name: "Recipes", href: "/recipes", icon: BookOpen },
+    { name: "Collections", href: "/collections", icon: FolderOpen },
     { name: "Meal Plans", href: "/meal-plans", icon: Calendar },
     { name: "Profile", href: "/profile", icon: User },
   ];

@@ -9,8 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Badge } from '@/components/ui/badge';
 import { useRecipe, useCreateRecipe, useUpdateRecipe } from '@/hooks/useRecipes';
-import { Ingredient, Tag, RecipeCreate, RecipeUpdate } from '@/types/recipe';
+import { useCollections, useCreateCollection } from '@/hooks/useCollections';
+import { Ingredient, Tag, RecipeCreate, RecipeUpdate, Collection } from '@/types/recipe';
 import { ParsedRecipe } from '@/services/parsingService';
+import { CollectionCombobox } from '@/components/ui/collection-combobox';
 
 // Form-specific interfaces
 interface FormTag {
@@ -31,6 +33,7 @@ interface FormData {
   instructions: Record<string, unknown>;
   ingredients: Record<string, unknown>;
   tags: FormTag[];
+  collection_id?: string;
 }
 
 
@@ -50,6 +53,8 @@ export default function RecipeFormPage() {
   const { data: recipe, isLoading, error } = useRecipe(id!);
   const createRecipeMutation = useCreateRecipe();
   const updateRecipeMutation = useUpdateRecipe();
+  const { collections } = useCollections();
+  const { createCollection } = useCreateCollection();
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -64,6 +69,7 @@ export default function RecipeFormPage() {
     instructions: {},
     ingredients: {},
     tags: [],
+    collection_id: undefined,
   });
   
   const [parsedData, setParsedData] = useState<ParsedRecipe | null>(null);
@@ -96,6 +102,7 @@ export default function RecipeFormPage() {
           ? { type: 'html', content: ingredientsHtml }
           : ingredientsHtml || {},
         tags: [],
+        collection_id: undefined,
       });
     }
   }, [isEditMode, location.state]);
@@ -117,6 +124,7 @@ export default function RecipeFormPage() {
         instructions?: Record<string, unknown>;
         ingredients?: Ingredient[] | Record<string, unknown> | string;
         tags: Tag[];
+        collection_id?: string;
       };
 
       // Convert structured ingredients back to HTML for the rich text editor
@@ -146,6 +154,7 @@ export default function RecipeFormPage() {
           name: tag.name,
           color: tag.color || ''
         })),
+        collection_id: typedRecipe.collection_id,
       });
     }
   }, [isEditMode, recipe]);
@@ -258,7 +267,8 @@ export default function RecipeFormPage() {
       media: Object.keys(formData.media).length > 0 ? formData.media : undefined,
       instructions: Object.keys(formData.instructions).length > 0 ? formData.instructions : undefined,
       ingredients: parseHtmlIngredients(formData.ingredients),
-      tags: formData.tags.map(({ name, color }) => ({ name, color }))
+      tags: formData.tags.map(({ name, color }) => ({ name, color })),
+      collection_id: formData.collection_id || undefined
     };
 
     if (isEditMode) {
@@ -661,6 +671,28 @@ export default function RecipeFormPage() {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Collection Section */}
+              <div>
+                <Label htmlFor="collection">Collection</Label>
+                <div className="mt-2">
+                  <CollectionCombobox
+                    collections={collections}
+                    value={formData.collection_id}
+                    onValueChange={(value) => handleInputChange('collection_id', value)}
+                    onCreateCollection={async (name: string): Promise<Collection> => {
+                      const newCollection = await createCollection({ name });
+                      // In a real app, this would be handled by react-query refetch
+                      // For now, we need to update the local collections state
+                      return newCollection;
+                    }}
+                    placeholder="Select or create a collection..."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Organize your recipes into collections like "Dinner Favorites" or "Quick Meals"
+                  </p>
                 </div>
               </div>
 

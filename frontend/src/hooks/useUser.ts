@@ -6,17 +6,18 @@ import { mealPlanService } from "@/services/mealPlanService";
 
 export function useUser() {
   const { user: clerkUser, isLoaded, isSignedIn } = useClerkUser();
+  const { getToken } = useAuth();
 
   return {
     user: clerkUser,
     isLoaded,
     isSignedIn,
+    getToken,
   };
 }
 
 export function useUserStats() {
-  const { user, isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const { user, isSignedIn, getToken } = useUser();
 
   return useQuery({
     queryKey: ["userStats", user?.id],

@@ -10,6 +10,7 @@ from app.api.recipes import recipes_router
 from app.api.meal_plans import meal_plans_router
 from app.api.users import users_router
 from app.api.parsing import parsing_router
+from app.api.collections import collections_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -35,6 +36,7 @@ app.include_router(recipes_router, prefix="/api/recipes", tags=["recipes"])
 app.include_router(meal_plans_router, prefix="/api/meal-plans", tags=["meal-plans"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(parsing_router, prefix="/api/parse", tags=["parsing"])
+app.include_router(collections_router, prefix="/api/collections", tags=["collections"])
 
 # Mount static files for media serving
 import os

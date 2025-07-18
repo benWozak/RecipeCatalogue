@@ -13,6 +13,15 @@ export interface Tag {
   color?: string;
 }
 
+export interface Collection {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Recipe {
   id: string;
   user_id: string;
@@ -28,6 +37,8 @@ export interface Recipe {
   instructions?: Record<string, any> | string;
   ingredients: Ingredient[] | Record<string, any> | string; // Support both structured and HTML ingredients
   tags: Tag[];
+  collection_id?: string;
+  collection?: Collection;
   created_at: string;
   updated_at: string;
 }
@@ -45,6 +56,7 @@ export interface RecipeCreate {
   instructions?: Record<string, any>;
   ingredients: Omit<Ingredient, 'id'>[]; // Always send as structured ingredients array
   tags: Omit<Tag, 'id'>[];
+  collection_id?: string;
 }
 
 export interface RecipeUpdate {
@@ -60,6 +72,7 @@ export interface RecipeUpdate {
   instructions?: Record<string, any>;
   ingredients?: Omit<Ingredient, 'id'>[]; // Always send as structured ingredients array
   tags?: Omit<Tag, 'id'>[];
+  collection_id?: string;
 }
 
 export interface RecipeListResponse {
@@ -72,6 +85,7 @@ export interface RecipeListResponse {
 export interface RecipeFilters {
   search?: string;
   tags?: string[];
+  collection_id?: string;
   skip?: number;
   limit?: number;
 }
@@ -92,4 +106,15 @@ export interface RecipeFormData {
     name: string;
     color: string;
   }>;
+  collection_id?: string;
+}
+
+export interface CollectionCreate {
+  name: string;
+  description?: string;
+}
+
+export interface CollectionUpdate {
+  name?: string;
+  description?: string;
 }

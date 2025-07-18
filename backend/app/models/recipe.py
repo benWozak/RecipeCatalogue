@@ -34,6 +34,7 @@ class Recipe(Base):
 
     ingredients = relationship("Ingredient", back_populates="recipe", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=recipe_tags, back_populates="recipes")
+    collections = relationship("Collection", secondary="collection_recipes", back_populates="recipes")
 
 class Ingredient(Base):
     __tablename__ = "ingredients"

@@ -35,6 +35,7 @@ class RecipeService {
       if (filters.tags?.length) {
         filters.tags.forEach(tag => params.append('tags', tag));
       }
+      if (filters.collection_id) params.append('collection_id', filters.collection_id);
       if (filters.skip !== undefined) params.append('skip', filters.skip.toString());
       if (filters.limit !== undefined) params.append('limit', filters.limit.toString());
 
@@ -143,6 +144,31 @@ class RecipeService {
 
   async getRecipesByTag(tag: string, token: string): Promise<ApiResponse<RecipeListResponse>> {
     return this.getRecipes({ tags: [tag] }, token);
+  }
+
+  async assignRecipeToCollection(recipeId: string, collectionId: string | null, token: string): Promise<ApiResponse<Recipe>> {
+    try {
+      const response = await this.makeRequest(`/${recipeId}`, token, {
+        method: 'PUT',
+        body: JSON.stringify({ collection_id: collectionId }),
+      });
+      
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: data as Recipe
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to assign recipe to collection'
+      };
+    }
+  }
+
+  async removeRecipeFromCollection(recipeId: string, token: string): Promise<ApiResponse<Recipe>> {
+    return this.assignRecipeToCollection(recipeId, null, token);
   }
 
 }

@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Clock, Users, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Clock, Users, MoreVertical, Edit, Trash2, FolderPlus } from "lucide-react";
 import { Recipe } from "@/types/recipe";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,16 +8,19 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { CollectionAssignment } from "./CollectionAssignment";
 
 interface RecipeCardProps {
   recipe: Recipe;
   onEdit?: (recipe: Recipe) => void;
   onDelete?: (recipe: Recipe) => void;
+  onUpdate?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
+export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardProps) {
   const formatTime = (minutes?: number) => {
     if (!minutes) return null;
     if (minutes < 60) return `${minutes}m`;
@@ -63,23 +66,21 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
         {/* Recipe Image/Thumbnail */}
         {thumbnailImage && (
           <div className="relative aspect-video overflow-hidden">
-            <Link to={`/recipes/${recipe.id}`}>
-              <img
-                src={thumbnailImage}
-                alt={recipe.title}
-                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
-                  if (target.parentElement) {
-                    target.parentElement.classList.add("bg-muted");
-                    target.parentElement.innerHTML =
-                      '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">No image</div>';
-                  }
-                }}
-              />
-            </Link>
+            <img
+              src={thumbnailImage}
+              alt={recipe.title}
+              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
+                if (target.parentElement) {
+                  target.parentElement.classList.add("bg-muted");
+                  target.parentElement.innerHTML =
+                    '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">No image</div>';
+                }
+              }}
+            />
             {isVideoContent && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black/50 rounded-full p-3 backdrop-blur-sm">
@@ -135,6 +136,7 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete?.(recipe)}
                   className="text-destructive"
@@ -165,6 +167,15 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
             </div>
           </div>
 
+          {/* Collection Badge */}
+          {recipe.collection && (
+            <div className="mb-2">
+              <Badge variant="outline" className="text-xs text-primary border-primary/30">
+                📁 {recipe.collection.name}
+              </Badge>
+            </div>
+          )}
+
           {recipe.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-3">
               {recipe.tags.slice(0, 3).map((tag) => (
@@ -180,7 +191,7 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
             </div>
           )}
 
-          <div className="flex justify-between items-center text-xs text-muted-foreground">
+          <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
             <span>
               {recipe.source_type === "manual"
                 ? "Manual"
@@ -192,6 +203,13 @@ export function RecipeCard({ recipe, onEdit, onDelete }: RecipeCardProps) {
             </span>
             <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
           </div>
+          
+          {/* Collection Assignment */}
+          <CollectionAssignment 
+            recipe={recipe} 
+            onUpdate={onUpdate}
+            variant="inline"
+          />
         </CardContent>
       </Card>
     </Link>

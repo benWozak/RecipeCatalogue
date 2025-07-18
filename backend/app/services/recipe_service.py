@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from typing import List, Optional
 from app.models.recipe import Recipe, Ingredient, Tag
+from app.models.collection import Collection
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
 
 class RecipeService:
@@ -14,7 +15,8 @@ class RecipeService:
         skip: int = 0,
         limit: int = 100,
         search: Optional[str] = None,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
+        collection_id: Optional[str] = None
     ) -> List[Recipe]:
         query = self.db.query(Recipe).filter(Recipe.user_id == user_id)
         
@@ -28,6 +30,14 @@ class RecipeService:
         
         if tags:
             query = query.join(Recipe.tags).filter(Tag.name.in_(tags))
+        
+        if collection_id:
+            if collection_id == 'uncollected':
+                # Show recipes that are not in any collection
+                query = query.outerjoin(Recipe.collections).filter(Collection.id.is_(None))
+            else:
+                # Show recipes that are in the specified collection
+                query = query.join(Recipe.collections).filter(Collection.id == collection_id)
         
         return query.offset(skip).limit(limit).all()
 

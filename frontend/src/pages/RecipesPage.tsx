@@ -4,6 +4,7 @@ import { Plus, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecipeGrid, RecipeSearch } from "@/components/recipe";
 import { useRecipes } from "@/hooks/useRecipes";
+import { useCollections } from "@/hooks/useCollections";
 import { useRecipeStore, useRecipeSelectors } from "@/stores/recipeStore";
 import { RecipeFilters } from "@/types/recipe";
 
@@ -13,6 +14,7 @@ export default function RecipesPage() {
 
   const { setLoading, setError } = useRecipeStore();
   const { allTags } = useRecipeSelectors();
+  const { collections } = useCollections();
 
   // Build the filters for the API call
   const apiFilters: RecipeFilters = {
@@ -73,6 +75,7 @@ export default function RecipesPage() {
             filters={filters}
             searchQuery={searchQuery}
             availableTags={allTags}
+            availableCollections={collections}
           />
         </div>
 

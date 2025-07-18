@@ -15,8 +15,7 @@ import {
   Edit3,
   FolderOpen,
   Share2,
-  Zap,
-  Users,
+  CircleCheckBig,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -52,9 +51,9 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <article className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
           <div className="text-center space-y-8">
@@ -74,11 +73,24 @@ export default function LandingPage() {
                   In One Place
                 </span>
               </h1>
-              <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                No more losing your place when ads refresh. No more waiting for slow recipe sites. 
-                No more searching through Instagram, bookmarks, and reading lists. 
-                Just your recipes, organized and ready to use.
-              </p>
+              <div className="flex flex-col gap-2 max-w-xl justify-start mx-auto">
+                <p className="sm:text-lg text-muted-foreground leading-relaxed inline-flex items-center">
+                  <CircleCheckBig className="mr-2" /> No more losing your place
+                  when ads refresh.
+                </p>
+                <p className="sm:text-lg text-muted-foreground leading-relaxed inline-flex items-center">
+                  <CircleCheckBig className="mr-2" /> No more waiting for slow
+                  recipe sites.
+                </p>
+                <p className="sm:text-lg text-muted-foreground leading-relaxed inline-flex items-center">
+                  <CircleCheckBig className="mr-2" /> No more searching through
+                  Insta, bookmarks, and reading lists.
+                </p>
+                <p className="sm:text-lg text-muted-foreground leading-relaxed inline-flex items-center">
+                  <CircleCheckBig className="mr-2" /> Just your recipes,
+                  organized and ready to use.
+                </p>
+              </div>
             </div>
 
             {/* CTA Buttons */}
@@ -122,18 +134,20 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Features Section */}
-      <div id="features" className="py-20 bg-muted/30">
+      <section id="features" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Solve the problems that
-              <span className="block text-primary">make cooking frustrating</span>
+              <span className="block text-primary">
+                make cooking frustrating
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We've all been there—ads that make pages jump, slow recipe sites, 
+              We've all been there—ads that make pages jump, slow recipe sites,
               and recipes scattered everywhere. This app fixes all of that.
             </p>
           </div>
@@ -167,10 +181,10 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Detailed Features Section */}
-      <div className="py-20">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -178,7 +192,8 @@ export default function LandingPage() {
               <span className="block text-primary">Built for Home Cooks</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to collect, organize, and use your recipes effectively.
+              Everything you need to collect, organize, and use your recipes
+              effectively.
             </p>
           </div>
 
@@ -190,14 +205,20 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Smartphone className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     PWA Ready
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Cross-Platform Access</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Cross-Platform Access
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Works on any device - iOS, Android, or desktop. Install like a native app with offline access to all your recipes.
+                    Works on any device - iOS, Android, or desktop. Install like
+                    a native app with offline access to all your recipes.
                   </p>
                 </div>
               </CardContent>
@@ -210,14 +231,20 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Globe className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     AI Powered
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Multi-Source Recipe Parsing</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Multi-Source Recipe Parsing
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Parse recipes from any website, extract from Instagram posts, or scan from photos with intelligent AI extraction.
+                    Parse recipes from any website, extract from Instagram
+                    posts, or scan from photos with intelligent AI extraction.
                   </p>
                 </div>
               </CardContent>
@@ -230,14 +257,20 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Calendar className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     Coming Soon
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Weekly Meal Planning</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Weekly Meal Planning
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Plan your weeks with intuitive drag-and-drop interface. Plan for multiple weeks ahead with your saved recipes.
+                    Plan your weeks with intuitive drag-and-drop interface. Plan
+                    for multiple weeks ahead with your saved recipes.
                   </p>
                 </div>
               </CardContent>
@@ -250,14 +283,20 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Search className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     Smart
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Smart Recipe Search</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Smart Recipe Search
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Find recipes by ingredients, cuisine, cooking time, or any keyword. Advanced filtering makes discovery effortless.
+                    Find recipes by ingredients, cuisine, cooking time, or any
+                    keyword. Advanced filtering makes discovery effortless.
                   </p>
                 </div>
               </CardContent>
@@ -270,14 +309,20 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Edit3 className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     Flexible
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Easy to Update & Modify</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Easy to Update & Modify
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Edit recipes with a simple interface. Add personal notes, modifications, and rate your favorites.
+                    Edit recipes with a simple interface. Add personal notes,
+                    modifications, and rate your favorites.
                   </p>
                 </div>
               </CardContent>
@@ -290,14 +335,20 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <FolderOpen className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     Organized
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Collections & Folders</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Collections & Folders
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Create custom recipe collections. Organize by cuisine, occasion, or preference with smart tagging.
+                    Create custom recipe collections. Organize by cuisine,
+                    occasion, or preference with smart tagging.
                   </p>
                 </div>
               </CardContent>
@@ -310,33 +361,42 @@ export default function LandingPage() {
                   <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
                     <Share2 className="h-10 w-10 text-primary" />
                   </div>
-                  <Badge variant="secondary" className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30">
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
+                  >
                     Social
                   </Badge>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-semibold mb-3">Recipe Sharing</h3>
+                  <h3 className="text-2xl font-semibold mb-3">
+                    Recipe Sharing
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Share your favorite recipes with friends and family. Export recipes in multiple formats for easy sharing.
+                    Share your favorite recipes with friends and family. Export
+                    recipes in multiple formats for easy sharing.
                   </p>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Final CTA Section */}
-      <div className="py-20">
+      <section className="py-20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
             <h2 className="text-3xl sm:text-4xl font-bold">
               Ready to end the
-              <span className="block text-primary">recipe site frustrations?</span>
+              <span className="block text-primary">
+                recipe site frustrations?
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground">
-              Stop losing your place to jumping ads. Stop waiting for slow sites. 
-              Get all your recipes in one organized, distraction-free place.
+              Stop losing your place to jumping ads. Stop waiting for slow
+              sites. Get all your recipes in one organized, distraction-free
+              place.
             </p>
             <SignInButton mode="modal">
               <Button
@@ -349,7 +409,7 @@ export default function LandingPage() {
             </SignInButton>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </article>
   );
 }
