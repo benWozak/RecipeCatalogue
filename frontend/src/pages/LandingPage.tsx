@@ -2,6 +2,7 @@ import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AuroraText } from "@/components/ui/aurora-text";
 import {
   ChefHat,
   BookOpen,
@@ -68,10 +69,10 @@ export default function LandingPage() {
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-                Finally, All Your Recipes
-                <span className="block bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+                Finally, All Your Recipes <br />
+                <AuroraText className="block" colors={["#89CCAC", "#B689CC"]}>
                   In One Place
-                </span>
+                </AuroraText>
               </h1>
               <div className="flex flex-col gap-2 max-w-xl justify-start mx-auto">
                 <p className="sm:text-lg text-muted-foreground leading-relaxed inline-flex items-center">
