@@ -232,6 +232,9 @@ export function useCreateCollection() {
         globalCollectionsWithStats.push({ ...response.data, recipe_count: 0 });
         notifySubscribers();
         notifyStatsSubscribers();
+        
+        // Invalidate collections stats to refresh recipe counts
+        await refreshCollectionsStats();
 
         return response.data;
       } else {
@@ -342,4 +345,15 @@ export function useDeleteCollection() {
   };
 
   return { deleteCollection, isLoading };
+}
+
+// Helper function to refresh collections stats
+async function refreshCollectionsStats(): Promise<void> {
+  // Reset the global state to force a fresh fetch
+  globalCollectionsWithStats = [];
+  isFetchingStats = false;
+  statsPromise = null;
+  
+  // Notify all stats subscribers to trigger a re-fetch
+  notifyStatsSubscribers();
 }

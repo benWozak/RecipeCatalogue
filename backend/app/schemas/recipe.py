@@ -56,6 +56,7 @@ class RecipeBase(BaseModel):
 class RecipeCreate(RecipeBase):
     ingredients: List[IngredientCreate] = []
     tags: List[TagCreate] = []
+    collection_id: Optional[str] = None
 
 class RecipeUpdate(BaseModel):
     title: Optional[str] = None
@@ -70,6 +71,7 @@ class RecipeUpdate(BaseModel):
     instructions: Optional[Dict[str, Any]] = None
     ingredients: Optional[List[IngredientCreate]] = None
     tags: Optional[List[TagCreate]] = None
+    collection_id: Optional[str] = None
 
 class Recipe(RecipeBase):
     id: str
@@ -78,6 +80,7 @@ class Recipe(RecipeBase):
     updated_at: Optional[datetime] = None
     ingredients: List[Ingredient] = []
     tags: List[Tag] = []
+    collection_id: Optional[str] = None
 
     class Config:
         from_attributes = True

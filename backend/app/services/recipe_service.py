@@ -11,8 +11,13 @@ class RecipeService:
 
     def _populate_recipe_collection_info(self, recipe: Recipe):
         """Helper method to populate collection_id and collection info for recipe responses"""
-        if recipe.collections:
-            # Since frontend expects single collection, use the first one
+        # If recipe has a direct collection_id, use that (primary approach)
+        if recipe.collection_id:
+            # Ensure the collection relationship is loaded if needed
+            if not recipe.collection:
+                recipe.collection = self.db.query(Collection).filter(Collection.id == recipe.collection_id).first()
+        # Fallback: check many-to-many collections for backwards compatibility
+        elif recipe.collections:
             recipe.collection_id = recipe.collections[0].id
             recipe.collection = recipe.collections[0]
         else:
@@ -34,6 +39,7 @@ class RecipeService:
         # Eagerly load collections and other relationships
         query = query.options(
             selectinload(Recipe.collections),
+            selectinload(Recipe.collection),
             selectinload(Recipe.ingredients),
             selectinload(Recipe.tags)
         )
@@ -51,11 +57,21 @@ class RecipeService:
         
         if collection_id:
             if collection_id == 'uncollected':
-                # Show recipes that are not in any collection
-                query = query.outerjoin(Recipe.collections).filter(Collection.id.is_(None))
+                # Show recipes that are not in any collection (both direct and many-to-many)
+                query = query.filter(
+                    and_(
+                        Recipe.collection_id.is_(None),
+                        ~Recipe.collections.any()
+                    )
+                )
             else:
-                # Show recipes that are in the specified collection
-                query = query.join(Recipe.collections).filter(Collection.id == collection_id)
+                # Show recipes that are in the specified collection (check both direct and many-to-many)
+                query = query.filter(
+                    or_(
+                        Recipe.collection_id == collection_id,
+                        Recipe.collections.any(Collection.id == collection_id)
+                    )
+                )
         
         recipes = query.offset(skip).limit(limit).all()
         return [self._populate_recipe_collection_info(recipe) for recipe in recipes]
@@ -63,6 +79,7 @@ class RecipeService:
     def get_recipe(self, recipe_id: str, user_id: str) -> Optional[Recipe]:
         recipe = self.db.query(Recipe).options(
             selectinload(Recipe.collections),
+            selectinload(Recipe.collection),
             selectinload(Recipe.ingredients),
             selectinload(Recipe.tags)
         ).filter(
@@ -76,6 +93,14 @@ class RecipeService:
     def create_recipe(self, recipe_data: RecipeCreate, user_id: str) -> Recipe:
         recipe_dict = recipe_data.dict(exclude={'ingredients', 'tags', 'collection_id'})
         recipe = Recipe(**recipe_dict, user_id=user_id)
+        
+        # Handle collection assignment with direct collection_id
+        if recipe_data.collection_id:
+            collection = self.db.query(Collection).filter(
+                and_(Collection.id == recipe_data.collection_id, Collection.user_id == user_id)
+            ).first()
+            if collection:
+                recipe.collection_id = recipe_data.collection_id
         
         self.db.add(recipe)
         self.db.flush()
@@ -97,14 +122,6 @@ class RecipeService:
                 # Update color if tag exists but doesn't have a color
                 tag.color = tag_color
             recipe.tags.append(tag)
-
-        # Handle collection assignment
-        if recipe_data.collection_id:
-            collection = self.db.query(Collection).filter(
-                and_(Collection.id == recipe_data.collection_id, Collection.user_id == user_id)
-            ).first()
-            if collection:
-                recipe.collections.append(collection)
 
         self.db.commit()
         self.db.refresh(recipe)
@@ -150,15 +167,22 @@ class RecipeService:
 
         # Handle collection assignment
         if 'collection_id' in recipe_update.dict(exclude_unset=True):
-            # Clear existing collections (assuming one collection per recipe from frontend)
-            recipe.collections.clear()
-            
             if recipe_update.collection_id:
+                # Verify the collection exists and belongs to the user
                 collection = self.db.query(Collection).filter(
                     and_(Collection.id == recipe_update.collection_id, Collection.user_id == user_id)
                 ).first()
                 if collection:
-                    recipe.collections.append(collection)
+                    recipe.collection_id = recipe_update.collection_id
+                    # Also clear any many-to-many relationships for consistency
+                    recipe.collections.clear()
+                else:
+                    # Invalid collection_id, clear it
+                    recipe.collection_id = None
+            else:
+                # collection_id is None, clear the assignment
+                recipe.collection_id = None
+                recipe.collections.clear()
 
         self.db.commit()
         self.db.refresh(recipe)

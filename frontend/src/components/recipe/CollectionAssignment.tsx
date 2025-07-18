@@ -5,6 +5,8 @@ import { CollectionSelector } from "@/components/ui/collection-selector";
 import { useUser } from "@/hooks/useUser";
 import { recipeService } from "@/services/recipeService";
 import { Recipe } from "@/types/recipe";
+import { useQueryClient } from "@tanstack/react-query";
+import { recipeKeys } from "@/hooks/useRecipes";
 
 interface CollectionAssignmentProps {
   recipe: Recipe;
@@ -21,6 +23,7 @@ export function CollectionAssignment({
 }: CollectionAssignmentProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { user, getToken } = useUser();
+  const queryClient = useQueryClient();
 
   const handleCollectionChange = async (collectionId: string | null) => {
     if (!user) return;
@@ -41,6 +44,10 @@ export function CollectionAssignment({
 
       if (response.success && response.data) {
         onUpdate?.(response.data);
+        
+        // Invalidate recipe queries to refresh the UI
+        queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
       }
     } catch (error) {
       console.error('Failed to update recipe collection:', error);

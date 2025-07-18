@@ -159,6 +159,40 @@ class CollectionService {
       };
     }
   }
+
+  async addRecipeToCollection(collectionId: string, recipeId: string, token: string): Promise<ApiResponse<void>> {
+    try {
+      await this.makeRequest(`/${collectionId}/recipes/${recipeId}`, token, {
+        method: 'POST',
+      });
+      
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add recipe to collection'
+      };
+    }
+  }
+
+  async removeRecipeFromCollection(collectionId: string, recipeId: string, token: string): Promise<ApiResponse<void>> {
+    try {
+      await this.makeRequest(`/${collectionId}/recipes/${recipeId}`, token, {
+        method: 'DELETE',
+      });
+      
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to remove recipe from collection'
+      };
+    }
+  }
 }
 
 export const collectionService = new CollectionService();

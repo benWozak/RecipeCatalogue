@@ -29,12 +29,14 @@ class Recipe(Base):
     source_url = Column(String)
     media = Column(JSONB)
     instructions = Column(JSONB)
+    collection_id = Column(String, ForeignKey('collections.id'), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     ingredients = relationship("Ingredient", back_populates="recipe", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=recipe_tags, back_populates="recipes")
     collections = relationship("Collection", secondary="collection_recipes", back_populates="recipes")
+    collection = relationship("Collection", foreign_keys=[collection_id])
 
 class Ingredient(Base):
     __tablename__ = "ingredients"

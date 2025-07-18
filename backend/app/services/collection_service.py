@@ -33,24 +33,26 @@ class CollectionService:
         limit: int = 100
     ) -> List[CollectionWithStats]:
         """Get all collections for a user with recipe counts."""
-        # Query collections with recipe count using a subquery
-        collections_with_counts = (
-            self.db.query(
-                Collection,
-                func.count(Recipe.id).label('recipe_count')
-            )
-            .outerjoin(Collection.recipes)
+        # Get collections first
+        collections = (
+            self.db.query(Collection)
             .filter(Collection.user_id == user_id)
-            .group_by(Collection.id)
             .order_by(Collection.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
         )
         
-        # Convert to CollectionWithStats objects
+        # Calculate recipe counts for each collection
         result = []
-        for collection, recipe_count in collections_with_counts:
+        for collection in collections:
+            # Count recipes that have this collection_id (direct relationship)
+            recipe_count = (
+                self.db.query(Recipe)
+                .filter(Recipe.collection_id == collection.id)
+                .count()
+            )
+            
             collection_dict = {
                 "id": collection.id,
                 "user_id": collection.user_id,
@@ -58,7 +60,7 @@ class CollectionService:
                 "description": collection.description,
                 "created_at": collection.created_at,
                 "updated_at": collection.updated_at,
-                "recipe_count": recipe_count or 0
+                "recipe_count": recipe_count
             }
             result.append(CollectionWithStats(**collection_dict))
         
