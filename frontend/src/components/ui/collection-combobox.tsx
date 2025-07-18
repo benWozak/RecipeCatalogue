@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Check, ChevronsUpDown, Plus } from "lucide-react"
+import * as React from "react";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,22 +12,22 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Collection } from "@/types/recipe"
+} from "@/components/ui/popover";
+import { Collection } from "@/types/recipe";
 
 interface CollectionComboboxProps {
-  collections: Collection[]
-  value?: string
-  onValueChange: (value: string | undefined) => void
-  onCreateCollection: (name: string) => Promise<Collection>
-  placeholder?: string
-  disabled?: boolean
-  className?: string
+  collections: Collection[];
+  value?: string;
+  onValueChange: (value: string | undefined) => void;
+  onCreateCollection: (name: string) => Promise<Collection>;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
 }
 
 export function CollectionCombobox({
@@ -39,51 +39,54 @@ export function CollectionCombobox({
   disabled = false,
   className,
 }: CollectionComboboxProps) {
-  const [open, setOpen] = React.useState(false)
-  const [searchValue, setSearchValue] = React.useState("")
-  const [isCreating, setIsCreating] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
+  const [searchValue, setSearchValue] = React.useState("");
+  const [isCreating, setIsCreating] = React.useState(false);
 
-  const selectedCollection = collections.find((collection) => collection.id === value)
+  const selectedCollection = collections.find(
+    (collection) => collection.id === value
+  );
 
   const filteredCollections = collections.filter((collection) =>
     collection.name.toLowerCase().includes(searchValue.toLowerCase())
-  )
+  );
 
   const exactMatch = collections.find(
     (collection) => collection.name.toLowerCase() === searchValue.toLowerCase()
-  )
+  );
 
-  const showCreateOption = searchValue.trim() && !exactMatch && searchValue.length >= 2
+  const showCreateOption =
+    searchValue.trim() && !exactMatch && searchValue.length >= 2;
 
   const handleCreateCollection = async () => {
-    if (!searchValue.trim() || isCreating) return
+    if (!searchValue.trim() || isCreating) return;
 
-    setIsCreating(true)
+    setIsCreating(true);
     try {
-      const newCollection = await onCreateCollection(searchValue.trim())
-      onValueChange(newCollection.id)
-      setSearchValue("")
-      setOpen(false)
+      const newCollection = await onCreateCollection(searchValue.trim());
+      onValueChange(newCollection.id);
+      setSearchValue("");
+      setOpen(false);
     } catch (error) {
-      console.error("Failed to create collection:", error)
+      console.error("Failed to create collection:", error);
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleSelect = (selectedValue: string) => {
     if (selectedValue === value) {
-      onValueChange(undefined)
+      onValueChange(undefined);
     } else {
-      onValueChange(selectedValue)
+      onValueChange(selectedValue);
     }
-    setOpen(false)
-  }
+    setOpen(false);
+  };
 
   const handleClear = () => {
-    onValueChange(undefined)
-    setSearchValue("")
-  }
+    onValueChange(undefined);
+    setSearchValue("");
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -114,11 +117,14 @@ export function CollectionCombobox({
             <CommandEmpty>
               {searchValue ? "No collections found." : "No collections yet."}
             </CommandEmpty>
-            
+
             {/* Clear selection option */}
             {value && (
               <CommandGroup>
-                <CommandItem onSelect={handleClear} className="text-muted-foreground">
+                <CommandItem
+                  onSelect={handleClear}
+                  className="text-muted-foreground"
+                >
                   <Check className="mr-2 h-4 w-4 opacity-0" />
                   No collection
                 </CommandItem>
@@ -141,11 +147,6 @@ export function CollectionCombobox({
                       )}
                     />
                     <span className="truncate">{collection.name}</span>
-                    {collection.description && (
-                      <span className="ml-2 text-xs text-muted-foreground truncate">
-                        {collection.description}
-                      </span>
-                    )}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -163,9 +164,7 @@ export function CollectionCombobox({
                   {isCreating ? (
                     "Creating..."
                   ) : (
-                    <>
-                      Create &quot;{searchValue.trim()}&quot;
-                    </>
+                    <>Create &quot;{searchValue.trim()}&quot;</>
                   )}
                 </CommandItem>
               </CommandGroup>
@@ -174,5 +173,5 @@ export function CollectionCombobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

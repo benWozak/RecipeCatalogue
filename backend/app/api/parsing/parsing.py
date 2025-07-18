@@ -14,13 +14,16 @@ router = APIRouter()
 
 class URLParseRequest(BaseModel):
     url: str
+    collection_id: Optional[str] = None
 
 class InstagramParseRequest(BaseModel):
     url: str
+    collection_id: Optional[str] = None
 
 class BatchInstagramRequest(BaseModel):
     urls: List[str]
     max_results: Optional[int] = 20
+    collection_id: Optional[str] = None
 
 class ProfileParseRequest(BaseModel):
     username: str
@@ -46,7 +49,7 @@ async def parse_recipe_from_url(
 ):
     parsing_service = ParsingService(db)
     try:
-        recipe_data = await parsing_service.parse_from_url(request.url, current_user.id)
+        recipe_data = await parsing_service.parse_from_url(request.url, current_user.id, request.collection_id)
         return recipe_data
     except WebsiteProtectionError as e:
         raise HTTPException(
@@ -76,7 +79,7 @@ async def parse_recipe_from_instagram(
 ):
     parsing_service = ParsingService(db)
     try:
-        recipe_data = await parsing_service.parse_from_instagram(request.url, current_user.id)
+        recipe_data = await parsing_service.parse_from_instagram(request.url, current_user.id, request.collection_id)
         return recipe_data
     except Exception as e:
         raise HTTPException(
@@ -97,7 +100,7 @@ async def parse_batch_instagram_urls(
     
     for url in request.urls[:request.max_results]:
         try:
-            recipe_data = await parsing_service.parse_from_instagram(url, current_user.id)
+            recipe_data = await parsing_service.parse_from_instagram(url, current_user.id, request.collection_id)
             results.append({"url": url, "status": "success", "data": recipe_data})
         except Exception as e:
             errors.append({"url": url, "status": "error", "error": str(e)})
@@ -175,6 +178,7 @@ async def search_recipes_by_hashtag(
 @router.post("/image")
 async def parse_recipe_from_image(
     file: UploadFile = File(...),
+    collection_id: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -187,7 +191,7 @@ async def parse_recipe_from_image(
     parsing_service = ParsingService(db)
     try:
         image_data = await file.read()
-        recipe_data = await parsing_service.parse_from_image(image_data, current_user.id)
+        recipe_data = await parsing_service.parse_from_image(image_data, current_user.id, collection_id)
         return recipe_data
     except Exception as e:
         raise HTTPException(

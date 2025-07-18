@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional, List
 from urllib.parse import urlparse
 from .base_parser import BaseParser, ParsedRecipe
 from .text_processor import TextProcessor, RecipePattern
-from ...utils.storage_utils import storage_utils
+from app.utils.storage_utils import storage_utils
 
 
 class InstagramParser(BaseParser):

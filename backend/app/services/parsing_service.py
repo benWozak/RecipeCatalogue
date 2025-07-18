@@ -12,7 +12,7 @@ class ParsingService:
         self.instagram_parser = InstagramParser(db)
         self.validation_pipeline = ValidationPipeline()
 
-    async def parse_from_url(self, url: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    async def parse_from_url(self, url: str, user_id: Optional[str] = None, collection_id: Optional[str] = None) -> Dict[str, Any]:
         try:
             # Parse using new URL parser
             parsed_recipe = await self.url_parser.parse(url)
@@ -26,7 +26,7 @@ class ParsingService:
             )
             
             # Convert to legacy format for API compatibility
-            return self._convert_to_legacy_format(validation_result.parsed_recipe)
+            return self._convert_to_legacy_format(validation_result.parsed_recipe, collection_id)
             
         except WebsiteProtectionError as e:
             # Re-raise WebsiteProtectionError to be handled by API layer
@@ -34,7 +34,7 @@ class ParsingService:
         except Exception as e:
             raise Exception(f"Failed to parse recipe from URL: {str(e)}")
 
-    async def parse_from_instagram(self, url: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    async def parse_from_instagram(self, url: str, user_id: Optional[str] = None, collection_id: Optional[str] = None) -> Dict[str, Any]:
         try:
             # Parse using new Instagram parser
             parsed_recipe = await self.instagram_parser.parse(url)
@@ -48,25 +48,30 @@ class ParsingService:
             )
             
             # Convert to legacy format for API compatibility
-            return self._convert_to_legacy_format(validation_result.parsed_recipe)
+            return self._convert_to_legacy_format(validation_result.parsed_recipe, collection_id)
             
         except Exception as e:
             raise Exception(f"Failed to parse recipe from Instagram: {str(e)}")
 
-    async def parse_from_image(self, image_data: bytes, user_id: Optional[str] = None) -> Dict[str, Any]:
+    async def parse_from_image(self, image_data: bytes, user_id: Optional[str] = None, collection_id: Optional[str] = None) -> Dict[str, Any]:
         # Placeholder for OCR image parsing
         # In a real implementation, you would use Google Cloud Vision or similar
-        return {
+        result = {
             "title": "Recipe from Image",
             "description": "Recipe parsed from uploaded image",
             "source_type": "image",
             "instructions": {"steps": ["Please add recipe steps manually"]},
             "ingredients": []
         }
+        
+        if collection_id:
+            result["collection_id"] = collection_id
+            
+        return result
     
-    def _convert_to_legacy_format(self, parsed_recipe: ParsedRecipe) -> Dict[str, Any]:
+    def _convert_to_legacy_format(self, parsed_recipe: ParsedRecipe, collection_id: Optional[str] = None) -> Dict[str, Any]:
         """Convert ParsedRecipe to legacy API format"""
-        return {
+        result = {
             "title": parsed_recipe.title,
             "description": parsed_recipe.description,
             "source_type": parsed_recipe.source_type,
@@ -80,4 +85,9 @@ class ParsingService:
             "confidence_score": parsed_recipe.confidence_score,
             "media": parsed_recipe.media
         }
+        
+        if collection_id:
+            result["collection_id"] = collection_id
+            
+        return result
 

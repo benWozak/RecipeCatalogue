@@ -15,7 +15,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useCollections } from "@/hooks/useCollections";
-import { Collection } from "@/types/recipe";
 
 interface CollectionSelectorProps {
   value?: string | null;
@@ -25,17 +24,19 @@ interface CollectionSelectorProps {
   disabled?: boolean;
 }
 
-export function CollectionSelector({ 
-  value, 
-  onValueChange, 
+export function CollectionSelector({
+  value,
+  onValueChange,
   placeholder = "Select collection...",
   className,
-  disabled = false
+  disabled = false,
 }: CollectionSelectorProps) {
   const [open, setOpen] = useState(false);
   const { collections, isLoading } = useCollections();
 
-  const selectedCollection = collections?.find(collection => collection.id === value);
+  const selectedCollection = collections?.find(
+    (collection) => collection.id === value
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -81,7 +82,7 @@ export function CollectionSelector({
                 />
                 <span className="text-muted-foreground">No collection</span>
               </CommandItem>
-              
+
               {/* Collection options */}
               {collections?.map((collection) => (
                 <CommandItem
@@ -101,11 +102,6 @@ export function CollectionSelector({
                     <FolderPlus className="h-4 w-4" />
                     <div>
                       <div className="font-medium">{collection.name}</div>
-                      {collection.description && (
-                        <div className="text-xs text-muted-foreground line-clamp-1">
-                          {collection.description}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </CommandItem>

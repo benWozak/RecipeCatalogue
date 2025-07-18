@@ -8,7 +8,6 @@ from app.schemas.collection import (
     CollectionSchema, 
     CollectionCreate, 
     CollectionUpdate, 
-    CollectionWithRecipes,
     CollectionWithStats,
     CollectionListResponse
 )
@@ -40,7 +39,7 @@ async def get_collections_with_stats(
     collections = collection_service.get_user_collections_with_stats(current_user.id, skip, limit)
     return collections
 
-@router.get("/{collection_id}", response_model=CollectionWithRecipes)
+@router.get("/{collection_id}", response_model=CollectionSchema)
 async def get_collection(
     collection_id: str,
     include_recipes: bool = Query(False, description="Include recipes in the response"),

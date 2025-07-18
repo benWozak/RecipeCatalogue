@@ -1,9 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, List, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from app.schemas.recipe import Recipe
+from typing import Optional, List
 
 class CollectionBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Collection name")
@@ -24,8 +21,6 @@ class CollectionSchema(CollectionBase):
     
     model_config = {"from_attributes": True}
 
-class CollectionWithRecipes(CollectionSchema):
-    recipes: List["Recipe"] = []
 
 class CollectionWithStats(CollectionSchema):
     recipe_count: int = Field(0, description="Number of recipes in this collection")
