@@ -14,7 +14,7 @@ export interface ApiResponse<T> {
 }
 
 class MealPlanService {
-  private baseUrl = 'http://localhost:8000/api/meal-plans';
+  private baseUrl = `${import.meta.env.VITE_API_URL}/api/meal-plans`;
 
   private async makeRequest(endpoint: string, token: string, options: RequestInit = {}): Promise<Response> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -150,7 +150,7 @@ class MealPlanService {
   // Helper method to get recipes formatted for meal planning
   async getRecipesForMealPlan(token: string, search?: string): Promise<ApiResponse<RecipeForMealPlan[]>> {
     try {
-      const recipeServiceUrl = 'http://localhost:8000/api/recipes';
+      const recipeServiceUrl = `${import.meta.env.VITE_API_URL}/api/recipes`;
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       

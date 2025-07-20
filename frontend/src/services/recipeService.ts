@@ -7,7 +7,7 @@ export interface ApiResponse<T> {
 }
 
 class RecipeService {
-  private baseUrl = 'http://localhost:8000/api/recipes';
+  private baseUrl = `${import.meta.env.VITE_API_URL}/api/recipes`;
 
   private async makeRequest(endpoint: string, token: string, options: RequestInit = {}): Promise<Response> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {

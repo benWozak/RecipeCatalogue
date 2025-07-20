@@ -47,7 +47,7 @@ export interface ParseResponse {
 }
 
 class ParsingService {
-  private baseUrl = 'http://localhost:8000/api/parse'
+  private baseUrl = `${import.meta.env.VITE_API_URL}/api/parse`
 
   private async makeRequest(endpoint: string, token: string, options: RequestInit = {}): Promise<Response> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
