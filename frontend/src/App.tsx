@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { RouteErrorBoundary } from "@/components/error";
 import Layout from "./components/common/Layout";
 import LandingPage from "./pages/LandingPage.tsx";
 import HomePage from "./pages/HomePage";
@@ -26,36 +27,104 @@ function App() {
       <Router>
         <div className="min-h-screen bg-background text-foreground">
           <SignedOut>
-            <LandingPage />
+            <RouteErrorBoundary routeName="Landing">
+              <LandingPage />
+            </RouteErrorBoundary>
           </SignedOut>
 
           <SignedIn>
             <Layout>
               <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/recipes" element={<RecipesPage />} />
-                <Route path="/recipes/scan" element={<RecipeScanPage />} />
-                <Route
-                  path="/recipes/scan/instagram"
-                  element={<InstagramScanPage />}
-                />
-                <Route path="/recipes/scan/url" element={<URLScanPage />} />
-                <Route path="/recipes/scan/image" element={<ImageScanPage />} />
-                <Route
-                  path="/recipes/scan/manual"
-                  element={<ManualRecipePage />}
-                />
-                <Route path="/recipes/new" element={<RecipeFormPage />} />
-                <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-                <Route path="/recipes/:id/edit" element={<RecipeFormPage />} />
-                <Route path="/collections" element={<CollectionsPage />} />
-                <Route path="/meal-plans" element={<MealPlansPage />} />
-                <Route path="/meal-plans/new" element={<NewMealPlanPage />} />
-                <Route
-                  path="/meal-plans/:id"
-                  element={<MealPlanDetailPage />}
-                />
-                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/" element={
+                  <RouteErrorBoundary routeName="Home">
+                    <HomePage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes" element={
+                  <RouteErrorBoundary routeName="Recipes">
+                    <RecipesPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/scan" element={
+                  <RouteErrorBoundary routeName="Recipe Scan">
+                    <RecipeScanPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/scan/instagram" element={
+                  <RouteErrorBoundary routeName="Instagram Scan">
+                    <InstagramScanPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/scan/url" element={
+                  <RouteErrorBoundary routeName="URL Scan">
+                    <URLScanPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/scan/image" element={
+                  <RouteErrorBoundary routeName="Image Scan">
+                    <ImageScanPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/scan/manual" element={
+                  <RouteErrorBoundary routeName="Manual Recipe">
+                    <ManualRecipePage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/new" element={
+                  <RouteErrorBoundary routeName="New Recipe">
+                    <RecipeFormPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/:id" element={
+                  <RouteErrorBoundary routeName="Recipe Details">
+                    <RecipeDetailPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/recipes/:id/edit" element={
+                  <RouteErrorBoundary routeName="Edit Recipe">
+                    <RecipeFormPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/collections" element={
+                  <RouteErrorBoundary routeName="Collections">
+                    <CollectionsPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/meal-plans" element={
+                  <RouteErrorBoundary routeName="Meal Plans">
+                    <MealPlansPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/meal-plans/new" element={
+                  <RouteErrorBoundary routeName="New Meal Plan">
+                    <NewMealPlanPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/meal-plans/:id" element={
+                  <RouteErrorBoundary routeName="Meal Plan Details">
+                    <MealPlanDetailPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/profile" element={
+                  <RouteErrorBoundary routeName="Profile">
+                    <ProfilePage />
+                  </RouteErrorBoundary>
+                } />
+                
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Layout>
