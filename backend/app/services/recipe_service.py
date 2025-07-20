@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_, or_
 from typing import List, Optional
-from app.models.recipe import Recipe, Ingredient, Tag
+from app.models.recipe import Recipe, Tag
 from app.models.collection import Collection
 from app.schemas.recipe import RecipeCreate, RecipeUpdate
 
@@ -40,7 +40,6 @@ class RecipeService:
         query = query.options(
             selectinload(Recipe.collections),
             selectinload(Recipe.collection),
-            selectinload(Recipe.ingredients),
             selectinload(Recipe.tags)
         )
         
@@ -80,7 +79,6 @@ class RecipeService:
         recipe = self.db.query(Recipe).options(
             selectinload(Recipe.collections),
             selectinload(Recipe.collection),
-            selectinload(Recipe.ingredients),
             selectinload(Recipe.tags)
         ).filter(
             and_(Recipe.id == recipe_id, Recipe.user_id == user_id)
@@ -91,7 +89,7 @@ class RecipeService:
         return None
 
     def create_recipe(self, recipe_data: RecipeCreate, user_id: str) -> Recipe:
-        recipe_dict = recipe_data.dict(exclude={'ingredients', 'tags', 'collection_id'})
+        recipe_dict = recipe_data.dict(exclude={'tags', 'collection_id'})
         recipe = Recipe(**recipe_dict, user_id=user_id)
         
         # Handle collection assignment with direct collection_id
@@ -104,10 +102,6 @@ class RecipeService:
         
         self.db.add(recipe)
         self.db.flush()
-
-        for ingredient_data in recipe_data.ingredients:
-            ingredient = Ingredient(**ingredient_data.dict(), recipe_id=recipe.id)
-            self.db.add(ingredient)
 
         for tag_data in recipe_data.tags:
             tag_name = tag_data.name if hasattr(tag_data, 'name') else str(tag_data)
@@ -137,17 +131,9 @@ class RecipeService:
         if not recipe:
             return None
 
-        update_data = recipe_update.dict(exclude_unset=True, exclude={'ingredients', 'tags', 'collection_id'})
+        update_data = recipe_update.dict(exclude_unset=True, exclude={'tags', 'collection_id'})
         for field, value in update_data.items():
             setattr(recipe, field, value)
-
-        if recipe_update.ingredients is not None:
-            for ingredient in recipe.ingredients:
-                self.db.delete(ingredient)
-            
-            for ingredient_data in recipe_update.ingredients:
-                ingredient = Ingredient(**ingredient_data.dict(), recipe_id=recipe.id)
-                self.db.add(ingredient)
 
         if recipe_update.tags is not None:
             recipe.tags.clear()

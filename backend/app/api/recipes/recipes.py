@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.core.database import get_db
 from app.api.auth.auth import get_current_user
 from app.models.user import User
-from app.models.recipe import Recipe, Ingredient, Tag
+from app.models.recipe import Recipe, Tag
 from app.schemas.recipe import Recipe as RecipeSchema, RecipeCreate, RecipeUpdate
 from app.services.recipe_service import RecipeService
 

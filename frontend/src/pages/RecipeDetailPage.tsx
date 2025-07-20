@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { HtmlRenderer } from "@/components/ui/html-renderer";
 import { useRecipe, useDeleteRecipe } from "@/hooks/useRecipes";
 import { useRecipeStore } from "@/stores/recipeStore";
-import { Recipe, Ingredient, Tag } from "@/types/recipe";
+import { Recipe, Tag } from "@/types/recipe";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -421,104 +421,82 @@ export default function RecipeDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Ingredients</h3>
-                    {currentRecipe.ingredients ? (
-                      Array.isArray(currentRecipe.ingredients) &&
-                      currentRecipe.ingredients.length > 0 ? (
-                        // Structured ingredients from database
-                        <ul className="space-y-2">
-                          {(currentRecipe.ingredients as Ingredient[])
-                            .sort(
-                              (a: Ingredient, b: Ingredient) =>
-                                a.order_index - b.order_index
-                            )
-                            .map((ingredient: Ingredient) => (
-                              <li
-                                key={ingredient.id}
-                                className="flex items-start gap-2"
-                              >
-                                <span className="text-muted-foreground">•</span>
-                                <div className="flex-1">
-                                  <span className="font-medium">
-                                    {ingredient.amount && ingredient.unit
-                                      ? `${ingredient.amount} ${ingredient.unit} `
-                                      : ingredient.amount
-                                      ? `${ingredient.amount} `
-                                      : ""}
-                                    {ingredient.name}
-                                  </span>
-                                  {ingredient.notes && (
-                                    <span className="text-muted-foreground text-sm ml-2">
-                                      ({ingredient.notes})
-                                    </span>
-                                  )}
-                                </div>
-                              </li>
-                            ))}
-                        </ul>
-                      ) : (
-                        // HTML ingredients from parsing (Instagram, web, etc.)
-                        <HtmlRenderer
-                          content={currentRecipe.ingredients as string}
-                        />
-                      )
-                    ) : (
-                      <p className="text-muted-foreground">
-                        No ingredients listed
-                      </p>
-                    )}
+                    {(() => {
+                      // Debug: log the ingredients data structure
+                      console.log('Ingredients data:', currentRecipe.ingredients);
+                      
+                      if (!currentRecipe.ingredients) {
+                        return (
+                          <p className="text-muted-foreground">
+                            No ingredients listed
+                          </p>
+                        );
+                      }
+
+                      // Handle JSONB format: { type: "html", content: "..." }
+                      if (typeof currentRecipe.ingredients === "object" && currentRecipe.ingredients.content) {
+                        return (
+                          <HtmlRenderer
+                            content={currentRecipe.ingredients.content}
+                          />
+                        );
+                      }
+
+                      // Handle direct string content (fallback)
+                      if (typeof currentRecipe.ingredients === "string") {
+                        return (
+                          <HtmlRenderer
+                            content={currentRecipe.ingredients}
+                          />
+                        );
+                      }
+
+                      return (
+                        <p className="text-muted-foreground">
+                          No ingredients listed
+                        </p>
+                      );
+                    })()}
                   </div>
 
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Instructions</h3>
-                    {currentRecipe.instructions ? (
-                      (() => {
-                        // Handle different instruction formats
-                        if (typeof currentRecipe.instructions === "string") {
-                          // Plain text instructions
-                          return (
-                            <div className="whitespace-pre-wrap">
-                              {currentRecipe.instructions}
-                            </div>
-                          );
-                        }
+                    {(() => {
+                      // Debug: log the instructions data structure
+                      console.log('Instructions data:', currentRecipe.instructions);
+                      
+                      if (!currentRecipe.instructions) {
+                        return (
+                          <p className="text-muted-foreground">
+                            No instructions provided
+                          </p>
+                        );
+                      }
 
-                        if (typeof currentRecipe.instructions === "object") {
-                          // Check for content property (rich text editor format)
-                          if (currentRecipe.instructions.content) {
-                            return (
-                              <HtmlRenderer
-                                content={currentRecipe.instructions.content}
-                              />
-                            );
-                          }
+                      // Handle JSONB format: { type: "html", content: "..." }
+                      if (typeof currentRecipe.instructions === "object" && currentRecipe.instructions.content) {
+                        return (
+                          <HtmlRenderer
+                            content={currentRecipe.instructions.content}
+                          />
+                        );
+                      }
 
-                          // Check if it's a direct HTML object (some parsing formats)
-                          if (currentRecipe.instructions.html) {
-                            return (
-                              <HtmlRenderer
-                                content={currentRecipe.instructions.html}
-                              />
-                            );
-                          }
+                      // Handle direct string content (fallback for legacy data)
+                      if (typeof currentRecipe.instructions === "string") {
+                        return (
+                          <HtmlRenderer
+                            content={currentRecipe.instructions}
+                          />
+                        );
+                      }
 
-                          // Fallback: try to render the whole object as HTML
-                          return (
-                            <HtmlRenderer
-                              content={
-                                currentRecipe.instructions as unknown as string
-                              }
-                            />
-                          );
-                        }
-
-                        // Final fallback
-                        return <div>Unable to display instructions</div>;
-                      })()
-                    ) : (
-                      <p className="text-muted-foreground">
-                        No instructions provided
-                      </p>
-                    )}
+                      return (
+                        <p className="text-muted-foreground">
+                          Unable to display instructions
+                        </p>
+                      );
+                    })()}
                   </div>
                 </div>
               </CardContent>

@@ -47,7 +47,7 @@ export function useParsingProgress(): [ParsingProgressState, ParsingProgressActi
 
   const startParsing = useCallback(() => {
     startTimeRef.current = Date.now()
-    setState(prev => ({
+    setState(() => ({
       ...initialState,
       isActive: true
     }))

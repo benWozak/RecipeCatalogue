@@ -1,11 +1,3 @@
-export interface Ingredient {
-  id: string;
-  name: string;
-  amount?: number;
-  unit?: string;
-  notes?: string;
-  order_index: number;
-}
 
 export interface Tag {
   id: string;
@@ -35,7 +27,7 @@ export interface Recipe {
   source_url?: string;
   media?: Record<string, any>;
   instructions?: Record<string, any> | string;
-  ingredients: Ingredient[] | Record<string, any> | string; // Support both structured and HTML ingredients
+  ingredients?: Record<string, any>; // HTML format stored as JSONB
   tags: Tag[];
   collection_id?: string;
   collection?: Collection;
@@ -54,7 +46,7 @@ export interface RecipeCreate {
   source_url?: string;
   media?: Record<string, any>;
   instructions?: Record<string, any>;
-  ingredients: Omit<Ingredient, 'id'>[]; // Always send as structured ingredients array
+  ingredients?: Record<string, any>; // HTML format
   tags: Omit<Tag, 'id'>[];
   collection_id?: string;
 }
@@ -70,7 +62,7 @@ export interface RecipeUpdate {
   source_url?: string;
   media?: Record<string, any>;
   instructions?: Record<string, any>;
-  ingredients?: Omit<Ingredient, 'id'>[]; // Always send as structured ingredients array
+  ingredients?: Record<string, any>; // HTML format
   tags?: Omit<Tag, 'id'>[];
   collection_id?: string;
 }

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import Dict, Any, Optional
-from app.schemas.recipe import RecipeCreate, IngredientCreate
+from app.schemas.recipe import RecipeCreate
 from app.core.config import settings
 from app.services.parsers import URLParser, InstagramParser, ValidationPipeline, ParsedRecipe
 from app.services.parsers.url_parser import WebsiteProtectionError

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, Integer, DateTime, ForeignKey, Table, DECIMAL
+from sqlalchemy import Column, String, Text, Integer, DateTime, ForeignKey, Table
 from sqlalchemy.dialects.postgresql import JSONB, ENUM
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -29,27 +29,14 @@ class Recipe(Base):
     source_url = Column(String)
     media = Column(JSONB)
     instructions = Column(JSONB)
+    ingredients = Column(JSONB)
     collection_id = Column(String, ForeignKey('collections.id'), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    ingredients = relationship("Ingredient", back_populates="recipe", cascade="all, delete-orphan")
     tags = relationship("Tag", secondary=recipe_tags, back_populates="recipes")
     collections = relationship("Collection", secondary="collection_recipes", back_populates="recipes")
     collection = relationship("Collection", foreign_keys=[collection_id])
-
-class Ingredient(Base):
-    __tablename__ = "ingredients"
-
-    id = Column(String, primary_key=True, default=generate_id)
-    recipe_id = Column(String, ForeignKey('recipes.id', ondelete='CASCADE'), nullable=False)
-    name = Column(String, nullable=False)
-    amount = Column(DECIMAL)
-    unit = Column(String)
-    notes = Column(Text)
-    order_index = Column(Integer)
-
-    recipe = relationship("Recipe", back_populates="ingredients")
 
 class Tag(Base):
     __tablename__ = "tags"

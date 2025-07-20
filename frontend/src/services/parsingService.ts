@@ -151,6 +151,17 @@ class ParsingService {
     }
   }
 
+  /**
+   * Generic URL parser that determines the appropriate parsing method
+   */
+  async parseUrl(url: string, token: string): Promise<ParseResponse> {
+    if (url.includes('instagram.com')) {
+      return this.parseInstagramUrl(url, token)
+    } else {
+      return this.parseWebUrl(url, token)
+    }
+  }
+
   async parseImage(file: File, token: string): Promise<ParseResponse> {
     try {
       const formData = new FormData()
@@ -219,7 +230,7 @@ class ParsingService {
     if (typeof EventSource === 'undefined') {
       console.warn('EventSource not supported, falling back to regular parsing')
       // Fallback to regular parsing
-      const result = await this.parseUrl(url, token, collectionId)
+      const result = await this.parseUrl(url, token)
       if (result.success && result.data) {
         callbacks.onComplete?.(result.data)
       } else {
@@ -317,18 +328,25 @@ class ParsingService {
       // Handle different event types
       if (data.event === 'result') {
         // Final result
-        callbacks.onComplete?.(data.data as ParsedRecipe)
+        if (callbacks.onComplete) {
+          callbacks.onComplete(data.data as ParsedRecipe)
+        }
       } else if (data.event === 'error') {
         // Error event
         const error = new Error(data.data.message)
         if (data.data.error_type === 'website_protection') {
-          (error as any).isWebsiteProtection = true
-          (error as any).suggestions = data.data.suggestions
+          const typedError = error as any
+          typedError.isWebsiteProtection = true
+          typedError.suggestions = data.data.suggestions
         }
-        callbacks.onError?.(error)
+        if (callbacks.onError) {
+          callbacks.onError(error)
+        }
       } else {
         // Progress event
-        callbacks.onProgress?.(data as ProgressEvent)
+        if (callbacks.onProgress) {
+          callbacks.onProgress(data as ProgressEvent)
+        }
       }
     } catch (error) {
       console.error('Error parsing SSE event:', error)

@@ -10,7 +10,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Badge } from '@/components/ui/badge';
 import { useRecipe, useCreateRecipe, useUpdateRecipe } from '@/hooks/useRecipes';
 import { useCollections, useCreateCollection } from '@/hooks/useCollections';
-import { Ingredient, Tag, RecipeCreate, RecipeUpdate, Collection } from '@/types/recipe';
+import { Tag, RecipeCreate, RecipeUpdate, Collection } from '@/types/recipe';
 import { ParsedRecipe } from '@/services/parsingService';
 import { CollectionCombobox } from '@/components/ui/collection-combobox';
 
@@ -83,8 +83,6 @@ export default function RecipeFormPage() {
       setParsedData(parsed);
       setConfidenceScore(parsed.confidence_score);
 
-      const ingredientsHtml = parsed.ingredients || '';
-
       setFormData({
         title: parsed.title || '',
         description: parsed.description || '',
@@ -98,9 +96,9 @@ export default function RecipeFormPage() {
         instructions: typeof parsed.instructions === 'string' 
           ? { type: 'html', content: parsed.instructions }
           : parsed.instructions || {},
-        ingredients: typeof ingredientsHtml === 'string' 
-          ? { type: 'html', content: ingredientsHtml }
-          : ingredientsHtml || {},
+        ingredients: typeof parsed.ingredients === 'string' 
+          ? { type: 'html', content: parsed.ingredients }
+          : parsed.ingredients || {},
         tags: [],
         collection_id: undefined,
       });
@@ -122,21 +120,10 @@ export default function RecipeFormPage() {
         source_url?: string;
         media?: Record<string, unknown>;
         instructions?: Record<string, unknown>;
-        ingredients?: Ingredient[] | Record<string, unknown> | string;
+        ingredients?: Record<string, unknown>;
         tags: Tag[];
         collection_id?: string;
       };
-
-      // Convert structured ingredients back to HTML for the rich text editor
-      const ingredientsHtml = Array.isArray(typedRecipe.ingredients) && typedRecipe.ingredients.length > 0 
-        ? (typedRecipe.ingredients as Ingredient[])
-            .sort((a: Ingredient, b: Ingredient) => a.order_index - b.order_index)
-            .map((ing: Ingredient) => {
-              const amount = ing.amount && ing.unit ? `${ing.amount} ${ing.unit} ` : ing.amount ? `${ing.amount} ` : '';
-              const notes = ing.notes ? ` (${ing.notes})` : '';
-              return `<p>${amount}${ing.name}${notes}</p>`;
-            }).join('')
-        : '';
 
       setFormData({
         title: typedRecipe.title,
@@ -149,7 +136,7 @@ export default function RecipeFormPage() {
         source_url: typedRecipe.source_url || '',
         media: typedRecipe.media || {},
         instructions: typedRecipe.instructions || {},
-        ingredients: { type: 'html', content: ingredientsHtml },
+        ingredients: typedRecipe.ingredients || {},
         tags: typedRecipe.tags.map((tag: Tag) => ({
           name: tag.name,
           color: tag.color || ''
@@ -185,66 +172,6 @@ export default function RecipeFormPage() {
     }));
   };
 
-  // Helper function to convert HTML ingredients to structured format
-  const parseHtmlIngredients = (ingredientsData: Record<string, unknown>): Omit<Ingredient, 'id'>[] => {
-    if (!ingredientsData) return [];
-    
-    // If it's already an array (structured), return as is
-    if (Array.isArray(ingredientsData)) {
-      return ingredientsData;
-    }
-    
-    // If it's HTML content, parse it into structured format
-    if ('content' in ingredientsData && typeof ingredientsData.content === 'string') {
-      const htmlContent = ingredientsData.content;
-      
-      // Create a temporary DOM element to parse HTML
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = htmlContent;
-      
-      // Use a Set to track seen ingredients and avoid duplicates
-      const seenIngredients = new Set<string>();
-      
-      // Extract text from paragraphs first, then list items if no paragraphs
-      let listItems: NodeListOf<Element> = tempDiv.querySelectorAll('p');
-      if (listItems.length === 0 || (listItems.length === 1 && !listItems[0].textContent?.trim())) {
-        listItems = tempDiv.querySelectorAll('li');
-      }
-      
-      const ingredients = Array.from(listItems)
-        .map((item, index) => {
-          let text = item.textContent?.trim() || '';
-          if (!text || text.length < 2) return null;
-          
-          // Remove trailing special characters and emojis
-          text = text.replace(/⁣$/, '').trim();
-          
-          // Skip section headers (like "Salmon⁣", "Salad⁣", "Creamy Asian Dressing⁣")
-          if (text.length < 10 && !text.match(/\d/) && !text.includes(' ')) {
-            return null;
-          }
-          
-          // Skip duplicates
-          if (seenIngredients.has(text)) {
-            return null;
-          }
-          seenIngredients.add(text);
-          
-          return {
-            name: text,
-            amount: undefined,
-            unit: '',
-            notes: '',
-            order_index: index
-          };
-        })
-        .filter((item): item is NonNullable<typeof item> => item !== null) as Omit<Ingredient, 'id'>[];
-      
-      return ingredients;
-    }
-    
-    return [];
-  };
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -266,7 +193,7 @@ export default function RecipeFormPage() {
       source_url: formData.source_url || undefined,
       media: Object.keys(formData.media).length > 0 ? formData.media : undefined,
       instructions: Object.keys(formData.instructions).length > 0 ? formData.instructions : undefined,
-      ingredients: parseHtmlIngredients(formData.ingredients),
+      ingredients: Object.keys(formData.ingredients).length > 0 ? formData.ingredients : undefined,
       tags: formData.tags.map(({ name, color }) => ({ name, color })),
       collection_id: formData.collection_id || undefined
     };
