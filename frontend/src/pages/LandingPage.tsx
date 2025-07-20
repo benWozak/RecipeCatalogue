@@ -14,7 +14,6 @@ import {
   Sparkles,
   Search,
   Edit3,
-  FolderOpen,
   Share2,
   CircleCheckBig,
 } from "lucide-react";
@@ -56,20 +55,20 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="px-4 py-16 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8 lg:py-20">
         <div className="flex flex-col items-center justify-between w-full mb-10 lg:flex-row">
-          <div className="mb-16 lg:mb-0 lg:max-w-lg lg:pr-5">
-            <div className="w-2xl mb-6">
+          <div className="mb-16 lg:mb-0 lg:max-w-2xl lg:pr-5">
+            <div className="lg:w-2xl mb-6">
               <div className="flex items-center space-x-2 mb-6">
                 <ChefHat className="h-8 w-8 text-primary" />
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
                   Recipe Catalogue
                 </span>
               </div>
               <div>
-                <p className="inline-block px-3 py-px mb-4 text-xs font-semibold tracking-wider uppercase bg-teal-accent-400 text-teal-900 rounded-full">
+                <p className="inline-block mb-4 text-sm font-semibold tracking-wider uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   Coming Soon
                 </p>
               </div>
-              <h2 className="font-sans text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl sm:leading-none max-w-lg mb-6">
+              <h2 className="font-sans text-3xl font-bold tracking-tight sm:text-4xl sm:leading-none max-w-lg mb-6">
                 Finally, All Your Recipes <br className="hidden md:block" />
                 <AuroraText
                   className="inline-block"
@@ -79,20 +78,19 @@ export default function LandingPage() {
                 </AuroraText>
               </h2>
               <div className="flex flex-col gap-2 mb-6">
-                <p className="text-gray-700 text-base md:text-lg inline-flex items-center">
-                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-500" /> No
-                  more losing your place when ads refresh.
+                <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg inline-flex items-center">
+                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-600" /> No
+                  more losing your place when ads refresh
                 </p>
-                <p className="text-gray-700 text-base md:text-lg inline-flex items-center">
-                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-500" /> No
+                <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg inline-flex items-center">
+                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-600" /> No
                   more waiting for slow recipe sites.
                 </p>
-                <p className="text-gray-700 text-base md:text-lg inline-flex items-center">
-                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-500" /> No
-                  more searching through Insta, bookmarks, and reading lists.
+                <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg inline-flex items-center">
+                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-600" /> No
+                  more scrolling through reading lists.
                 </p>
-                <p className="text-gray-700 text-base md:text-lg inline-flex items-center">
-                  <CircleCheckBig className="mr-2 h-5 w-5 text-green-500" />{" "}
+                <p className="text-gray-700 dark:text-gray-300 text-lg md:text-xl inline-flex items-center">
                   Just your recipes, organized and ready to use.
                 </p>
               </div>
@@ -201,7 +199,7 @@ export default function LandingPage() {
               </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We've all been there—ads that make pages jump, slow recipe sites,
+              We've all been there—ads that make pages jump, slow page loads,
               and recipes scattered everywhere. This app fixes all of that.
             </p>
           </div>
@@ -377,32 +375,6 @@ export default function LandingPage() {
                   <p className="text-muted-foreground leading-relaxed">
                     Edit recipes with a simple interface. Add personal notes,
                     modifications, and rate your favorites.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Collections & Folders */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-0 bg-background/50 backdrop-blur-sm hover:bg-background/80">
-              <CardContent className="p-8 space-y-6">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <FolderOpen className="h-10 w-10 text-primary" />
-                  </div>
-                  <Badge
-                    variant="secondary"
-                    className="absolute -top-2 -right-2 bg-primary/20 text-primary border-primary/30"
-                  >
-                    Organized
-                  </Badge>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-semibold mb-3">
-                    Collections & Folders
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Create custom recipe collections. Organize by cuisine,
-                    occasion, or preference with smart tagging.
                   </p>
                 </div>
               </CardContent>
