@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
+import uuid
+import asyncio
+import json
 from app.core.database import get_db
 from app.api.auth.auth import get_current_user
 from app.models.user import User
@@ -8,6 +12,7 @@ from app.schemas.recipe import RecipeCreate
 from app.services.parsing_service import ParsingService
 from app.services.parsers import ValidationPipeline, ValidationStatus
 from app.services.parsers.url_parser import WebsiteProtectionError
+from app.services.parsers.progress_events import progress_stream, ProgressPhase, ProgressStatus
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -41,6 +46,10 @@ class ValidationRejectionRequest(BaseModel):
     validation_id: str
     reason: str
 
+class URLParseStreamRequest(BaseModel):
+    url: str
+    collection_id: Optional[str] = None
+
 @router.post("/url")
 async def parse_recipe_from_url(
     request: URLParseRequest,
@@ -50,6 +59,120 @@ async def parse_recipe_from_url(
     parsing_service = ParsingService(db)
     try:
         recipe_data = await parsing_service.parse_from_url(request.url, current_user.id, request.collection_id)
+        return recipe_data
+    except WebsiteProtectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error_type": "website_protection",
+                "message": str(e),
+                "suggestions": [
+                    "Try copying and pasting the recipe text manually",
+                    "Take a screenshot and use image parsing instead",
+                    "Look for the same recipe on a different website",
+                    "Some websites block automated access to protect their content"
+                ]
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to parse recipe from URL: {str(e)}"
+        )
+
+@router.post("/url/stream")
+async def parse_recipe_from_url_stream(
+    request: URLParseStreamRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Stream real-time progress updates while parsing recipe from URL"""
+    session_id = str(uuid.uuid4())
+    
+    async def event_stream():
+        try:
+            # Create progress tracking session
+            progress_emitter = progress_stream.create_session(request.url, session_id)
+            
+            # Start parsing in background task
+            parsing_task = asyncio.create_task(
+                parse_recipe_with_progress(request, current_user, db, progress_emitter)
+            )
+            
+            # Stream progress events
+            async for event in progress_stream.subscribe_to_session(session_id):
+                yield event.to_sse_format()
+                
+                # Stop streaming if completed or failed
+                if event.phase in [ProgressPhase.COMPLETED, ProgressPhase.FAILED]:
+                    break
+            
+            # Wait for parsing to complete and get result
+            try:
+                result = await parsing_task
+                
+                # Send final result as data event
+                final_event = {
+                    "event": "result",
+                    "data": result
+                }
+                yield f"data: {json.dumps(final_event)}\n\n"
+                
+            except Exception as e:
+                # Send error as final event
+                error_event = {
+                    "event": "error",
+                    "data": {
+                        "error_type": "parsing_failed",
+                        "message": str(e)
+                    }
+                }
+                yield f"data: {json.dumps(error_event)}\n\n"
+                
+        except asyncio.CancelledError:
+            # Client disconnected
+            pass
+        except Exception as e:
+            # Send error event
+            error_event = {
+                "event": "error", 
+                "data": {
+                    "error_type": "stream_error",
+                    "message": str(e)
+                }
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+        finally:
+            # Cleanup session
+            progress_stream.cleanup_session(session_id)
+    
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Session-ID": session_id
+        }
+    )
+
+async def parse_recipe_with_progress(
+    request: URLParseStreamRequest,
+    current_user: User,
+    db: Session,
+    progress_emitter
+):
+    """Parse recipe with progress tracking"""
+    
+    parsing_service = ParsingService(db)
+    try:
+        # Parse using URL parser with progress tracking
+        recipe_data = await parsing_service.parse_from_url_with_progress(
+            request.url, 
+            current_user.id, 
+            request.collection_id,
+            progress_emitter
+        )
         return recipe_data
     except WebsiteProtectionError as e:
         raise HTTPException(
@@ -371,4 +494,42 @@ async def get_validation_summary(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get validation summary: {str(e)}"
+        )
+
+@router.get("/progress/sessions")
+async def get_active_progress_sessions(
+    current_user: User = Depends(get_current_user)
+):
+    """Get information about active parsing sessions"""
+    try:
+        active_sessions = progress_stream.get_active_sessions()
+        return {
+            "active_sessions": len(active_sessions),
+            "sessions": active_sessions
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get progress sessions: {str(e)}"
+        )
+
+@router.get("/progress/session/{session_id}")
+async def get_progress_session_details(
+    session_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get detailed information about a specific parsing session"""
+    try:
+        session = progress_stream.get_session(session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        return session.get_summary()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get session details: {str(e)}"
         )

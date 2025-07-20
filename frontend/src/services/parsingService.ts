@@ -46,6 +46,30 @@ export interface ParseResponse {
   suggestions?: string[]
 }
 
+export interface ProgressEvent {
+  event_id: string
+  phase: string
+  status: string
+  message: string
+  timestamp: number
+  datetime: string
+  method?: string
+  attempt?: number
+  total_attempts?: number
+  duration_ms?: number
+  metadata?: Record<string, any>
+  error_details?: string
+  suggestions?: string[]
+  progress_percent?: number
+  estimated_remaining_ms?: number
+}
+
+export interface ProgressCallback {
+  onProgress?: (event: ProgressEvent) => void
+  onComplete?: (data: ParsedRecipe) => void
+  onError?: (error: any) => void
+}
+
 class ParsingService {
   private baseUrl = `${import.meta.env.VITE_API_URL}/api/parse`
 
@@ -179,6 +203,161 @@ class ParsingService {
       return urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
     } catch {
       return false
+    }
+  }
+
+  /**
+   * Parse URL with real-time progress streaming using Server-Sent Events
+   */
+  async parseUrlWithProgress(
+    url: string, 
+    token: string, 
+    callbacks: ProgressCallback,
+    collectionId?: string
+  ): Promise<void> {
+    // Check for EventSource support
+    if (typeof EventSource === 'undefined') {
+      console.warn('EventSource not supported, falling back to regular parsing')
+      // Fallback to regular parsing
+      const result = await this.parseUrl(url, token, collectionId)
+      if (result.success && result.data) {
+        callbacks.onComplete?.(result.data)
+      } else {
+        callbacks.onError?.(new Error(result.error || 'Parsing failed'))
+      }
+      return
+    }
+
+    try {
+      // Start SSE stream
+      const streamUrl = `${this.baseUrl}/url/stream`
+      const requestBody = JSON.stringify({
+        url,
+        collection_id: collectionId
+      })
+
+      // Make POST request to start streaming
+      const response = await fetch(streamUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+        body: requestBody
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+      }
+
+      // Handle EventSource manually for better control
+      this.handleEventStream(response, callbacks)
+
+    } catch (error) {
+      console.error('Failed to start progress stream:', error)
+      callbacks.onError?.(error)
+    }
+  }
+
+  /**
+   * Handle Server-Sent Event stream
+   */
+  private async handleEventStream(response: Response, callbacks: ProgressCallback): Promise<void> {
+    if (!response.body) {
+      throw new Error('No response body for streaming')
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        
+        // Process complete events
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || '' // Keep incomplete event in buffer
+
+        for (const eventData of events) {
+          if (eventData.trim()) {
+            this.processSSEEvent(eventData, callbacks)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error reading SSE stream:', error)
+      callbacks.onError?.(error)
+    } finally {
+      reader.releaseLock()
+    }
+  }
+
+  /**
+   * Process individual SSE event
+   */
+  private processSSEEvent(eventData: string, callbacks: ProgressCallback): void {
+    try {
+      // Parse SSE format: "data: {...json...}"
+      const lines = eventData.split('\n')
+      const dataLine = lines.find(line => line.startsWith('data: '))
+      
+      if (!dataLine) return
+
+      const jsonData = dataLine.substring(6) // Remove "data: " prefix
+      const data = JSON.parse(jsonData)
+
+      // Handle different event types
+      if (data.event === 'result') {
+        // Final result
+        callbacks.onComplete?.(data.data as ParsedRecipe)
+      } else if (data.event === 'error') {
+        // Error event
+        const error = new Error(data.data.message)
+        if (data.data.error_type === 'website_protection') {
+          (error as any).isWebsiteProtection = true
+          (error as any).suggestions = data.data.suggestions
+        }
+        callbacks.onError?.(error)
+      } else {
+        // Progress event
+        callbacks.onProgress?.(data as ProgressEvent)
+      }
+    } catch (error) {
+      console.error('Error parsing SSE event:', error)
+    }
+  }
+
+  /**
+   * Get active parsing sessions
+   */
+  async getActiveSessions(token: string): Promise<any> {
+    try {
+      const response = await this.makeRequest('/progress/sessions', token)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to get active sessions:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get details of a specific parsing session
+   */
+  async getSessionDetails(sessionId: string, token: string): Promise<any> {
+    try {
+      const response = await this.makeRequest(`/progress/session/${sessionId}`, token)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to get session details:', error)
+      throw error
     }
   }
 }

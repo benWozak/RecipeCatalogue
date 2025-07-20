@@ -1,7 +1,12 @@
 import json
 import re
+import asyncio
+import logging
 from typing import Dict, Any, List, Tuple, Optional
 from .base_parser import BaseParser, ParsedRecipe
+from .request_utils import RequestHeaderManager, RateLimiter, RetryManager, SessionManager, ProxyManager
+from .browser_automation import BrowserAutomation, PLAYWRIGHT_AVAILABLE
+from .progress_events import ProgressEventEmitter, ProgressPhase, ProgressStatus
 
 
 class WebsiteProtectionError(Exception):
@@ -35,93 +40,224 @@ except ImportError as e:
 # Ensure HTTP_AVAILABLE is properly set
 HTTP_AVAILABLE = HTTP_AVAILABLE and BS4_AVAILABLE
 
+logger = logging.getLogger(__name__)
+
 
 class URLParser(BaseParser):
-    """Parser for recipe websites using URL scraping"""
+    """Parser for recipe websites using URL scraping with anti-bot protection"""
     
-    async def parse(self, url: str, **kwargs) -> ParsedRecipe:
-        """Parse recipe from URL"""
+    def __init__(self, proxies: List[str] = None):
+        super().__init__()
+        self.header_manager = RequestHeaderManager()
+        self.rate_limiter = RateLimiter()
+        self.retry_manager = RetryManager()
+        self.session_manager = SessionManager()
+        self.proxy_manager = ProxyManager(proxies)
+        self.use_browser_fallback = PLAYWRIGHT_AVAILABLE  # Enable browser fallback if available
+        
+        # Metrics tracking
+        self.metrics = {
+            "total_requests": 0,
+            "successful_requests": 0,
+            "blocked_requests": 0,
+            "browser_automation_used": 0,
+            "proxy_used": 0,
+            "recipe_scrapers_used": 0,
+            "manual_parsing_used": 0,
+            "domains_parsed": set(),
+        }
+        
+        # Enhanced blocking detection patterns
+        self.blocked_indicators = [
+            'access denied', 'forbidden', 'blocked', 'sign in', 'login', 
+            'subscribe', 'membership required', 'unauthorized access',
+            'please enable javascript', 'verify you are human',
+            'captcha', 'are you a robot', 'cloudflare', 'ddos protection',
+            'rate limit', 'too many requests', 'temporarily unavailable',
+            'security check', 'suspicious activity', 'bot detected',
+            'please try again later', 'service unavailable',
+            'checking your browser', 'moment please', 'ray id',
+            'error 1020', 'error 1015', 'error 1012'  # Cloudflare errors
+        ]
+    
+    async def parse(self, url: str, progress_emitter: Optional[ProgressEventEmitter] = None, **kwargs) -> ParsedRecipe:
+        """Parse recipe from URL with comprehensive anti-bot protection and progress tracking"""
         if not HTTP_AVAILABLE:
             raise ImportError("httpx and BeautifulSoup4 are required for URL parsing")
         
+        # Initialize progress tracking
+        if progress_emitter:
+            progress_emitter.emit_event(
+                ProgressPhase.INITIALIZING,
+                ProgressStatus.IN_PROGRESS,
+                f"Starting to parse recipe from {url}",
+                metadata={"url": url, "domain": urlparse(url).netloc}
+            )
+        
+        # Track metrics
+        from urllib.parse import urlparse
+        domain = urlparse(url).netloc
+        self.metrics["total_requests"] += 1
+        self.metrics["domains_parsed"].add(domain)
+        
         # Try recipe-scrapers first (supports 500+ sites)
         if RECIPE_SCRAPERS_AVAILABLE:
+            if progress_emitter:
+                progress_emitter.emit_event(
+                    ProgressPhase.TRYING_SCRAPERS,
+                    ProgressStatus.IN_PROGRESS,
+                    "Attempting to parse using recipe-scrapers library",
+                    method="recipe-scrapers",
+                    metadata={"library": "recipe-scrapers", "supports": "500+ sites"}
+                )
+            
             try:
-                result = await self._parse_with_recipe_scrapers(url)
+                result = await self.retry_manager.execute_with_retry(
+                    self._parse_with_recipe_scrapers, url, progress_emitter
+                )
+                self.rate_limiter.record_success(url)
+                self.metrics["successful_requests"] += 1
+                self.metrics["recipe_scrapers_used"] += 1
+                
+                if progress_emitter:
+                    progress_emitter.emit_event(
+                        ProgressPhase.COMPLETED,
+                        ProgressStatus.SUCCESS,
+                        f"Successfully parsed recipe: {result.title}",
+                        method="recipe-scrapers",
+                        metadata={"title": result.title, "confidence": result.confidence_score}
+                    )
+                
                 return result
             except Exception as e:
-                # If recipe-scrapers fails, fall back to manual parsing
-                pass
+                logger.warning(f"recipe-scrapers failed for {url}: {e}")
+                self.rate_limiter.record_failure(url, "rate limit" in str(e).lower())
+                
+                if progress_emitter:
+                    progress_emitter.emit_event(
+                        ProgressPhase.SCRAPERS_FAILED,
+                        ProgressStatus.FAILED,
+                        f"recipe-scrapers failed: {str(e)[:100]}",
+                        method="recipe-scrapers",
+                        error_details=str(e),
+                        suggestions=["Falling back to manual parsing", "This is normal for sites not supported by recipe-scrapers"]
+                    )
+                # Fall back to manual parsing
         
-        # Fallback to manual parsing
+        # Fallback to manual parsing with enhanced protection
+        if progress_emitter:
+            progress_emitter.emit_event(
+                ProgressPhase.TRYING_MANUAL,
+                ProgressStatus.IN_PROGRESS,
+                "Attempting manual parsing with enhanced headers and anti-bot protection",
+                method="manual-http",
+                metadata={"features": ["header rotation", "rate limiting", "session management", "proxy support"]}
+            )
+        
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, headers=headers, timeout=30.0)
-                response.raise_for_status()
-                
-            soup = BeautifulSoup(response.text, 'html.parser')
+            result = await self.retry_manager.execute_with_retry(
+                self._fetch_and_parse_manually, url, progress_emitter
+            )
+            self.rate_limiter.record_success(url)
+            self.metrics["successful_requests"] += 1
+            self.metrics["manual_parsing_used"] += 1
             
-            # Try to extract structured data first (JSON-LD)
-            json_ld = soup.find('script', {'type': 'application/ld+json'})
-            if json_ld:
-                try:
-                    data = json.loads(json_ld.string)
-                    if isinstance(data, list):
-                        data = data[0]
-                    
-                    if data.get('@type') == 'Recipe':
-                        return self._parse_json_ld_recipe(data, url)
-                except:
-                    pass
-            
-            # Try Jump to Recipe approach
-            recipe_section = self._find_recipe_section_via_jump_link(soup)
-            if recipe_section:
-                return self._parse_recipe_section(recipe_section, url)
-            
-            # Fallback to HTML parsing
-            result = self._parse_html_recipe(soup, url)
-            
-            # Check if we got a very low confidence result, which might indicate
-            # we received a blocked/login page instead of the actual recipe
-            if (result.confidence_score is not None and 
-                result.confidence_score <= 0.3 and 
-                (not result.ingredients or len(result.ingredients.strip()) < 50) and
-                (not result.instructions or len(result.instructions.strip()) < 100)):
-                
-                # Check if the page content suggests it's a blocked page
-                page_text = soup.get_text().lower()
-                blocked_indicators = [
-                    'access denied', 'forbidden', 'blocked', 'sign in', 'login', 
-                    'subscribe', 'membership required', 'unauthorized access',
-                    'please enable javascript', 'verify you are human'
-                ]
-                
-                if any(indicator in page_text for indicator in blocked_indicators):
-                    raise WebsiteProtectionError("This website requires authentication or blocks automated access. The recipe may be behind a login wall or subscription.")
-                
-                # If confidence is very low (0.3 or less) and we have minimal content,
-                # it's likely the site is blocking us even without explicit indicators
-                raise WebsiteProtectionError("Unable to parse recipe from this website. The site may be blocking automated access or the recipe content may not be accessible to our parser.")
+            if progress_emitter:
+                progress_emitter.emit_event(
+                    ProgressPhase.COMPLETED,
+                    ProgressStatus.SUCCESS,
+                    f"Successfully parsed recipe: {result.title}",
+                    method="manual-http",
+                    metadata={"title": result.title, "confidence": result.confidence_score}
+                )
             
             return result
             
         except WebsiteProtectionError as e:
-            # Re-raise the website protection error as-is for special handling
-            raise e
-        except httpx.HTTPStatusError as e:
-            # Handle HTTP status errors specifically
-            if e.response.status_code == 403:
-                raise WebsiteProtectionError("This website blocks automated access. The recipe may be available, but the site prevents our parser from reading it.")
-            elif e.response.status_code == 404:
-                raise Exception("Recipe page not found. The page may have moved or been deleted. Please check the URL and try again.")
+            self.rate_limiter.record_failure(url, True)
+            self.metrics["blocked_requests"] += 1
+            
+            if progress_emitter:
+                progress_emitter.emit_event(
+                    ProgressPhase.MANUAL_BLOCKED,
+                    ProgressStatus.FAILED,
+                    f"Manual parsing blocked: {str(e)[:100]}",
+                    method="manual-http",
+                    error_details=str(e),
+                    suggestions=["Trying browser automation", "Website has anti-bot protection"]
+                )
+            
+            # Try browser automation as final fallback if available
+            if self.use_browser_fallback:
+                if progress_emitter:
+                    progress_emitter.emit_event(
+                        ProgressPhase.TRYING_BROWSER,
+                        ProgressStatus.IN_PROGRESS,
+                        "Attempting browser automation with Playwright (this may take longer)",
+                        method="browser-automation",
+                        metadata={"browser": "chromium", "headless": True, "features": ["JavaScript execution", "human-like behavior"]}
+                    )
+                
+                logger.info(f"Trying browser automation fallback for {url}")
+                try:
+                    result = await self.retry_manager.execute_with_retry(
+                        self._parse_with_browser_automation, url, progress_emitter
+                    )
+                    self.rate_limiter.record_success(url)
+                    self.metrics["successful_requests"] += 1
+                    self.metrics["browser_automation_used"] += 1
+                    
+                    if progress_emitter:
+                        progress_emitter.emit_event(
+                            ProgressPhase.COMPLETED,
+                            ProgressStatus.SUCCESS,
+                            f"Successfully parsed recipe via browser automation: {result.title}",
+                            method="browser-automation",
+                            metadata={"title": result.title, "confidence": result.confidence_score}
+                        )
+                    
+                    return result
+                except Exception as browser_error:
+                    logger.error(f"Browser automation also failed: {browser_error}")
+                    if progress_emitter:
+                        progress_emitter.emit_event(
+                            ProgressPhase.FAILED,
+                            ProgressStatus.FAILED,
+                            f"All parsing methods failed. Browser automation error: {str(browser_error)[:100]}",
+                            method="browser-automation",
+                            error_details=str(browser_error),
+                            suggestions=["Try a different URL", "Copy and paste recipe text manually", "Website may have strong protection"]
+                        )
+                    # Fall through to raise original error
             else:
-                raise Exception(f"HTTP {e.response.status_code} error: {str(e)}")
+                if progress_emitter:
+                    progress_emitter.emit_event(
+                        ProgressPhase.FAILED,
+                        ProgressStatus.FAILED,
+                        "All available parsing methods failed. Browser automation not available.",
+                        error_details=str(e),
+                        suggestions=["Install Playwright for browser automation: pip install playwright", "Copy and paste recipe text manually"]
+                    )
+            
+            raise e
         except Exception as e:
             error_msg = str(e)
+            self.rate_limiter.record_failure(url, "rate limit" in error_msg.lower())
+            
+            # Try browser automation for certain errors if available
+            if self.use_browser_fallback and any(indicator in error_msg.lower() for indicator in ["403", "forbidden", "timeout", "connection"]):
+                logger.info(f"Trying browser automation fallback for error: {error_msg}")
+                try:
+                    result = await self.retry_manager.execute_with_retry(
+                        self._parse_with_browser_automation, url
+                    )
+                    self.rate_limiter.record_success(url)
+                    self.metrics["successful_requests"] += 1
+                    self.metrics["browser_automation_used"] += 1
+                    return result
+                except Exception as browser_error:
+                    logger.error(f"Browser automation also failed: {browser_error}")
+                    # Fall through to original error handling
             
             # Provide helpful suggestions for common issues
             if "403" in error_msg or "Forbidden" in error_msg:
@@ -133,22 +269,249 @@ class URLParser(BaseParser):
             else:
                 raise Exception(f"Failed to parse recipe from URL: {error_msg}")
     
-    async def _parse_with_recipe_scrapers(self, url: str) -> ParsedRecipe:
-        """Parse recipe using recipe-scrapers library"""
+    async def _fetch_and_parse_manually(self, url: str, progress_emitter: Optional[ProgressEventEmitter] = None) -> ParsedRecipe:
+        """Fetch and parse recipe manually with anti-bot protection"""
+        # Apply rate limiting
+        if progress_emitter:
+            progress_emitter.emit_event(
+                ProgressPhase.RATE_LIMITING,
+                ProgressStatus.IN_PROGRESS,
+                "Applying rate limiting to avoid triggering anti-bot measures",
+                method="manual-http",
+                metadata={"domain": urlparse(url).netloc}
+            )
+        
+        await self.rate_limiter.wait_for_domain(url)
+        
+        # Get realistic headers with rotation
+        headers = self.header_manager.get_random_headers(url)
+        
+        # Add session-specific headers (cookies, etc.)
+        session_headers = self.session_manager.get_session_headers(url)
+        headers.update(session_headers)
+        
+        # Get proxy if available
+        proxy = self.proxy_manager.get_next_proxy()
+        proxy_config = {"proxy": proxy} if proxy else {}
+        if proxy:
+            self.metrics["proxy_used"] += 1
+            if progress_emitter:
+                progress_emitter.emit_event(
+                    ProgressPhase.TRYING_MANUAL,
+                    ProgressStatus.IN_PROGRESS,
+                    f"Using proxy for request: {proxy}",
+                    method="manual-http",
+                    metadata={"proxy": proxy, "proxy_type": "rotation"}
+                )
+        
+        # Make request with enhanced protection
+        if progress_emitter:
+            progress_emitter.emit_event(
+                ProgressPhase.TRYING_MANUAL,
+                ProgressStatus.IN_PROGRESS,
+                "Making HTTP request with enhanced headers and protection",
+                method="manual-http",
+                metadata={
+                    "user_agent": headers['User-Agent'][:50] + "..." if len(headers['User-Agent']) > 50 else headers['User-Agent'],
+                    "proxy_used": proxy is not None,
+                    "headers_count": len(headers)
+                }
+            )
+        
+        async with httpx.AsyncClient(timeout=30.0, **proxy_config) as client:
+            logger.debug(f"Fetching {url} with User-Agent: {headers['User-Agent'][:50]}... {f'via proxy {proxy}' if proxy else ''}")
+            
+            try:
+                response = await client.get(url, headers=headers)
+                
+                # Record proxy success if used
+                if proxy:
+                    self.proxy_manager.record_proxy_success(proxy)
+                
+                # Update session with response
+                response_cookies = dict(response.cookies) if hasattr(response, 'cookies') else {}
+                self.session_manager.update_session(url, dict(response.headers), response_cookies)
+                
+                # Check for explicit blocking before raising HTTP errors
+                if response.status_code in [403, 429]:
+                    page_text = response.text.lower() if response.text else ""
+                    if any(indicator in page_text for indicator in self.blocked_indicators):
+                        raise WebsiteProtectionError(
+                            f"Website returned {response.status_code} and appears to be blocking automated access"
+                        )
+                
+                response.raise_for_status()
+                
+            except Exception as e:
+                # Record proxy failure if used
+                if proxy:
+                    self.proxy_manager.record_proxy_failure(proxy)
+                raise e
+            
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Enhanced blocking detection
+        if progress_emitter:
+            progress_emitter.emit_event(
+                ProgressPhase.PARSING_CONTENT,
+                ProgressStatus.IN_PROGRESS,
+                "Analyzing page content and checking for blocking",
+                method="manual-http",
+                metadata={"content_length": len(response.text), "status_code": response.status_code}
+            )
+        
+        page_text = soup.get_text().lower()
+        if any(indicator in page_text for indicator in self.blocked_indicators):
+            raise WebsiteProtectionError(
+                "This website appears to be blocking automated access or requires verification"
+            )
+        
+        # Try to extract structured data first (JSON-LD)
+        json_ld = soup.find('script', {'type': 'application/ld+json'})
+        if json_ld:
+            try:
+                data = json.loads(json_ld.string)
+                if isinstance(data, list):
+                    data = data[0]
+                
+                if data.get('@type') == 'Recipe':
+                    return self._parse_json_ld_recipe(data, url)
+            except:
+                pass
+        
+        # Try Jump to Recipe approach
+        recipe_section = self._find_recipe_section_via_jump_link(soup)
+        if recipe_section:
+            return self._parse_recipe_section(recipe_section, url)
+        
+        # Fallback to HTML parsing
+        result = self._parse_html_recipe(soup, url)
+        
+        # Enhanced low confidence detection
+        if self._is_likely_blocked_content(result, soup):
+            raise WebsiteProtectionError(
+                "Unable to parse recipe from this website. The site may be blocking automated access or the recipe content may not be accessible to our parser."
+            )
+        
+        return result
+    
+    def _is_likely_blocked_content(self, result: ParsedRecipe, soup: BeautifulSoup) -> bool:
+        """Enhanced detection of blocked or low-quality content"""
+        # Check confidence score and content length
+        if (result.confidence_score is not None and 
+            result.confidence_score <= 0.3 and 
+            (not result.ingredients or len(result.ingredients.strip()) < 50) and
+            (not result.instructions or len(result.instructions.strip()) < 100)):
+            
+            # Additional checks for blocked content
+            page_text = soup.get_text().lower()
+            
+            # Check for blocking indicators
+            if any(indicator in page_text for indicator in self.blocked_indicators):
+                return True
+            
+            # Check for minimal content (likely a blocked page)
+            meaningful_text = ' '.join(page_text.split())
+            if len(meaningful_text) < 500:  # Very little content
+                return True
+            
+            # Check for excessive JavaScript warnings
+            script_tags = soup.find_all('script')
+            if len(script_tags) > 20 and 'recipe' not in page_text:
+                return True
+                
+        return False
+    
+    async def _parse_with_browser_automation(self, url: str, progress_emitter: Optional[ProgressEventEmitter] = None) -> ParsedRecipe:
+        """Parse recipe using browser automation for heavily protected sites"""
+        if not PLAYWRIGHT_AVAILABLE:
+            raise ImportError("Playwright is required for browser automation. Install with: pip install playwright")
+        
+        logger.info(f"Using browser automation for {url}")
+        
+        if progress_emitter:
+            progress_emitter.emit_event(
+                ProgressPhase.TRYING_BROWSER,
+                ProgressStatus.IN_PROGRESS,
+                "Launching headless browser and loading page",
+                method="browser-automation",
+                metadata={"browser": "chromium", "timeout": "30s"}
+            )
+        
+        # Apply rate limiting (browser automation is slower, so use longer delay)
+        await self.rate_limiter.wait_for_domain(url)
+        
+        try:
+            async with BrowserAutomation() as browser:
+                html_content, page_title = await browser.fetch_page_content(url, wait_for_content=True)
+                
+                # Parse the retrieved HTML content
+                soup = BeautifulSoup(html_content, 'html.parser')
+                
+                # Enhanced blocking detection for browser-retrieved content
+                page_text = soup.get_text().lower()
+                if any(indicator in page_text for indicator in self.blocked_indicators):
+                    raise WebsiteProtectionError(
+                        "Website is still blocking access even with browser automation"
+                    )
+                
+                # Try to extract structured data first (JSON-LD)
+                json_ld = soup.find('script', {'type': 'application/ld+json'})
+                if json_ld:
+                    try:
+                        data = json.loads(json_ld.string)
+                        if isinstance(data, list):
+                            data = data[0]
+                        
+                        if data.get('@type') == 'Recipe':
+                            logger.debug("Found JSON-LD recipe data via browser automation")
+                            return self._parse_json_ld_recipe(data, url)
+                    except:
+                        pass
+                
+                # Try Jump to Recipe approach
+                recipe_section = self._find_recipe_section_via_jump_link(soup)
+                if recipe_section:
+                    logger.debug("Found recipe section via jump link with browser automation")
+                    return self._parse_recipe_section(recipe_section, url)
+                
+                # Fallback to HTML parsing
+                result = self._parse_html_recipe(soup, url)
+                
+                # Enhanced low confidence detection
+                if self._is_likely_blocked_content(result, soup):
+                    raise WebsiteProtectionError(
+                        "Unable to parse recipe even with browser automation. The site may have additional protection or the recipe content may not be accessible."
+                    )
+                
+                logger.info(f"Successfully parsed recipe via browser automation: {result.title}")
+                return result
+                
+        except WebsiteProtectionError as e:
+            raise e
+        except Exception as e:
+            raise Exception(f"Browser automation parsing failed: {str(e)}")
+    
+    async def _parse_with_recipe_scrapers(self, url: str, progress_emitter: Optional[ProgressEventEmitter] = None) -> ParsedRecipe:
+        """Parse recipe using recipe-scrapers library with rate limiting"""
+        # Apply rate limiting before using recipe-scrapers
+        await self.rate_limiter.wait_for_domain(url)
+        
         try:
             # Recipe-scrapers is synchronous, so we run it in a thread pool
             import asyncio
             loop = asyncio.get_event_loop()
             
-            # Try with different request strategies for recipe-scrapers
             def scrape_with_headers():
-                # recipe-scrapers uses requests internally, but we can try different approaches
                 try:
+                    logger.debug(f"Using recipe-scrapers for {url}")
                     return scrape_me(url)
                 except Exception as e:
-                    # If regular scraping fails, the error might be 403
                     # recipe-scrapers doesn't expose header customization easily
-                    # so we'll let it fail and fall back to manual parsing
+                    # Check if this looks like a blocking error
+                    error_str = str(e).lower()
+                    if any(indicator in error_str for indicator in ['403', 'forbidden', 'blocked', 'captcha']):
+                        raise WebsiteProtectionError(f"recipe-scrapers blocked: {e}")
                     raise e
             
             scraper = await loop.run_in_executor(None, scrape_with_headers)
@@ -243,6 +606,9 @@ class URLParser(BaseParser):
             
             return validated_data
             
+        except WebsiteProtectionError as e:
+            # Re-raise protection errors
+            raise e
         except Exception as e:
             raise Exception(f"Recipe-scrapers parsing failed: {str(e)}")
     
@@ -1048,3 +1414,111 @@ class URLParser(BaseParser):
             return True
         
         return True  # Default to true if no negative indicators
+    
+    def get_parser_metrics(self) -> Dict[str, Any]:
+        """Get comprehensive metrics about parser performance and blocking detection"""
+        metrics = self.metrics.copy()
+        
+        # Convert set to list for JSON serialization
+        metrics["domains_parsed"] = list(metrics["domains_parsed"])
+        metrics["unique_domains_count"] = len(self.metrics["domains_parsed"])
+        
+        # Calculate success rates
+        total = metrics["total_requests"]
+        if total > 0:
+            metrics["success_rate"] = metrics["successful_requests"] / total
+            metrics["blocking_rate"] = metrics["blocked_requests"] / total
+            metrics["browser_automation_rate"] = metrics["browser_automation_used"] / total
+            metrics["proxy_usage_rate"] = metrics["proxy_used"] / total
+        else:
+            metrics["success_rate"] = 0.0
+            metrics["blocking_rate"] = 0.0
+            metrics["browser_automation_rate"] = 0.0
+            metrics["proxy_usage_rate"] = 0.0
+        
+        # Add rate limiter stats
+        metrics["rate_limiter_stats"] = self.rate_limiter.get_domain_stats()
+        
+        # Add proxy stats if available
+        if self.proxy_manager.proxies:
+            metrics["proxy_stats"] = self.proxy_manager.get_proxy_stats()
+        
+        return metrics
+    
+    def reset_metrics(self) -> None:
+        """Reset all metrics counters"""
+        self.metrics = {
+            "total_requests": 0,
+            "successful_requests": 0,
+            "blocked_requests": 0,
+            "browser_automation_used": 0,
+            "proxy_used": 0,
+            "recipe_scrapers_used": 0,
+            "manual_parsing_used": 0,
+            "domains_parsed": set(),
+        }
+    
+    def add_proxy(self, proxy_url: str) -> None:
+        """Add a proxy to the rotation list"""
+        self.proxy_manager.add_proxy(proxy_url)
+        logger.info(f"Added proxy: {proxy_url}")
+    
+    def remove_proxy(self, proxy_url: str) -> None:
+        """Remove a proxy from the rotation list"""
+        self.proxy_manager.remove_proxy(proxy_url)
+        logger.info(f"Removed proxy: {proxy_url}")
+    
+    def get_blocking_status_summary(self) -> Dict[str, Any]:
+        """Get a summary of blocking detection and evasion strategies"""
+        metrics = self.get_parser_metrics()
+        
+        summary = {
+            "anti_bot_features_enabled": {
+                "header_rotation": True,
+                "rate_limiting": True,
+                "retry_with_backoff": True,
+                "session_management": True,
+                "browser_automation": self.use_browser_fallback,
+                "proxy_support": len(self.proxy_manager.proxies) > 0,
+                "enhanced_blocking_detection": True,
+            },
+            "performance_stats": {
+                "total_requests": metrics["total_requests"],
+                "success_rate": f"{metrics['success_rate']:.1%}",
+                "blocking_rate": f"{metrics['blocking_rate']:.1%}",
+                "unique_domains": metrics["unique_domains_count"],
+            },
+            "evasion_usage": {
+                "browser_automation_rate": f"{metrics['browser_automation_rate']:.1%}",
+                "proxy_usage_rate": f"{metrics['proxy_usage_rate']:.1%}",
+                "recipe_scrapers_success": metrics["recipe_scrapers_used"],
+                "manual_parsing_used": metrics["manual_parsing_used"],
+            },
+            "recommendations": self._get_recommendations(metrics)
+        }
+        
+        return summary
+    
+    def _get_recommendations(self, metrics: Dict[str, Any]) -> List[str]:
+        """Generate recommendations based on current metrics"""
+        recommendations = []
+        
+        if metrics["blocking_rate"] > 0.3:  # >30% blocking rate
+            recommendations.append("High blocking rate detected. Consider adding more proxies or using browser automation.")
+        
+        if metrics["browser_automation_rate"] > 0.5:  # >50% browser automation usage
+            recommendations.append("Heavy reliance on browser automation detected. Consider optimizing request headers or adding proxy rotation.")
+        
+        if not self.use_browser_fallback:
+            recommendations.append("Browser automation not available. Install playwright for better success rates: pip install playwright")
+        
+        if len(self.proxy_manager.proxies) == 0:
+            recommendations.append("No proxies configured. Consider adding proxy rotation for better evasion.")
+        
+        if metrics["success_rate"] < 0.7:  # <70% success rate
+            recommendations.append("Low success rate. Review blocked domains and consider additional evasion strategies.")
+        
+        if not recommendations:
+            recommendations.append("Parser performing well. No immediate improvements needed.")
+        
+        return recommendations

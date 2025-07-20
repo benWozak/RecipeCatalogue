@@ -4,11 +4,12 @@ from app.schemas.recipe import RecipeCreate, IngredientCreate
 from app.core.config import settings
 from app.services.parsers import URLParser, InstagramParser, ValidationPipeline, ParsedRecipe
 from app.services.parsers.url_parser import WebsiteProtectionError
+from app.services.parsers.progress_events import ProgressEventEmitter
 
 class ParsingService:
     def __init__(self, db: Session):
         self.db = db
-        self.url_parser = URLParser(db)
+        self.url_parser = URLParser()  # URLParser no longer takes db as parameter
         self.instagram_parser = InstagramParser(db)
         self.validation_pipeline = ValidationPipeline()
 
@@ -16,6 +17,29 @@ class ParsingService:
         try:
             # Parse using new URL parser
             parsed_recipe = await self.url_parser.parse(url)
+            
+            # Convert user_id to string if it's a UUID object
+            user_id_str = str(user_id) if user_id is not None else None
+            
+            # Validate the parsed recipe
+            validation_result = self.validation_pipeline.validate_parsed_recipe(
+                parsed_recipe, url, user_id_str
+            )
+            
+            # Convert to legacy format for API compatibility
+            return self._convert_to_legacy_format(validation_result.parsed_recipe, collection_id)
+            
+        except WebsiteProtectionError as e:
+            # Re-raise WebsiteProtectionError to be handled by API layer
+            raise e
+        except Exception as e:
+            raise Exception(f"Failed to parse recipe from URL: {str(e)}")
+
+    async def parse_from_url_with_progress(self, url: str, user_id: Optional[str] = None, collection_id: Optional[str] = None, progress_emitter: Optional[ProgressEventEmitter] = None) -> Dict[str, Any]:
+        """Parse recipe from URL with progress tracking"""
+        try:
+            # Parse using URL parser with progress tracking
+            parsed_recipe = await self.url_parser.parse(url, progress_emitter=progress_emitter)
             
             # Convert user_id to string if it's a UUID object
             user_id_str = str(user_id) if user_id is not None else None
