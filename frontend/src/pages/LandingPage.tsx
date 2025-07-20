@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AuroraText } from "@/components/ui/aurora-text";
+import SEO from "@/components/SEO";
 import {
   ChefHat,
   BookOpen,
@@ -19,6 +20,37 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Recipe Catalogue",
+    "description": "Organize all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface. No more losing your place to jumping ads and slow recipe sites.",
+    "url": "https://recipecatalogue.app",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Web Browser, iOS, Android",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Recipe Catalogue",
+      "url": "https://recipecatalogue.app"
+    },
+    "featureList": [
+      "Ad-free recipe viewing",
+      "Multi-source recipe parsing",
+      "Instagram recipe extraction",
+      "Photo recipe scanning",
+      "Smart recipe search",
+      "Cross-platform access",
+      "Meal planning tools"
+    ],
+    "screenshot": "https://recipecatalogue.app/app-screenshot.png"
+  };
+
   const features = [
     {
       icon: Globe,
@@ -51,7 +83,14 @@ export default function LandingPage() {
   ];
 
   return (
-    <article className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <>
+      <SEO 
+        structuredData={structuredData}
+        title="Recipe Catalogue - All Your Recipes In One Place"
+        description="Stop losing your place to jumping ads and slow recipe sites. Recipe Catalogue organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface."
+        keywords="recipe organizer, meal planning, recipe collection, cooking app, recipe manager, ad-free recipes, recipe storage, instagram recipes, photo scanning"
+      />
+      <article className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Hero Section */}
       <section className="px-4 py-16 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8 lg:py-20">
         <div className="flex flex-col items-center justify-between w-full mb-10 lg:flex-row">
@@ -68,7 +107,7 @@ export default function LandingPage() {
                   Coming Soon
                 </p>
               </div>
-              <h2 className="font-sans text-3xl font-bold tracking-tight sm:text-4xl sm:leading-none max-w-lg mb-6">
+              <h1 className="font-sans text-3xl font-bold tracking-tight sm:text-4xl sm:leading-none max-w-lg mb-6">
                 Finally, All Your Recipes <br className="hidden md:block" />
                 <AuroraText
                   className="inline-block"
@@ -76,7 +115,7 @@ export default function LandingPage() {
                 >
                   In One Place
                 </AuroraText>
-              </h2>
+              </h1>
               <div className="flex flex-col gap-2 mb-6">
                 <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg inline-flex items-center">
                   <CircleCheckBig className="mr-2 h-5 w-5 text-green-600" /> No
@@ -159,14 +198,14 @@ export default function LandingPage() {
               <img
                 className="object-cover"
                 src="https://kitwind.io/assets/kometa/one-girl-phone.png"
-                alt=""
+                alt="Person using Recipe Catalogue app on mobile device"
               />
             </div>
             <div className="w-5/12 -ml-16 lg:-ml-32">
               <img
                 className="object-cover"
                 src="https://kitwind.io/assets/kometa/two-girls-phone.png"
-                alt=""
+                alt="Two people sharing recipes using the Recipe Catalogue mobile app"
               />
             </div>
           </div>
@@ -189,10 +228,10 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-muted/30">
+      <section id="features" className="py-20 bg-muted/30" aria-labelledby="features-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            <h2 id="features-heading" className="text-3xl sm:text-4xl font-bold mb-4">
               Solve the problems that
               <span className="block text-primary">
                 make cooking frustrating
@@ -236,10 +275,10 @@ export default function LandingPage() {
       </section>
 
       {/* Detailed Features Section */}
-      <section className="py-20">
+      <section className="py-20" aria-labelledby="detailed-features-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            <h2 id="detailed-features-heading" className="text-3xl sm:text-4xl font-bold mb-4">
               Powerful Features
               <span className="block text-primary">Built for Home Cooks</span>
             </h2>
@@ -410,10 +449,10 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20">
+      <section className="py-20" aria-labelledby="cta-heading">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
-            <h2 className="text-3xl sm:text-4xl font-bold">
+            <h2 id="cta-heading" className="text-3xl sm:text-4xl font-bold">
               Ready to end the
               <span className="block text-primary">
                 recipe site frustrations?
@@ -436,6 +475,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-    </article>
+      </article>
+    </>
   );
 }

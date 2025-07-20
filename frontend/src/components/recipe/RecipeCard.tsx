@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Clock, Users, MoreVertical, Edit, Trash2, FolderPlus } from "lucide-react";
+import { Clock, Users, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Recipe } from "@/types/recipe";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
