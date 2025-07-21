@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { Home, BookOpen, FolderOpen, Plus, User } from "lucide-react";
+import { Home, BookOpen, CalendarDays, Plus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function MobileBottomNav() {
@@ -9,7 +9,7 @@ export default function MobileBottomNav() {
     { name: "Home", href: "/", icon: Home },
     { name: "Recipes", href: "/recipes", icon: BookOpen },
     { name: "Add", href: "/recipes/scan", icon: Plus, special: true },
-    { name: "Collections", href: "/collections", icon: FolderOpen },
+    { name: "Meal plan", href: "/meal-plans", icon: CalendarDays },
     { name: "Profile", href: "/profile", icon: User },
   ];
 

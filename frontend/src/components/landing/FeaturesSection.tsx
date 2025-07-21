@@ -1,11 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Globe,
-  Smartphone,
-  BookOpen,
-  Calendar,
-} from "lucide-react";
+import { Globe, Smartphone, BookOpen, Calendar } from "lucide-react";
 
 export function FeaturesSection() {
   const features = [
@@ -40,18 +35,23 @@ export function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="py-20 bg-muted/30" aria-labelledby="features-heading">
+    <section
+      id="features"
+      className="py-20 bg-muted/30"
+      aria-labelledby="features-heading"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 id="features-heading" className="text-3xl sm:text-4xl font-bold mb-4">
+          <h2
+            id="features-heading"
+            className="text-3xl sm:text-4xl font-bold mb-4"
+          >
             Solve the problems that
-            <span className="block text-primary">
-              make cooking frustrating
-            </span>
+            <span className="block text-primary">make cooking frustrating</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            We've all been there—ads that make pages jump, slow page loads,
-            and recipes scattered everywhere. This app fixes all of that.
+            We've all been there—ads that make pages jump, slow page loads, and
+            recipes scattered everywhere. This app fixes all of that.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export function FeaturesSection() {
                   {feature.badge && (
                     <Badge
                       variant="secondary"
-                      className="absolute -top-2 -right-2 text-xs bg-primary/20 text-primary border-primary/30"
+                      className="absolute -top-2 -right-2 text-xs text-secondary-foreground"
                     >
                       {feature.badge}
                     </Badge>

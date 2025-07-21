@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Search, X, SlidersHorizontal, FolderOpen, Settings } from "lucide-react";
+import {
+  Search,
+  X,
+  SlidersHorizontal,
+  FolderOpen,
+  Settings,
+} from "lucide-react";
 import { Link } from "react-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,7 +42,6 @@ export function RecipeSearch({
     e.preventDefault();
     onSearch(localSearchQuery);
   };
-
 
   const handleTagFilter = (tag: string) => {
     const currentTags = filters.tags || [];
@@ -91,17 +96,17 @@ export function RecipeSearch({
               {filters.collection_id && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-5 w-5 rounded-full p-0 text-xs"
-                >
-                  1
-                </Badge>
+                  className="h-3 w-3 rounded-full p-0 text-xs"
+                ></Badge>
               )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
             <DropdownMenuItem
               onClick={() => handleCollectionFilter(null)}
-              className={!filters.collection_id ? "bg-accent" : ""}
+              className={
+                !filters.collection_id ? "bg-accent text-accent-foreground" : ""
+              }
             >
               <div className="flex items-center justify-between w-full">
                 <span>All Collections</span>
@@ -109,7 +114,11 @@ export function RecipeSearch({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleCollectionFilter("uncollected")}
-              className={filters.collection_id === "uncollected" ? "bg-accent" : ""}
+              className={
+                filters.collection_id === "uncollected"
+                  ? "bg-accent text-accent-foreground"
+                  : ""
+              }
             >
               <div className="flex items-center justify-between w-full">
                 <span>Uncollected</span>
@@ -122,7 +131,11 @@ export function RecipeSearch({
                   <DropdownMenuItem
                     key={collection.id}
                     onClick={() => handleCollectionFilter(collection.id)}
-                    className={filters.collection_id === collection.id ? "bg-accent" : ""}
+                    className={
+                      filters.collection_id === collection.id
+                        ? "bg-accent text-accent-foreground"
+                        : ""
+                    }
                   >
                     <div className="flex items-center justify-between w-full">
                       <span>{collection.name}</span>
@@ -142,7 +155,10 @@ export function RecipeSearch({
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/collections" className="flex items-center gap-2 w-full">
+              <Link
+                to="/collections"
+                className="flex items-center gap-2 w-full"
+              >
                 <Settings className="h-4 w-4" />
                 Manage Collections
               </Link>
@@ -158,10 +174,8 @@ export function RecipeSearch({
               {hasActiveFilters && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-5 w-5 rounded-full p-0 text-xs"
-                >
-                  !
-                </Badge>
+                  className="h-3 w-3 rounded-full p-0 text-xs"
+                ></Badge>
               )}
             </Button>
           </DropdownMenuTrigger>
