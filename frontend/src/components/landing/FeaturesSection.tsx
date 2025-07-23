@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Globe, Smartphone, BookOpen, Calendar } from "lucide-react";
 
 export function FeaturesSection() {
+  const chartColors = ["#89ccac", "#608bd1", "#977bd7", "#c6923a", "#329776"];
+
   const features = [
     {
       icon: Globe,
@@ -10,6 +12,7 @@ export function FeaturesSection() {
       description:
         "Clean, ad-free interface that never jumps or shifts while you're cooking. No more losing your place!",
       badge: "Ad-Free",
+      color: chartColors[0],
     },
     {
       icon: Smartphone,
@@ -17,6 +20,7 @@ export function FeaturesSection() {
       description:
         "All your recipes load instantly. No waiting for slow recipe sites or broken 'jump to recipe' buttons.",
       badge: "Lightning Fast",
+      color: chartColors[1],
     },
     {
       icon: BookOpen,
@@ -24,6 +28,7 @@ export function FeaturesSection() {
       description:
         "All your recipes from Instagram, web bookmarks, and reading lists organized in one searchable location.",
       badge: "Unified",
+      color: chartColors[2],
     },
     {
       icon: Calendar,
@@ -31,6 +36,7 @@ export function FeaturesSection() {
       description:
         "Smart search and organization so you can actually find that recipe you saved. Plus meal planning!",
       badge: "Coming Soon",
+      color: chartColors[3],
     },
   ];
 
@@ -61,14 +67,28 @@ export function FeaturesSection() {
               key={index}
               className="group hover:shadow-lg transition-all duration-300 border-0 bg-background/50 backdrop-blur-sm hover:bg-background/80"
             >
-              <CardContent className="p-6 text-center space-y-4">
+              <CardContent className="p-6 space-y-4">
                 <div className="relative">
-                  <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <feature.icon className="h-8 w-8 text-primary" />
+                  <div
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-colors duration-300"
+                    style={{
+                      backgroundColor: `${feature.color}1a`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = `${feature.color}33`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = `${feature.color}1a`;
+                    }}
+                  >
+                    <feature.icon
+                      className="h-8 w-8"
+                      style={{ color: feature.color }}
+                    />
                   </div>
                   {feature.badge && (
                     <Badge
-                      variant="secondary"
+                      style={{ backgroundColor: feature.color }}
                       className="absolute -top-2 -right-2 text-xs text-secondary-foreground"
                     >
                       {feature.badge}

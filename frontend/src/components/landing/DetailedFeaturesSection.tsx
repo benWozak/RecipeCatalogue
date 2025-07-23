@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 
 export function DetailedFeaturesSection() {
+  const chartColors = ["#89ccac", "#608bd1", "#977bd7", "#c6923a", "#329776"];
+
   const detailedFeatures = [
     {
       icon: Smartphone,
@@ -18,6 +20,7 @@ export function DetailedFeaturesSection() {
         "Works on any device - iOS, Android, or desktop. Install like a native app with offline access to all your recipes.",
       badge: "PWA Ready",
       gridClass: "",
+      color: chartColors[0],
     },
     {
       icon: Globe,
@@ -26,6 +29,7 @@ export function DetailedFeaturesSection() {
         "Parse recipes from any website, extract from Instagram posts, or scan from photos with intelligent AI extraction.",
       badge: "AI Powered",
       gridClass: "",
+      color: chartColors[1],
     },
     {
       icon: Calendar,
@@ -34,6 +38,7 @@ export function DetailedFeaturesSection() {
         "Plan your weeks with intuitive drag-and-drop interface. Plan for multiple weeks ahead with your saved recipes.",
       badge: "Coming Soon",
       gridClass: "",
+      color: chartColors[2],
     },
     {
       icon: Search,
@@ -42,6 +47,7 @@ export function DetailedFeaturesSection() {
         "Find recipes by ingredients, cuisine, cooking time, or any keyword. Advanced filtering makes discovery effortless.",
       badge: "Smart",
       gridClass: "",
+      color: chartColors[3],
     },
     {
       icon: Edit3,
@@ -50,6 +56,7 @@ export function DetailedFeaturesSection() {
         "Edit recipes with a simple interface. Add personal notes, modifications, and rate your favorites.",
       badge: "Flexible",
       gridClass: "",
+      color: chartColors[4],
     },
     {
       icon: Share2,
@@ -58,6 +65,7 @@ export function DetailedFeaturesSection() {
         "Share your favorite recipes with friends and family. Export recipes in multiple formats for easy sharing.",
       badge: "Social",
       gridClass: "md:col-span-2 lg:col-span-1",
+      color: chartColors[0],
     },
   ];
 
@@ -86,11 +94,25 @@ export function DetailedFeaturesSection() {
             >
               <CardContent className="p-8 space-y-6">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <feature.icon className="h-10 w-10 text-primary" />
+                  <div
+                    className="w-20 h-20 rounded-3xl flex items-center justify-center transition-colors duration-300"
+                    style={{
+                      backgroundColor: `${feature.color}1a`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = `${feature.color}33`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = `${feature.color}1a`;
+                    }}
+                  >
+                    <feature.icon
+                      className="h-10 w-10"
+                      style={{ color: feature.color }}
+                    />
                   </div>
                   <Badge
-                    variant="secondary"
+                    style={{ backgroundColor: feature.color }}
                     className="absolute -top-2 -right-2 text-secondary-foreground"
                   >
                     {feature.badge}
