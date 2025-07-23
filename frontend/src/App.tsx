@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { RouteErrorBoundary } from "@/components/error";
 import Layout from "./components/common/Layout";
 import LandingPage from "./pages/LandingPage.tsx";
+import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import RecipesPage from "./pages/RecipesPage";
 import RecipeScanPage from "./pages/RecipeScanPage";
@@ -27,9 +28,18 @@ function App() {
       <Router>
         <div className="min-h-screen bg-background text-foreground">
           <SignedOut>
-            <RouteErrorBoundary routeName="Landing">
-              <LandingPage />
-            </RouteErrorBoundary>
+            <Routes>
+              <Route path="/" element={
+                <RouteErrorBoundary routeName="Landing">
+                  <LandingPage />
+                </RouteErrorBoundary>
+              } />
+              <Route path="/login" element={
+                <RouteErrorBoundary routeName="Login">
+                  <LoginPage />
+                </RouteErrorBoundary>
+              } />
+            </Routes>
           </SignedOut>
 
           <SignedIn>

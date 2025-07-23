@@ -1,6 +1,6 @@
-import { SignInButton } from "@clerk/clerk-react";
-import { Button } from "@/components/ui/button";
-import { ChefHat } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Link } from "react-router";
+// import { ChefHat } from "lucide-react";
 
 export function CTASection() {
   return (
@@ -14,19 +14,19 @@ export function CTASection() {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground">
-            Stop losing your place to jumping ads. Stop waiting for slow
-            sites. Get all your recipes in one organized, distraction-free
-            place.
+            Stop losing your place to jumping ads. Stop waiting for slow sites.
+            Get all your recipes in one organized, distraction-free place.
           </p>
-          <SignInButton mode="modal">
-            <Button
-              size="lg"
-              className="text-lg px-12 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
+          {/* <Button
+            size="lg"
+            className="text-lg px-12 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
+            asChild
+          >
+            <Link to="/login">
               <ChefHat className="mr-2 h-5 w-5" />
               Get Your Recipes Organized
-            </Button>
-          </SignInButton>
+            </Link>
+          </Button> */}
         </div>
       </div>
     </section>

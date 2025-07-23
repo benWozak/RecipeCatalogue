@@ -192,6 +192,7 @@ body {
   /* Prevent mobile scrolling bounce */
   html, body {
     overscroll-behavior: none;
+    scroll-behavior: smooth;
   }
   
   /* Better touch targets for mobile */

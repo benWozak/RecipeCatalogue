@@ -1,5 +1,5 @@
-import { SignInButton } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
+// import { Link } from "react-router";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { BoxReveal } from "@/components/magicui/box-reveal";
 import {
@@ -8,7 +8,7 @@ import {
   Globe,
   Camera,
   Instagram,
-  Sparkles,
+  // Sparkles,
   CircleCheckBig,
 } from "lucide-react";
 
@@ -70,17 +70,18 @@ export function HeroSection() {
           </div>
           <BoxReveal boxColor="#89CCAC" duration={0.8}>
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
-              <SignInButton mode="modal">
-                <Button
-                  size="lg"
-                  className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
-                >
+              {/* <Button
+                size="lg"
+                className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                asChild
+              >
+                <Link to="/login">
                   <Sparkles className="mr-2 h-5 w-5" />
                   Get Started Free
-                </Button>
-              </SignInButton>
+                </Link>
+              </Button> */}
               <Button
-                variant="outline"
+                // variant="outline"
                 size="lg"
                 className="text-lg px-8 py-6"
                 asChild
