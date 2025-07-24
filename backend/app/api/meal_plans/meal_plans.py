@@ -32,6 +32,20 @@ async def create_meal_plan(
     meal_plan_service = MealPlanService(db)
     return meal_plan_service.create_meal_plan(meal_plan, current_user.id)
 
+@router.get("/active", response_model=MealPlanSchema)
+async def get_active_meal_plan(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    active_meal_plan = meal_plan_service.get_active_meal_plan(current_user.id)
+    if not active_meal_plan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No active meal plan found"
+        )
+    return active_meal_plan
+
 @router.get("/{meal_plan_id}", response_model=MealPlanSchema)
 async def get_meal_plan(
     meal_plan_id: str,
@@ -77,3 +91,18 @@ async def delete_meal_plan(
             detail="Meal plan not found"
         )
     return {"message": "Meal plan deleted successfully"}
+
+@router.put("/{meal_plan_id}/set-active", response_model=MealPlanSchema)
+async def set_active_meal_plan(
+    meal_plan_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    meal_plan_service = MealPlanService(db)
+    meal_plan = meal_plan_service.set_active_meal_plan(meal_plan_id, current_user.id)
+    if not meal_plan:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meal plan not found"
+        )
+    return meal_plan

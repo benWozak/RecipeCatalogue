@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Integer
+from sqlalchemy import Column, String, Date, DateTime, ForeignKey, Integer, Boolean
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -15,6 +15,7 @@ class MealPlan(Base):
     name = Column(String, nullable=False)
     start_date = Column(Date)
     end_date = Column(Date)
+    is_active = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     entries = relationship("MealPlanEntry", back_populates="meal_plan", cascade="all, delete-orphan")

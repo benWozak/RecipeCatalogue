@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { MoreVertical, Edit, Trash2, Users, RotateCcw } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Users, RotateCcw, CheckCircle, Circle } from 'lucide-react';
 import { MealPlan, decodeMealPlanDate } from '@/types/mealPlan';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,10 @@ interface MealPlanCardProps {
   mealPlan: MealPlan;
   onEdit?: (mealPlan: MealPlan) => void;
   onDelete?: (mealPlan: MealPlan) => void;
+  onSetActive?: (mealPlan: MealPlan) => void;
 }
 
-export function MealPlanCard({ mealPlan, onEdit, onDelete }: MealPlanCardProps) {
+export function MealPlanCard({ mealPlan, onEdit, onDelete, onSetActive }: MealPlanCardProps) {
   const getRotationInfo = () => {
     if (mealPlan.entries.length === 0) {
       return { weekCount: 0, dayCount: 0 };
@@ -80,6 +81,12 @@ export function MealPlanCard({ mealPlan, onEdit, onDelete }: MealPlanCardProps) 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {onSetActive && !mealPlan.is_active && (
+                <DropdownMenuItem onClick={() => onSetActive(mealPlan)}>
+                  <Circle className="h-4 w-4 mr-2" />
+                  Set as Active
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => onEdit?.(mealPlan)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
@@ -109,9 +116,17 @@ export function MealPlanCard({ mealPlan, onEdit, onDelete }: MealPlanCardProps) 
             </div>
           </div>
           
-          <Badge variant="secondary" className="text-xs">
-            Rotation
-          </Badge>
+          <div className="flex items-center gap-2">
+            {mealPlan.is_active && (
+              <Badge variant="default" className="text-xs bg-green-100 text-green-800 border-green-200">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Active
+              </Badge>
+            )}
+            <Badge variant="secondary" className="text-xs">
+              Rotation
+            </Badge>
+          </div>
         </div>
         
         <div className="flex justify-between items-center text-xs text-muted-foreground">

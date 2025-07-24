@@ -72,3 +72,28 @@ class MealPlanService:
         self.db.delete(meal_plan)
         self.db.commit()
         return True
+
+    def get_active_meal_plan(self, user_id: str) -> Optional[MealPlan]:
+        """Get the user's currently active meal plan."""
+        return self.db.query(MealPlan).filter(
+            and_(MealPlan.user_id == user_id, MealPlan.is_active == True)
+        ).first()
+
+    def set_active_meal_plan(self, meal_plan_id: str, user_id: str) -> Optional[MealPlan]:
+        """Set a meal plan as active, deactivating any previously active meal plan."""
+        # First verify the meal plan exists and belongs to the user
+        meal_plan = self.get_meal_plan(meal_plan_id, user_id)
+        if not meal_plan:
+            return None
+
+        # Deactivate any currently active meal plan for this user
+        current_active = self.get_active_meal_plan(user_id)
+        if current_active and current_active.id != meal_plan_id:
+            current_active.is_active = False
+
+        # Set the new meal plan as active
+        meal_plan.is_active = True
+        
+        self.db.commit()
+        self.db.refresh(meal_plan)
+        return meal_plan

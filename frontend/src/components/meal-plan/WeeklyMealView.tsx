@@ -1,261 +1,257 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { MealType, MealPlan, MealPlanEntry, DayMeals } from '@/types/mealPlan';
-import { DayMealCards } from './DayMealCards';
+import { 
+  MealPlan, 
+  MealType, 
+  MealPlanEntry, 
+  decodeMealPlanDate, 
+  getDayName, 
+  getCurrentDayOfWeek,
+  getCurrentWeekInRotation 
+} from '@/types/mealPlan';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 interface WeeklyMealViewProps {
-  mealPlan?: MealPlan;
-  currentDate?: string; // ISO date string for the current day
-  isEditing?: boolean;
-  onAddMeal?: (date: string, mealType: MealType) => void;
-  onEditMeal?: (entry: MealPlanEntry) => void;
+  mealPlan: MealPlan;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 }
 
-export function WeeklyMealView({ 
-  mealPlan, 
-  currentDate, 
-  isEditing = false,
-  onAddMeal,
-  onEditMeal 
-}: WeeklyMealViewProps) {
-  const [currentDayIndex, setCurrentDayIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  const mobileContainerRef = useRef<HTMLDivElement>(null);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+interface DayMeals {
+  [MealType.BREAKFAST]?: MealPlanEntry;
+  [MealType.LUNCH]?: MealPlanEntry;
+  [MealType.DINNER]?: MealPlanEntry;
+}
 
-  // Check if we're on mobile
+interface WeekDay {
+  dayOfWeek: number;
+  dayName: string;
+  isToday: boolean;
+  meals: DayMeals;
+}
+
+export function WeeklyMealView({ mealPlan, onSwipeLeft, onSwipeRight }: WeeklyMealViewProps) {
+  const [currentWeek, setCurrentWeek] = useState(getCurrentWeekInRotation(mealPlan));
+  const [currentDay] = useState(getCurrentDayOfWeek());
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Update week when meal plan changes
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    setCurrentWeek(getCurrentWeekInRotation(mealPlan));
+  }, [mealPlan]);
 
-  // Generate days of the week starting from Monday
-  const generateWeekDays = (startDate?: string) => {
-    const today = currentDate ? new Date(currentDate) : new Date();
-    const startOfWeek = startDate ? new Date(startDate) : new Date(today);
+  // Get all days for the current week
+  const getWeekDays = (): WeekDay[] => {
+    const weekDays: WeekDay[] = [];
     
-    // If no start date provided, get the start of current week (Monday)
-    if (!startDate) {
-      const dayOfWeek = today.getDay();
-      const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      startOfWeek.setDate(today.getDate() + daysToMonday);
-    }
-
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
-      day.setDate(startOfWeek.getDate() + i);
-      days.push(day);
-    }
-    return days;
-  };
-
-  const weekDays = generateWeekDays(mealPlan?.start_date);
-
-  // Set initial day to today if currentDate is provided
-  useEffect(() => {
-    if (currentDate) {
-      const todayIndex = weekDays.findIndex(day => 
-        day.toISOString().split('T')[0] === currentDate.split('T')[0]
-      );
-      if (todayIndex !== -1) {
-        setCurrentDayIndex(todayIndex);
-      }
-    }
-  }, [currentDate, weekDays.length]);
-
-  // Transform meal plan entries into day-organized structure
-  const organizeMealsByDay = (): DayMeals[] => {
-    if (!mealPlan) return [];
-
-    const dayMealsMap = new Map<string, DayMeals>();
-
-    // Initialize empty days
-    weekDays.forEach(day => {
-      const dateStr = day.toISOString().split('T')[0];
-      dayMealsMap.set(dateStr, {
-        day_of_week: Array.from(weekDays).indexOf(day),
-        day_name: day.toLocaleDateString('en', { weekday: 'long' }),
-        meals: {
-          [MealType.BREAKFAST]: undefined,
-          [MealType.SNACK]: [],
-          [MealType.LUNCH]: undefined,
-          [MealType.DINNER]: undefined,
+    for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+      const dayMeals: DayMeals = {};
+      
+      // Find meals for this day
+      mealPlan.entries.forEach(entry => {
+        const { weekNumber, dayOfWeek: entryDay } = decodeMealPlanDate(entry.date);
+        if (weekNumber === currentWeek && entryDay === dayOfWeek) {
+          if (entry.meal_type === MealType.BREAKFAST || 
+              entry.meal_type === MealType.LUNCH || 
+              entry.meal_type === MealType.DINNER) {
+            dayMeals[entry.meal_type] = entry;
+          }
         }
       });
-    });
-
-    // Populate with actual meal entries
-    mealPlan.entries.forEach(entry => {
-      const dayMeals = dayMealsMap.get(entry.date);
-      if (dayMeals) {
-        if (entry.meal_type === MealType.SNACK) {
-          dayMeals.meals[MealType.SNACK]!.push(entry);
-        } else {
-          dayMeals.meals[entry.meal_type] = entry;
-        }
-      }
-    });
-
-    return Array.from(dayMealsMap.values());
-  };
-
-  const dayMealsData = organizeMealsByDay();
-
-  const formatDayName = (date: Date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'short' });
-  };
-
-  const formatDayNumber = (date: Date) => {
-    return date.getDate();
-  };
-
-  const isToday = (date: Date) => {
-    if (!currentDate) return false;
-    const today = new Date(currentDate);
-    return date.toDateString() === today.toDateString();
-  };
-
-  const handlePrevDay = () => {
-    setCurrentDayIndex(prev => Math.max(0, prev - 1));
-  };
-
-  const handleNextDay = () => {
-    setCurrentDayIndex(prev => Math.min(weekDays.length - 1, prev + 1));
-  };
-
-  // Touch event handlers for swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX || !touchEndX) return;
+      
+      weekDays.push({
+        dayOfWeek,
+        dayName: getDayName(dayOfWeek),
+        isToday: dayOfWeek === currentDay,
+        meals: dayMeals
+      });
+    }
     
-    const distance = touchStartX - touchEndX;
-    const minSwipeDistance = 50; // Minimum distance for a swipe
+    return weekDays;
+  };
 
-    if (Math.abs(distance) > minSwipeDistance) {
-      if (distance > 0) {
-        // Swipe left - next day
-        handleNextDay();
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    const totalWeeks = new Set(mealPlan.entries.map(entry => decodeMealPlanDate(entry.date).weekNumber)).size;
+    
+    if (direction === 'next') {
+      if (currentWeek < totalWeeks) {
+        setCurrentWeek(currentWeek + 1);
       } else {
-        // Swipe right - previous day
-        handlePrevDay();
+        setCurrentWeek(1); // Loop back to first week
+      }
+      onSwipeLeft?.();
+    } else {
+      if (currentWeek > 1) {
+        setCurrentWeek(currentWeek - 1);
+      } else {
+        setCurrentWeek(totalWeeks || 1); // Loop to last week
+      }
+      onSwipeRight?.();
+    }
+  };
+
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    
+    // Only trigger swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        navigateWeek('prev'); // Swipe right = previous week
+      } else {
+        navigateWeek('next'); // Swipe left = next week
       }
     }
-
-    setTouchStartX(null);
-    setTouchEndX(null);
+    
+    touchStartRef.current = null;
   };
 
-  // Mobile view: single day
-  if (isMobile) {
-    const currentDay = weekDays[currentDayIndex];
-    const currentDayMeals = dayMealsData[currentDayIndex];
+  const weekDays = getWeekDays();
+  const totalWeeks = new Set(mealPlan.entries.map(entry => decodeMealPlanDate(entry.date).weekNumber)).size;
 
-    return (
-      <div className="w-full">
-        {/* Mobile day navigation */}
-        <div className="flex items-center justify-between mb-4 bg-card border border-border rounded-lg p-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handlePrevDay}
-            disabled={currentDayIndex === 0}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          <div className="text-center">
-            <div className={`font-semibold ${isToday(currentDay) ? 'text-primary' : ''}`}>
-              {formatDayName(currentDay)}
-            </div>
-            <div className={`text-sm ${isToday(currentDay) ? 'text-primary' : 'text-muted-foreground'}`}>
-              {formatDayNumber(currentDay)}
-            </div>
-            {isToday(currentDay) && (
-              <div className="text-xs text-primary font-medium">Today</div>
-            )}
-          </div>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleNextDay}
-            disabled={currentDayIndex === weekDays.length - 1}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+  const mealTypeConfig = [
+    { type: MealType.BREAKFAST, label: 'B', color: 'bg-orange-100 text-orange-800' },
+    { type: MealType.LUNCH, label: 'L', color: 'bg-green-100 text-green-800' },
+    { type: MealType.DINNER, label: 'D', color: 'bg-blue-100 text-blue-800' },
+  ];
 
-        {/* Mobile day meals */}
-        <div
-          ref={mobileContainerRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="touch-pan-x"
-        >
-          {currentDayMeals && (
-            <DayMealCards
-              date={weekDays[currentDayIndex].toISOString().split('T')[0]}
-              meals={currentDayMeals.meals}
-              onAddMeal={onAddMeal}
-              onEditMeal={onEditMeal}
-              isEditing={isEditing}
-            />
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop view: all days in a row
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-7 gap-4">
-        {weekDays.map((day, index) => {
-          const dayMeals = dayMealsData[index];
-          const dayStr = day.toISOString().split('T')[0];
-
-          return (
-            <div key={dayStr} className="flex flex-col">
-              {/* Day header */}
-              <div className="text-center mb-3 pb-2 border-b border-border">
-                <div className={`font-semibold ${isToday(day) ? 'text-primary' : ''}`}>
-                  {formatDayName(day)}
-                </div>
-                <div className={`text-sm ${isToday(day) ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {formatDayNumber(day)}
-                </div>
-                {isToday(day) && (
-                  <div className="text-xs text-primary font-medium">Today</div>
-                )}
-              </div>
-
-              {/* Day meals */}
-              {dayMeals && (
-                <DayMealCards
-                  date={dayStr}
-                  meals={dayMeals.meals}
-                  onAddMeal={onAddMeal}
-                  onEditMeal={onEditMeal}
-                  isEditing={isEditing}
-                />
-              )}
-            </div>
-          );
-        })}
+    <div 
+      ref={containerRef}
+      className="h-full flex flex-col"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Week Header */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigateWeek('prev')}
+          className="flex items-center gap-1"
+          disabled={totalWeeks <= 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </Button>
+        
+        <div className="text-center">
+          <h2 className="text-xl font-bold">Week {currentWeek}</h2>
+          <p className="text-sm text-muted-foreground">
+            {totalWeeks > 1 && `of ${totalWeeks} weeks`}
+          </p>
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigateWeek('next')}
+          className="flex items-center gap-1"
+          disabled={totalWeeks <= 1}
+        >
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
+
+      {/* Days Grid */}
+      <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+        {weekDays.map((day) => (
+          <Card 
+            key={day.dayOfWeek} 
+            className={`${day.isToday ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <h3 className={`font-semibold ${day.isToday ? 'text-primary' : ''}`}>
+                  {day.dayName}
+                  {day.isToday && <span className="ml-2 text-xs text-primary">Today</span>}
+                </h3>
+                <div className="flex gap-1">
+                  {mealTypeConfig.map(({ type, label, color }) => {
+                    const hasMeal = day.meals[type as keyof DayMeals];
+                    return (
+                      <div
+                        key={type}
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                          hasMeal ? color : 'bg-gray-100 text-gray-400'
+                        }`}
+                      >
+                        {label}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                {mealTypeConfig.map(({ type }) => {
+                  const meal = day.meals[type as keyof DayMeals];
+                  const typeLabels = {
+                    [MealType.BREAKFAST]: 'Breakfast',
+                    [MealType.LUNCH]: 'Lunch',
+                    [MealType.DINNER]: 'Dinner'
+                  };
+                  
+                  return (
+                    <div key={type} className="text-sm">
+                      <span className="font-medium text-muted-foreground text-xs">
+                        {typeLabels[type as keyof typeof typeLabels]}:
+                      </span>
+                      {meal ? (
+                        <div className="mt-1 flex items-center gap-2">
+                          {meal.recipe_thumbnail && (
+                            <div className="w-8 h-8 flex-shrink-0">
+                              <img
+                                src={meal.recipe_thumbnail}
+                                alt={meal.recipe_title}
+                                className="w-full h-full object-cover rounded"
+                                loading="lazy"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {meal.recipe_title || 'Recipe'}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {meal.servings} servings
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground ml-1">No meal planned</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Swipe Indicator */}
+      {totalWeeks > 1 && (
+        <div className="p-2 text-center">
+          <p className="text-xs text-muted-foreground">
+            Swipe left or right to navigate weeks
+          </p>
+        </div>
+      )}
     </div>
   );
 }

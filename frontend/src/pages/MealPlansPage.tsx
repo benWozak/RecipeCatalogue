@@ -67,6 +67,27 @@ export default function MealPlansPage() {
     }
   };
 
+  const handleSetActiveMealPlan = async (mealPlan: MealPlan) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await mealPlanService.setActiveMealPlan(mealPlan.id, token);
+      if (response.success) {
+        // Update the meal plans list to reflect the new active status
+        setMealPlans((prev) => prev.map((mp) => ({
+          ...mp,
+          is_active: mp.id === mealPlan.id // Only the selected plan is active
+        })));
+      } else {
+        alert("Failed to set active meal plan");
+      }
+    } catch (err) {
+      console.error("Error setting active meal plan:", err);
+      alert("Failed to set active meal plan");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -129,6 +150,7 @@ export default function MealPlansPage() {
                   mealPlan={mealPlan}
                   onEdit={handleEditMealPlan}
                   onDelete={handleDeleteMealPlan}
+                  onSetActive={handleSetActiveMealPlan}
                 />
               ))
             )}

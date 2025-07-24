@@ -29,6 +29,7 @@ class MealPlanBase(BaseModel):
     name: str
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+    is_active: Optional[bool] = False
 
 class MealPlanCreate(MealPlanBase):
     entries: List[MealPlanEntryCreate] = []
@@ -37,11 +38,13 @@ class MealPlanUpdate(BaseModel):
     name: Optional[str] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+    is_active: Optional[bool] = None
     entries: Optional[List[MealPlanEntryCreate]] = None
 
 class MealPlan(MealPlanBase):
     id: str
     user_id: str
+    is_active: bool
     created_at: datetime
     entries: List[MealPlanEntry] = []
 

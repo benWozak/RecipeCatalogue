@@ -15,6 +15,7 @@ import ManualRecipePage from "./pages/ManualRecipePage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipeFormPage from "./pages/RecipeFormPage";
 import CollectionsPage from "./pages/CollectionsPage";
+import ActiveMealPlanPage from "./pages/ActiveMealPlanPage";
 import MealPlansPage from "./pages/MealPlansPage";
 import NewMealPlanPage from "./pages/NewMealPlanPage";
 import MealPlanDetailPage from "./pages/MealPlanDetailPage";
@@ -117,7 +118,13 @@ function App() {
                 } />
                 
                 <Route path="/meal-plans" element={
-                  <RouteErrorBoundary routeName="Meal Plans">
+                  <RouteErrorBoundary routeName="Active Meal Plan">
+                    <ActiveMealPlanPage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/meal-plans/all" element={
+                  <RouteErrorBoundary routeName="All Meal Plans">
                     <MealPlansPage />
                   </RouteErrorBoundary>
                 } />

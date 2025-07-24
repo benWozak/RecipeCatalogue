@@ -191,6 +191,63 @@ class MealPlanService {
       };
     }
   }
+
+  // Active meal plan methods
+  async getActiveMealPlan(token: string): Promise<ApiResponse<MealPlan | null>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/active`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 404) {
+        // No active meal plan found - this is expected, return null
+        return {
+          success: true,
+          data: null
+        };
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: data || null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch active meal plan'
+      };
+    }
+  }
+
+  async setActiveMealPlan(id: string, token: string): Promise<ApiResponse<MealPlan>> {
+    try {
+      const response = await this.makeRequest(`/${id}/set-active`, token, {
+        method: 'PUT',
+      });
+      
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: data as MealPlan
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to set active meal plan'
+      };
+    }
+  }
 }
 
 export const mealPlanService = new MealPlanService();

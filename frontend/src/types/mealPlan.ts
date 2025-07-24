@@ -32,6 +32,7 @@ export interface MealPlan {
   start_date?: string; // Auto-calculated
   end_date?: string; // Auto-calculated
   created_at: string;
+  is_active?: boolean; // Indicates if this is the user's active meal plan
   entries: MealPlanEntry[];
   weeks?: WeekPlan[]; // Derived from entries for UI
 }
@@ -47,6 +48,7 @@ export interface MealPlanUpdate {
   name?: string;
   start_date?: string;
   end_date?: string;
+  is_active?: boolean;
   entries?: MealPlanEntryCreate[];
 }
 
@@ -135,4 +137,34 @@ export const decodeMealPlanDate = (encodedDate: string): { weekNumber: number; d
 export const getDayName = (dayOfWeek: number): string => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   return days[dayOfWeek] || '';
+};
+
+// Get current day of week (0 = Monday, 6 = Sunday)
+export const getCurrentDayOfWeek = (): number => {
+  const now = new Date();
+  const jsDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  return jsDay === 0 ? 6 : jsDay - 1; // Convert to our format (0 = Monday)
+};
+
+// Calculate which week in rotation we should be showing based on current date
+export const getCurrentWeekInRotation = (mealPlan: MealPlan): number => {
+  if (!mealPlan.start_date || !mealPlan.entries.length) return 1;
+  
+  const startDate = new Date(mealPlan.start_date);
+  const now = new Date();
+  const daysDiff = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const weeksDiff = Math.floor(daysDiff / 7);
+  
+  // Get total weeks in rotation
+  const weeks = new Set<number>();
+  mealPlan.entries.forEach(entry => {
+    const { weekNumber } = decodeMealPlanDate(entry.date);
+    weeks.add(weekNumber);
+  });
+  const totalWeeks = weeks.size;
+  
+  if (totalWeeks === 0) return 1;
+  
+  // Calculate current week in rotation (1-based)
+  return (weeksDiff % totalWeeks) + 1;
 };
