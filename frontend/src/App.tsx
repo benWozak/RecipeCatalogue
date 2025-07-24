@@ -39,6 +39,11 @@ function App() {
                   <LoginPage />
                 </RouteErrorBoundary>
               } />
+              <Route path="*" element={
+                <RouteErrorBoundary routeName="Not Found">
+                  <NotFoundPage />
+                </RouteErrorBoundary>
+              } />
             </Routes>
           </SignedOut>
 
