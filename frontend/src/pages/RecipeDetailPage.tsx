@@ -61,12 +61,12 @@ export default function RecipeDetailPage() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link
-              to="/recipes"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+            <Button
+              onClick={() => navigate(-1)}
+              // className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={24} />
-            </Link>
+            </Button>
             <div className="h-8 bg-muted rounded w-48 animate-pulse"></div>
           </div>
 
@@ -98,12 +98,12 @@ export default function RecipeDetailPage() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link
-              to="/recipes"
+            <button
+              onClick={() => navigate(-1)}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={24} />
-            </Link>
+            </button>
             <h1 className="text-3xl font-bold text-foreground">
               Recipe Details
             </h1>
@@ -129,12 +129,12 @@ export default function RecipeDetailPage() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link
-              to="/recipes"
+            <button
+              onClick={() => navigate(-1)}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft size={24} />
-            </Link>
+            </button>
             <h1 className="text-3xl font-bold text-foreground">
               Recipe Details
             </h1>
@@ -158,12 +158,12 @@ export default function RecipeDetailPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-6">
-          <Link
-            to="/recipes"
+          <button
+            onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={24} />
-          </Link>
+          </button>
           <h1 className="text-3xl font-bold text-foreground">Recipe Details</h1>
         </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Plus, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecipeGrid, RecipeSearch } from "@/components/recipe";
@@ -9,6 +9,7 @@ import { useRecipeStore, useRecipeSelectors } from "@/stores/recipeStore";
 import { RecipeFilters } from "@/types/recipe";
 
 export default function RecipesPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<RecipeFilters>({});
 
@@ -59,11 +60,9 @@ export default function RecipesPage() {
                 : "No recipes yet"}
             </p>
           </div>
-          <Button asChild>
-            <Link to="/recipes/scan" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add Recipe
-            </Link>
+          <Button onClick={() => navigate(-1)}>
+            <Plus className="h-4 w-4" />
+            Add Recipe
           </Button>
         </div>
 
@@ -114,11 +113,9 @@ export default function RecipesPage() {
                   recipe.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                  <Button asChild>
-                    <Link to="/recipes/scan">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Recipe
-                    </Link>
+                  <Button onClick={() => navigate(-1)}>
+                    <Plus className="h-4 w-4" />
+                    Add Recipe
                   </Button>
                   <Button variant="outline" asChild>
                     <Link to="/recipes/scan">Scan Recipe</Link>
