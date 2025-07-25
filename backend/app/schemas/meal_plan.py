@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from enum import Enum
 
@@ -21,6 +21,24 @@ class MealPlanEntryCreate(MealPlanEntryBase):
 class MealPlanEntry(MealPlanEntryBase):
     id: str
     meal_plan_id: str
+
+    class Config:
+        from_attributes = True
+
+# Enhanced meal plan entry that includes recipe details for frontend display
+class RecipeDetails(BaseModel):
+    id: str
+    title: str
+    media: Optional[Dict[str, Any]] = None
+    source_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class MealPlanEntryWithRecipe(MealPlanEntryBase):
+    id: str
+    meal_plan_id: str
+    recipe: Optional[RecipeDetails] = None
 
     class Config:
         from_attributes = True
@@ -47,6 +65,17 @@ class MealPlan(MealPlanBase):
     is_active: bool
     created_at: datetime
     entries: List[MealPlanEntry] = []
+
+    class Config:
+        from_attributes = True
+
+# Enhanced meal plan for active meal plan endpoint with recipe details
+class MealPlanWithRecipeDetails(MealPlanBase):
+    id: str
+    user_id: str
+    is_active: bool
+    created_at: datetime
+    entries: List[MealPlanEntryWithRecipe] = []
 
     class Config:
         from_attributes = True

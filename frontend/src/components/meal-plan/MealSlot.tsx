@@ -1,4 +1,5 @@
 import { Plus, X } from "lucide-react";
+import { useNavigate } from "react-router";
 import { MealType } from "@/types/mealPlan";
 import { Recipe } from "@/types/recipe";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export function MealSlot({
   onRemoveRecipe,
   disabled = false,
 }: MealSlotProps) {
+  const navigate = useNavigate();
   const getMealTypeLabel = (type: MealType) => {
     switch (type) {
       case MealType.BREAKFAST:
@@ -63,7 +65,11 @@ export function MealSlot({
         {recipe ? (
           /* Filled State - Show Recipe */
           <div className="relative group">
-            <MiniRecipeCard recipe={recipe} />
+            <MiniRecipeCard 
+              recipe={recipe} 
+              onClick={() => navigate(`/recipes/${recipe.id}`)}
+              className="cursor-pointer hover:bg-muted/30 transition-colors"
+            />
             {onRemoveRecipe && !disabled && (
               <Button
                 variant="ghost"

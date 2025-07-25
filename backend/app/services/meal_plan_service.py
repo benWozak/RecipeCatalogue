@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
 from typing import List, Optional
 from app.models.meal_plan import MealPlan, MealPlanEntry
@@ -74,8 +74,10 @@ class MealPlanService:
         return True
 
     def get_active_meal_plan(self, user_id: str) -> Optional[MealPlan]:
-        """Get the user's currently active meal plan."""
-        return self.db.query(MealPlan).filter(
+        """Get the user's currently active meal plan with recipe details."""
+        return self.db.query(MealPlan).options(
+            joinedload(MealPlan.entries).joinedload(MealPlanEntry.recipe)
+        ).filter(
             and_(MealPlan.user_id == user_id, MealPlan.is_active == True)
         ).first()
 

@@ -4,7 +4,7 @@ from typing import List
 from app.core.database import get_db
 from app.api.auth.auth import get_current_user
 from app.models.user import User
-from app.schemas.meal_plan import MealPlan as MealPlanSchema, MealPlanCreate, MealPlanUpdate
+from app.schemas.meal_plan import MealPlan as MealPlanSchema, MealPlanCreate, MealPlanUpdate, MealPlanWithRecipeDetails
 from app.services.meal_plan_service import MealPlanService
 
 router = APIRouter()
@@ -32,7 +32,7 @@ async def create_meal_plan(
     meal_plan_service = MealPlanService(db)
     return meal_plan_service.create_meal_plan(meal_plan, current_user.id)
 
-@router.get("/active", response_model=MealPlanSchema)
+@router.get("/active", response_model=MealPlanWithRecipeDetails)
 async def get_active_meal_plan(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)

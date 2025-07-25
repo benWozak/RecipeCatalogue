@@ -56,7 +56,6 @@ export default function RecipeDetailPage() {
       : `${hours}h`;
   };
 
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -422,9 +421,6 @@ export default function RecipeDetailPage() {
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Ingredients</h3>
                     {(() => {
-                      // Debug: log the ingredients data structure
-                      console.log('Ingredients data:', currentRecipe.ingredients);
-                      
                       if (!currentRecipe.ingredients) {
                         return (
                           <p className="text-muted-foreground">
@@ -434,7 +430,10 @@ export default function RecipeDetailPage() {
                       }
 
                       // Handle JSONB format: { type: "html", content: "..." }
-                      if (typeof currentRecipe.ingredients === "object" && currentRecipe.ingredients.content) {
+                      if (
+                        typeof currentRecipe.ingredients === "object" &&
+                        currentRecipe.ingredients.content
+                      ) {
                         return (
                           <HtmlRenderer
                             content={currentRecipe.ingredients.content}
@@ -445,9 +444,7 @@ export default function RecipeDetailPage() {
                       // Handle direct string content (fallback)
                       if (typeof currentRecipe.ingredients === "string") {
                         return (
-                          <HtmlRenderer
-                            content={currentRecipe.ingredients}
-                          />
+                          <HtmlRenderer content={currentRecipe.ingredients} />
                         );
                       }
 
@@ -462,9 +459,6 @@ export default function RecipeDetailPage() {
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Instructions</h3>
                     {(() => {
-                      // Debug: log the instructions data structure
-                      console.log('Instructions data:', currentRecipe.instructions);
-                      
                       if (!currentRecipe.instructions) {
                         return (
                           <p className="text-muted-foreground">
@@ -474,7 +468,10 @@ export default function RecipeDetailPage() {
                       }
 
                       // Handle JSONB format: { type: "html", content: "..." }
-                      if (typeof currentRecipe.instructions === "object" && currentRecipe.instructions.content) {
+                      if (
+                        typeof currentRecipe.instructions === "object" &&
+                        currentRecipe.instructions.content
+                      ) {
                         return (
                           <HtmlRenderer
                             content={currentRecipe.instructions.content}
@@ -485,9 +482,7 @@ export default function RecipeDetailPage() {
                       // Handle direct string content (fallback for legacy data)
                       if (typeof currentRecipe.instructions === "string") {
                         return (
-                          <HtmlRenderer
-                            content={currentRecipe.instructions}
-                          />
+                          <HtmlRenderer content={currentRecipe.instructions} />
                         );
                       }
 

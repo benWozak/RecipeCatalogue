@@ -1,4 +1,3 @@
-import { Clock } from "lucide-react";
 import { Recipe } from "@/types/recipe";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -43,15 +42,15 @@ export function MiniRecipeCard({
 
   return (
     <Card
-      className={`py-0 rounded-t-none transition-all hover:bg-muted/50 ${
+      className={`py-0 transition-all hover:bg-muted/50 ${
         onClick ? "cursor-pointer" : ""
       } ${className || ""}`}
       onClick={onClick}
     >
       <CardContent className="px-0">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 h-24">
           {/* Recipe Thumbnail */}
-          <div className="max-w-16 w-12 h-full flex-shrink-0 bg-muted rounded overflow-hidden">
+          <div className="w-24 h-full flex-shrink-0 bg-muted rounded overflow-hidden">
             {thumbnailImage ? (
               <img
                 src={thumbnailImage}

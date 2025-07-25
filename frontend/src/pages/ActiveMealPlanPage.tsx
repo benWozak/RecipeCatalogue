@@ -86,14 +86,13 @@ export default function ActiveMealPlanPage() {
     );
   }
 
-  // If we reach here, we have an active meal plan (redirect happens during loading if none found)
   return (
-    <div className="h-screen bg-background flex flex-col">
+    <div className="bg-background flex flex-col">
       {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-end sm:items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               <h1 className="text-2xl font-bold">Your Meal Plan</h1>
               <MealPlanViewToggle
                 currentView={viewMode}
@@ -118,7 +117,7 @@ export default function ActiveMealPlanPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden max-w-5xl mx-auto">
         {activeMealPlan &&
           (viewMode === "daily" ? (
             <DailyMealView mealPlan={activeMealPlan} />

@@ -5,6 +5,24 @@ export enum MealType {
   DINNER = 'dinner'
 }
 
+// Recipe details from backend
+export interface RecipeDetails {
+  id: string;
+  title: string;
+  media?: {
+    stored_media?: {
+      thumbnails?: {
+        small?: string;
+        medium?: string;
+        large?: string;
+      };
+    };
+    images?: Array<string | { url: string }>;
+    video_thumbnail?: string;
+  };
+  source_url?: string;
+}
+
 export interface MealPlanEntry {
   id: string;
   meal_plan_id: string;
@@ -12,8 +30,9 @@ export interface MealPlanEntry {
   date: string; // We'll use this to encode week_number + day_of_week
   meal_type: MealType;
   servings: number;
-  recipe_title?: string; // For display purposes
-  recipe_thumbnail?: string; // For display purposes
+  recipe?: RecipeDetails; // Enhanced with recipe details for active meal plan
+  recipe_title?: string; // For display purposes (legacy)
+  recipe_thumbnail?: string; // For display purposes (legacy)
   week_number?: number; // Derived from date for UI purposes
   day_of_week?: number; // Derived from date for UI purposes (0=Monday, 6=Sunday)
 }
