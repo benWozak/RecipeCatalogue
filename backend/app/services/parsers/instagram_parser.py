@@ -30,6 +30,10 @@ class InstagramParser(BaseParser):
             # Download post metadata
             post = self._get_post_data(shortcode)
             
+            # Validate post object before proceeding
+            if not isinstance(post, instaloader.Post):
+                raise Exception(f"Expected Post object, got {type(post)}")
+            
             # Extract text content
             text_content = self._extract_text_content(post)
             
@@ -125,6 +129,9 @@ class InstagramParser(BaseParser):
         """Get post data using instaloader"""
         try:
             post = instaloader.Post.from_shortcode(self.loader.context, shortcode)
+            # Validate that we got a proper Post object
+            if not hasattr(post, 'owner_username'):
+                raise Exception("Invalid post object returned from instaloader")
             return post
         except Exception as e:
             raise Exception(f"Failed to fetch Instagram post: {str(e)}")
@@ -336,7 +343,7 @@ class InstagramParser(BaseParser):
                 parsed_data.description = "Recipe extracted from Instagram post. Please review and edit as needed."
         
         # Ensure we have some basic content
-        if not parsed_data.ingredients and not parsed_data.instructions.get('steps'):
+        if not parsed_data.ingredients and not parsed_data.instructions:
             parsed_data.description = "Instagram post detected but no recipe content found. Please add ingredients and instructions manually."
             parsed_data.confidence_score = 0.1
         
