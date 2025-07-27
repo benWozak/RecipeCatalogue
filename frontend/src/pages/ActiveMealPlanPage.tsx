@@ -117,7 +117,7 @@ export default function ActiveMealPlanPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden max-w-5xl mx-auto">
+      <div className="flex-1 overflow-hidden w-full max-w-4xl mx-auto">
         {activeMealPlan &&
           (viewMode === "daily" ? (
             <DailyMealView mealPlan={activeMealPlan} />

@@ -1,9 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router';
-import { useAuth } from '@clerk/clerk-react';
-import { ArrowLeft, Edit, Loader2, Calendar, Users, RotateCcw } from 'lucide-react';
-import { MealPlan, decodeMealPlanDate, getDayName } from '@/types/mealPlan';
-import { mealPlanService } from '@/services/mealPlanService';
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router";
+import { useAuth } from "@clerk/clerk-react";
+import {
+  ArrowLeft,
+  Edit,
+  Loader2,
+  Calendar,
+  Users,
+  RotateCcw,
+} from "lucide-react";
+import { MealPlan, decodeMealPlanDate, getDayName } from "@/types/mealPlan";
+import { mealPlanService } from "@/services/mealPlanService";
 
 export default function MealPlanDetailPage() {
   const { id } = useParams();
@@ -22,10 +29,10 @@ export default function MealPlanDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = await getToken();
       if (!token) {
-        setError('Authentication required');
+        setError("Authentication required");
         return;
       }
 
@@ -33,10 +40,11 @@ export default function MealPlanDetailPage() {
       if (response.success && response.data) {
         setMealPlan(response.data);
       } else {
-        setError(response.error || 'Failed to load meal plan');
+        setError(response.error || "Failed to load meal plan");
       }
     } catch (err) {
-      setError('Failed to load meal plan');
+      console.error("Error loading meal plan:", err);
+      setError("Failed to load meal plan");
     } finally {
       setLoading(false);
     }
@@ -48,47 +56,49 @@ export default function MealPlanDetailPage() {
     }
 
     const weekMap = new Map<number, any>();
-    
-    mealPlan.entries.forEach(entry => {
+
+    mealPlan.entries.forEach((entry) => {
       const { weekNumber, dayOfWeek } = decodeMealPlanDate(entry.date);
-      
+
       if (!weekMap.has(weekNumber)) {
         weekMap.set(weekNumber, {
           week_number: weekNumber,
           days: new Map(),
-          total_meals: 0
+          total_meals: 0,
         });
       }
-      
+
       const week = weekMap.get(weekNumber)!;
       if (!week.days.has(dayOfWeek)) {
         week.days.set(dayOfWeek, []);
       }
-      
+
       week.days.get(dayOfWeek)!.push(entry);
       week.total_meals++;
     });
 
-    const weeks = Array.from(weekMap.values()).sort((a, b) => a.week_number - b.week_number);
-    
+    const weeks = Array.from(weekMap.values()).sort(
+      (a, b) => a.week_number - b.week_number
+    );
+
     return {
       weekCount: weeks.length,
       totalMeals: mealPlan.entries.length,
-      weeks
+      weeks,
     };
   };
 
   const getRotationDescription = () => {
     const { weekCount } = getRotationInfo();
-    
+
     if (weekCount === 0) {
-      return 'No meals planned';
+      return "No meals planned";
     }
-    
+
     if (weekCount === 1) {
-      return 'Single week rotation';
+      return "Single week rotation";
     }
-    
+
     return `${weekCount} week rotation`;
   };
 
@@ -98,7 +108,9 @@ export default function MealPlanDetailPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Loading meal plan...</span>
+            <span className="ml-2 text-muted-foreground">
+              Loading meal plan...
+            </span>
           </div>
         </div>
       </div>
@@ -110,7 +122,7 @@ export default function MealPlanDetailPage() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link 
+            <Link
               to="/meal-plans"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -118,10 +130,10 @@ export default function MealPlanDetailPage() {
             </Link>
             <h1 className="text-3xl font-bold text-foreground">Meal Plan</h1>
           </div>
-          
+
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
             <p className="text-destructive font-medium mb-4">{error}</p>
-            <Link 
+            <Link
               to="/meal-plans"
               className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
             >
@@ -138,7 +150,7 @@ export default function MealPlanDetailPage() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link 
+            <Link
               to="/meal-plans"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -146,10 +158,10 @@ export default function MealPlanDetailPage() {
             </Link>
             <h1 className="text-3xl font-bold text-foreground">Meal Plan</h1>
           </div>
-          
+
           <div className="bg-card border border-border rounded-lg p-6 text-center">
             <p className="text-muted-foreground">Meal plan not found</p>
-            <Link 
+            <Link
               to="/meal-plans"
               className="mt-4 inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
             >
@@ -166,7 +178,7 @@ export default function MealPlanDetailPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Link 
+          <Link
             to="/meal-plans"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
@@ -191,22 +203,29 @@ export default function MealPlanDetailPage() {
             <div className="flex items-center gap-3">
               <RotateCcw className="h-5 w-5 text-muted-foreground" />
               <div>
-                <div className="text-sm text-muted-foreground">Week Rotation</div>
-                <div className="font-semibold">{getRotationInfo().weekCount} week{getRotationInfo().weekCount !== 1 ? 's' : ''}</div>
+                <div className="text-sm text-muted-foreground">
+                  Week Rotation
+                </div>
+                <div className="font-semibold">
+                  {getRotationInfo().weekCount} week
+                  {getRotationInfo().weekCount !== 1 ? "s" : ""}
+                </div>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Total Meals</div>
-                <div className="font-semibold">{getRotationInfo().totalMeals}</div>
+                <div className="font-semibold">
+                  {getRotationInfo().totalMeals}
+                </div>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-muted-foreground" />
@@ -223,10 +242,13 @@ export default function MealPlanDetailPage() {
         {/* Rotation View */}
         <div className="bg-card border border-border rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-6">Rotation Schedule</h2>
-          
+
           {getRotationInfo().totalMeals === 0 ? (
             <div className="text-center py-12">
-              <Calendar size={48} className="mx-auto mb-4 text-muted-foreground" />
+              <Calendar
+                size={48}
+                className="mx-auto mb-4 text-muted-foreground"
+              />
               <p className="text-muted-foreground mb-4">No meals planned yet</p>
               <Link
                 to={`/meal-plans/${mealPlan.id}/edit`}
@@ -238,7 +260,10 @@ export default function MealPlanDetailPage() {
           ) : (
             <div className="space-y-8">
               {getRotationInfo().weeks.map((week) => (
-                <div key={week.week_number} className="border border-border rounded-lg p-4">
+                <div
+                  key={week.week_number}
+                  className="border border-border rounded-lg p-4"
+                >
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
                     <RotateCcw className="h-4 w-4" />
                     Week {week.week_number}
@@ -246,24 +271,36 @@ export default function MealPlanDetailPage() {
                       ({week.total_meals} meals)
                     </span>
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
                     {Array.from({ length: 7 }, (_, dayIndex) => {
                       const dayName = getDayName(dayIndex);
                       const dayMeals = week.days.get(dayIndex) || [];
-                      
+
                       return (
-                        <div key={dayIndex} className="bg-muted/30 rounded-lg p-3">
-                          <div className="font-medium text-sm mb-2">{dayName}</div>
+                        <div
+                          key={dayIndex}
+                          className="bg-muted/30 rounded-lg p-3"
+                        >
+                          <div className="font-medium text-sm mb-2">
+                            {dayName}
+                          </div>
                           <div className="space-y-1">
                             {dayMeals.length === 0 ? (
-                              <div className="text-xs text-muted-foreground">No meals</div>
+                              <div className="text-xs text-muted-foreground">
+                                No meals
+                              </div>
                             ) : (
                               dayMeals.map((entry: any, index: number) => (
-                                <div key={index} className="text-xs p-1 bg-background rounded border border-border">
-                                  <div className="font-medium">{entry.meal_type}</div>
+                                <div
+                                  key={index}
+                                  className="text-xs p-1 bg-background rounded border border-border"
+                                >
+                                  <div className="font-medium">
+                                    {entry.meal_type}
+                                  </div>
                                   <div className="text-muted-foreground truncate">
-                                    {entry.recipe_title || 'Recipe'}
+                                    {entry.recipe_title || "Recipe"}
                                   </div>
                                 </div>
                               ))
