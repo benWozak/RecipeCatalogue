@@ -95,7 +95,7 @@ export function PricingSection() {
           {pricingTiers.map((tier, index) => (
             <Card
               key={index}
-              className={`relative group hover:shadow-lg transition-all duration-300 border-0 bg-background/50 backdrop-blur-sm hover:bg-background/80 ring-1 ${
+              className={`relative group hover:shadow-lg transition-all duration-300 border-0 backdrop-blur-sm hover:bg-background/80 ring-1 ${
                 tier.popular ? "ring-primary/20" : "ring-muted"
               }`}
             >
@@ -171,15 +171,15 @@ export function PricingSection() {
               </CardContent>
 
               <span
-                className="absolute -bottom-px left-1/2 h-px w-1/2 -translate-x-1/2 bg-gradient-to-r opacity-60"
+                className="absolute -bottom-px left-1/2 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r opacity-70"
                 style={{
                   backgroundImage: `linear-gradient(to right, transparent, ${tier.color}, transparent)`,
                 }}
               />
               <span
-                className="absolute inset-0 opacity-60 pointer-events-none"
+                className="absolute inset-0 opacity-70 pointer-events-none"
                 style={{
-                  background: `radial-gradient(30% 5% at 50% 100%, ${tier.color}26 0%, transparent 100%)`,
+                  background: `radial-gradient(50% 15% at 50% 100%, ${tier.color}60 0%, transparent 100%)`,
                 }}
               />
             </Card>

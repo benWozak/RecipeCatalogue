@@ -27,7 +27,7 @@ export function HeroSection() {
             <div>
               <BoxReveal boxColor="#89CCAC" duration={0.5}>
                 <p className="inline-block mb-4 text-sm font-semibold tracking-wider uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  coming soon
+                  Open Beta
                 </p>
               </BoxReveal>
             </div>

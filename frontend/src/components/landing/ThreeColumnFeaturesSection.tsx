@@ -66,9 +66,9 @@ const leftFeatures: FeatureItem[] = [
 const rightFeatures: FeatureItem[] = [
   {
     icon: Search,
-    title: "Smart Recipe Discovery",
+    title: "Make it Yours",
     description:
-      "Find recipes by ingredients, cuisine, cooking time, or dietary restrictions with advanced filtering.",
+      "Modify recipes the way you like them. Add notes, adjust ingredients, and create your own variations.",
     position: "right",
     cornerStyle: "sm:-translate-x-4 sm:rounded-bl-[2px]",
     color: chartColors[3],
@@ -101,7 +101,7 @@ const FeatureCard = ({ feature }: { feature: FeatureItem }) => {
       <Card
         className={cn(
           "relative rounded-2xl px-4 pt-4 pb-4 text-sm border-0",
-          "bg-background/50 ring-border/20 ring hover:bg-background/80 transition-all duration-300",
+          "ring-muted ring-1 hover:bg-background/80 transition-all duration-300",
           feature.cornerStyle
         )}
       >
@@ -117,15 +117,15 @@ const FeatureCard = ({ feature }: { feature: FeatureItem }) => {
           {feature.description}
         </CardDescription>
         <span
-          className="absolute -bottom-px left-1/2 h-px w-1/2 -translate-x-1/2 bg-gradient-to-r opacity-60"
+          className="absolute -bottom-px left-1/2 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r opacity-70"
           style={{
             backgroundImage: `linear-gradient(to right, transparent, ${feature.color}, transparent)`,
           }}
         ></span>
         <span
-          className="absolute inset-0 opacity-60"
+          className="absolute inset-0 opacity-70"
           style={{
-            background: `radial-gradient(30% 5% at 50% 100%, ${feature.color}26 0%, transparent 100%)`,
+            background: `radial-gradient(50% 15% at 50% 100%, ${feature.color}60 0%, transparent 100%)`,
           }}
         ></span>
       </Card>
@@ -149,8 +149,8 @@ export function ThreeColumnFeaturesSection() {
               <span className="relative z-1 flex items-center gap-2">
                 Features
               </span>
-              <span className="from-primary/0 via-primary to-primary/0 absolute -bottom-px left-1/2 h-px w-2/5 -translate-x-1/2 bg-gradient-to-r"></span>
-              <span className="absolute inset-0 bg-[radial-gradient(30%_40%_at_50%_100%,hsl(var(--primary)/0.25)_0%,transparent_100%)]"></span>
+              <span className="from-primary/10 via-primary to-primary/0 absolute -bottom-px left-1/2 h-px w-3/5 -translate-x-1/2 bg-gradient-to-r"></span>
+              <span className="absolute inset-0 bg-[radial-gradient(30%_40%_at_50%_100%,hsl(var(--primary)/0.75)_0%,transparent_100%)]"></span>
             </div>
             <h2 className="text-foreground mb-2 text-center text-2xl sm:mb-2.5 md:text-[2rem] font-bold">
               Tools That Make Home Cooking{" "}
