@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-// import { Link } from "react-router";
+import { Link } from "react-router";
 import { AuroraText } from "@/components/ui/aurora-text";
 import { BoxReveal } from "@/components/magicui/box-reveal";
 import {
@@ -8,7 +8,7 @@ import {
   Globe,
   Camera,
   Instagram,
-  // Sparkles,
+  Sparkles,
   CircleCheckBig,
 } from "lucide-react";
 
@@ -27,7 +27,7 @@ export function HeroSection() {
             <div>
               <BoxReveal boxColor="#89CCAC" duration={0.5}>
                 <p className="inline-block mb-4 text-sm font-semibold tracking-wider uppercase bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Coming Soon
+                  coming soon
                 </p>
               </BoxReveal>
             </div>
@@ -52,25 +52,25 @@ export function HeroSection() {
               <BoxReveal boxColor="#B689CC" duration={0.5}>
                 <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg inline-flex items-center">
                   <CircleCheckBig className="mr-2 h-5 w-5 text-green-600" /> No
-                  more waiting for slow recipe sites.
+                  more waiting for slow recipe sites
                 </p>
               </BoxReveal>
               <BoxReveal boxColor="#89CCAC" duration={0.5}>
                 <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg inline-flex items-center">
                   <CircleCheckBig className="mr-2 h-5 w-5 text-green-600" /> No
-                  more scrolling through reading lists.
+                  more scrolling through reading lists
                 </p>
               </BoxReveal>
               <BoxReveal boxColor="#B689CC" duration={0.6}>
                 <p className="text-gray-700 dark:text-gray-300 text-lg md:text-xl inline-flex items-center">
-                  Just your recipes, organized and ready to use.
+                  Just your recipes, streamlined and ready for your next meal
                 </p>
               </BoxReveal>
             </div>
           </div>
           <BoxReveal boxColor="#89CCAC" duration={0.8}>
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
-              {/* <Button
+              <Button
                 size="lg"
                 className="text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
                 asChild
@@ -79,7 +79,7 @@ export function HeroSection() {
                   <Sparkles className="mr-2 h-5 w-5" />
                   Get Started Free
                 </Link>
-              </Button> */}
+              </Button>
               <Button
                 // variant="outline"
                 size="lg"

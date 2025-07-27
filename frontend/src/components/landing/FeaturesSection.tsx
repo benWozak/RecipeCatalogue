@@ -52,12 +52,15 @@ export function FeaturesSection() {
             id="features-heading"
             className="text-3xl sm:text-4xl font-bold mb-4"
           >
-            Solve the problems that
-            <span className="block text-primary">make cooking frustrating</span>
+            Solve the problems that make
+            <span className="block text-primary">
+              modern home-cooking frustrating
+            </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            We've all been there—ads that make pages jump, slow page loads, and
-            recipes scattered everywhere. This app fixes all of that.
+            Tired of slow page loads and ads that make you lose your place?
+            Can't remember where you saved that recipe? This app solves all
+            those problems.
           </p>
         </div>
 

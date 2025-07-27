@@ -253,13 +253,11 @@ export function DailyMealView({
                   (() => {
                     const recipeData = convertMealPlanEntryToRecipe(meal);
                     return recipeData ? (
-                      <div className="bg-white rounded-lg border">
-                        <MiniRecipeCard
-                          recipe={recipeData}
-                          onClick={() => navigate(`/recipes/${meal.recipe_id}`)}
-                          className="cursor-pointer hover:bg-muted/30 transition-colors"
-                        />
-                      </div>
+                      <MiniRecipeCard
+                        recipe={recipeData}
+                        onClick={() => navigate(`/recipes/${meal.recipe_id}`)}
+                        className="cursor-pointer hover:bg-muted/30 transition-colors"
+                      />
                     ) : (
                       <div className="bg-white rounded-lg p-3 border">
                         <div className="flex items-center gap-3">

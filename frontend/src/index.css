@@ -5,7 +5,7 @@
 :root {
   --background: rgb(252, 252, 252);
   --foreground: rgb(23, 23, 23);
-  --card: rgb(252, 252, 252);
+  --card: rgb(255, 255, 255);
   --card-foreground: rgb(23, 23, 23);
   --popover: rgb(252, 252, 252);
   --popover-foreground: rgb(82, 82, 82);
@@ -52,9 +52,9 @@
 }
 
 .dark {
-  --background: rgb(18, 18, 18);
+  --background: rgb(23, 23, 23);
   --foreground: rgb(229, 232, 237);
-  --card: rgb(23, 23, 23);
+  --card: rgb(31, 31, 31);
   --card-foreground: rgb(229, 232, 237);
   --popover: rgb(36, 36, 36);
   --popover-foreground: rgb(169, 169, 169);
