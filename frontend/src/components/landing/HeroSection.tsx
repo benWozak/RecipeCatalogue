@@ -81,7 +81,7 @@ export function HeroSection() {
                 </Link>
               </Button>
               <Button
-                // variant="outline"
+                variant="outline"
                 size="lg"
                 className="text-lg px-8 py-6"
                 asChild
@@ -94,7 +94,27 @@ export function HeroSection() {
             </div>
           </BoxReveal>
           <div className="flex items-center space-x-3">
-            {/* App store links commented out as in original */}
+            {/* Keeping this for later use */}
+            {/* <a
+                href="/"
+                className="w-32 transition duration-300 hover:shadow-lg"
+              >
+                <img
+                  src="https://kitwind.io/assets/kometa/app-store.png"
+                  className="object-cover object-top w-full h-auto mx-auto"
+                  alt=""
+                />
+              </a> */}
+            {/* <a
+                href="/"
+                className="w-32 transition duration-300 hover:shadow-lg"
+              >
+                <img
+                  src="https://kitwind.io/assets/kometa/google-play.png"
+                  className="object-cover object-top w-full h-auto mx-auto"
+                  alt=""
+                />
+              </a> */}
           </div>
           <BoxReveal boxColor="#B689CC" duration={0.6}>
             <div className="flex items-center space-x-6 pt-6 text-sm text-muted-foreground">

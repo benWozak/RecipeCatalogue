@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 // import { DetailedFeaturesSection } from "@/components/landing/DetailedFeaturesSection";
 import { ThreeColumnFeaturesSection } from "@/components/landing/ThreeColumnFeaturesSection";
+import { PricingSection } from "@/components/landing/PricingSection";
 import { CTASection } from "@/components/landing/CTASection";
 
 export default function LandingPage() {
@@ -16,11 +17,22 @@ export default function LandingPage() {
     url: "https://recipecatalogue.app",
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Web Browser, iOS, Android",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
+    offers: [
+      {
+        "@type": "Offer",
+        name: "Free Tier",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Maximum 20 recipes, 10 URL/Instagram parsing uses per month, 1 week meal planning"
+      },
+      {
+        "@type": "Offer",
+        name: "Premium Tier",
+        price: "5",
+        priceCurrency: "USD",
+        description: "Unlimited recipes, unlimited parsing, unlimited meal planning with save functionality, full OCR access"
+      }
+    ],
     author: {
       "@type": "Organization",
       name: "Recipe Catalogue",
@@ -49,8 +61,8 @@ export default function LandingPage() {
       <article className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <HeroSection />
         <FeaturesSection />
-        {/* <DetailedFeaturesSection /> */}
         <ThreeColumnFeaturesSection />
+        <PricingSection />
         <CTASection />
       </article>
     </>
