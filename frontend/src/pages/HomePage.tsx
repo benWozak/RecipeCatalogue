@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ActionCard } from "@/components/ui/action-card";
+import { ActionGrid } from "@/components/ui/action-grid";
 import {
   BookOpen,
   Calendar,
@@ -145,7 +147,7 @@ export default function HomePage() {
       description: "Parse from URL or photo",
       icon: Camera,
       href: "/recipes/scan",
-      variant: "default" as const,
+      variant: "featured" as const,
     },
     {
       title: "Browse Recipes",
@@ -184,35 +186,19 @@ export default function HomePage() {
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="md:grid md:grid-cols-2 flex flex-col gap-4 mb-8">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Button
-                key={action.title}
-                asChild
+        <ActionGrid columns={2} maxWidth="4xl" className="mb-8">
+          {quickActions.map((action) => (
+            <Link key={action.title} to={action.href}>
+              <ActionCard
+                icon={action.icon}
+                title={action.title}
+                description={action.description}
                 variant={action.variant}
-                className="w-full h-auto flex-col gap-3 py-6 touch-manipulation"
-              >
-                <Link to={action.href}>
-                  <Icon size={28} />
-                  <div className="text-center">
-                    <div className="font-semibold">{action.title}</div>
-                    <div
-                      className={`text-xs ${
-                        action.variant === "outline"
-                          ? "text-muted-foreground"
-                          : "text-accent-foreground"
-                      }`}
-                    >
-                      {action.description}
-                    </div>
-                  </div>
-                </Link>
-              </Button>
-            );
-          })}
-        </div>
+                size="compact"
+              />
+            </Link>
+          ))}
+        </ActionGrid>
 
         {/* Recent Activity Section */}
         <RecentActivity />
