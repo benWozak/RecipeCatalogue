@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Clock,
@@ -13,6 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HtmlRenderer } from "@/components/ui/html-renderer";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 import { useRecipe, useDeleteRecipe } from "@/hooks/useRecipes";
 import { useRecipeStore } from "@/stores/recipeStore";
 import { Recipe, Tag } from "@/types/recipe";
@@ -23,6 +30,31 @@ export default function RecipeDetailPage() {
   const { selectedRecipe, error } = useRecipeStore();
   const { data: recipe, isLoading, error: queryError } = useRecipe(id!);
   const deleteRecipe = useDeleteRecipe();
+  const [activeTab, setActiveTab] = useState<"ingredients" | "instructions">(
+    "ingredients"
+  );
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    const handleSelect = () => {
+      const selectedIndex = carouselApi.selectedScrollSnap();
+      setActiveTab(selectedIndex === 0 ? "ingredients" : "instructions");
+    };
+
+    carouselApi.on("select", handleSelect);
+    return () => {
+      carouselApi.off("select", handleSelect);
+    };
+  }, [carouselApi]);
+
+  const handleTabChange = (tab: "ingredients" | "instructions") => {
+    setActiveTab(tab);
+    if (carouselApi) {
+      carouselApi.scrollTo(tab === "ingredients" ? 0 : 1);
+    }
+  };
 
   const currentRecipe: Recipe | null =
     (recipe && typeof recipe === "object" && recipe !== null && "id" in recipe
@@ -417,7 +449,132 @@ export default function RecipeDetailPage() {
               </CardHeader>
 
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Mobile/Tablet Toggle Tabs */}
+                <div className="lg:hidden mb-6">
+                  <div className="flex items-center bg-muted rounded-lg w-fit">
+                    <Button
+                      variant={
+                        activeTab === "ingredients" ? "default" : "ghost"
+                      }
+                      size="sm"
+                      onClick={() => handleTabChange("ingredients")}
+                      className="flex items-center gap-2 rounded-md"
+                    >
+                      Ingredients
+                    </Button>
+                    <Button
+                      variant={
+                        activeTab === "instructions" ? "default" : "ghost"
+                      }
+                      size="sm"
+                      onClick={() => handleTabChange("instructions")}
+                      className="flex items-center gap-2 rounded-md"
+                    >
+                      Instructions
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Mobile/Tablet Carousel View */}
+                <div className="lg:hidden">
+                  <Carousel
+                    setApi={setCarouselApi}
+                    opts={{
+                      align: "start",
+                      loop: false,
+                    }}
+                  >
+                    <CarouselContent>
+                      <CarouselItem>
+                        <div>
+                          <h3 className="text-xl font-semibold mb-4">
+                            Ingredients
+                          </h3>
+                          {(() => {
+                            if (!currentRecipe.ingredients) {
+                              return (
+                                <p className="text-muted-foreground">
+                                  No ingredients listed
+                                </p>
+                              );
+                            }
+
+                            if (
+                              typeof currentRecipe.ingredients === "object" &&
+                              currentRecipe.ingredients.content
+                            ) {
+                              return (
+                                <HtmlRenderer
+                                  content={currentRecipe.ingredients.content}
+                                />
+                              );
+                            }
+
+                            if (typeof currentRecipe.ingredients === "string") {
+                              return (
+                                <HtmlRenderer
+                                  content={currentRecipe.ingredients}
+                                />
+                              );
+                            }
+
+                            return (
+                              <p className="text-muted-foreground">
+                                No ingredients listed
+                              </p>
+                            );
+                          })()}
+                        </div>
+                      </CarouselItem>
+                      <CarouselItem>
+                        <div>
+                          <h3 className="text-xl font-semibold mb-4">
+                            Instructions
+                          </h3>
+                          {(() => {
+                            if (!currentRecipe.instructions) {
+                              return (
+                                <p className="text-muted-foreground">
+                                  No instructions provided
+                                </p>
+                              );
+                            }
+
+                            if (
+                              typeof currentRecipe.instructions === "object" &&
+                              currentRecipe.instructions.content
+                            ) {
+                              return (
+                                <HtmlRenderer
+                                  content={currentRecipe.instructions.content}
+                                />
+                              );
+                            }
+
+                            if (
+                              typeof currentRecipe.instructions === "string"
+                            ) {
+                              return (
+                                <HtmlRenderer
+                                  content={currentRecipe.instructions}
+                                />
+                              );
+                            }
+
+                            return (
+                              <p className="text-muted-foreground">
+                                Unable to display instructions
+                              </p>
+                            );
+                          })()}
+                        </div>
+                      </CarouselItem>
+                    </CarouselContent>
+                  </Carousel>
+                </div>
+
+                {/* Desktop Side-by-Side View */}
+                <div className="hidden lg:grid lg:grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Ingredients</h3>
                     {(() => {
@@ -429,7 +586,6 @@ export default function RecipeDetailPage() {
                         );
                       }
 
-                      // Handle JSONB format: { type: "html", content: "..." }
                       if (
                         typeof currentRecipe.ingredients === "object" &&
                         currentRecipe.ingredients.content
@@ -441,7 +597,6 @@ export default function RecipeDetailPage() {
                         );
                       }
 
-                      // Handle direct string content (fallback)
                       if (typeof currentRecipe.ingredients === "string") {
                         return (
                           <HtmlRenderer content={currentRecipe.ingredients} />
@@ -467,7 +622,6 @@ export default function RecipeDetailPage() {
                         );
                       }
 
-                      // Handle JSONB format: { type: "html", content: "..." }
                       if (
                         typeof currentRecipe.instructions === "object" &&
                         currentRecipe.instructions.content
@@ -479,7 +633,6 @@ export default function RecipeDetailPage() {
                         );
                       }
 
-                      // Handle direct string content (fallback for legacy data)
                       if (typeof currentRecipe.instructions === "string") {
                         return (
                           <HtmlRenderer content={currentRecipe.instructions} />
