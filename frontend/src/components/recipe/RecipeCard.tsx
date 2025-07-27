@@ -33,7 +33,17 @@ export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardPro
 
   // Get the best thumbnail image - prioritize stored thumbnails
   const getThumbnailImage = () => {
-    // First, try stored thumbnails (optimized for recipe cards)
+    // First, try video thumbnails if this is a video
+    if (recipe.media?.video_thumbnails?.thumbnails) {
+      // Use medium size for recipe cards (300x300)
+      return (
+        recipe.media.video_thumbnails.thumbnails.medium ||
+        recipe.media.video_thumbnails.thumbnails.large ||
+        recipe.media.video_thumbnails.thumbnails.small
+      );
+    }
+
+    // Next, try stored image thumbnails (optimized for recipe cards)
     if (recipe.media?.stored_media?.thumbnails) {
       // Use medium size for recipe cards (300x300)
       return (

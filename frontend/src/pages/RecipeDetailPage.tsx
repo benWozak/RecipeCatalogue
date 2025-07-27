@@ -252,7 +252,7 @@ export default function RecipeDetailPage() {
                   {currentRecipe.media.video_url && (
                     <div className="space-y-4">
                       <h4 className="font-medium">Video</h4>
-                      <div className="relative aspect-video">
+                      <div className="relative aspect-auto">
                         <video
                           src={currentRecipe.media.video_url}
                           controls

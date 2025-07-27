@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from .base_parser import BaseParser, ParsedRecipe
 from .text_processor import TextProcessor, RecipePattern
 from app.utils.storage_utils import storage_utils
+from app.utils.media_utils import media_utils
 
 
 class InstagramParser(BaseParser):
@@ -57,29 +58,16 @@ class InstagramParser(BaseParser):
             media_data = self._extract_media_data(post)
             
             # Store media with thumbnails if available
-            if media_data.get("images"):
+            await self._process_and_store_media(media_data)
+            
+            # Generate video thumbnails if this is a video post
+            if post.is_video and media_data.get("video_url"):
                 try:
-                    # Store the primary image/thumbnail
-                    primary_image = media_data["images"][0]
-                    if primary_image.get("url"):
-                        storage_result = await storage_utils.store_media_from_url(
-                            primary_image["url"],
-                            recipe_id=None  # Will be set later when recipe is saved
-                        )
-                        
-                        if storage_result.get("success"):
-                            # Add stored media info to media_data
-                            media_data["stored_media"] = {
-                                "media_id": storage_result["media_id"],
-                                "thumbnails": {
-                                    "small": storage_utils.get_thumbnail_url(storage_result["media_id"], "small"),
-                                    "medium": storage_utils.get_thumbnail_url(storage_result["media_id"], "medium"),
-                                    "large": storage_utils.get_thumbnail_url(storage_result["media_id"], "large")
-                                },
-                                "original": storage_utils.get_original_url(storage_result["media_id"])
-                            }
+                    video_thumbnails = await self._generate_video_thumbnails(media_data["video_url"])
+                    if video_thumbnails:
+                        media_data["video_thumbnails"] = video_thumbnails
                 except Exception as e:
-                    print(f"Failed to store media for Instagram post: {e}")
+                    print(f"Failed to generate video thumbnails: {e}")
             
             # Build parsed recipe with structured data
             parsed_data = ParsedRecipe(
@@ -245,6 +233,7 @@ class InstagramParser(BaseParser):
                             try:
                                 media_item["video_url"] = node.video_url
                                 media_item["video_duration"] = getattr(node, 'video_duration', None)
+                                media_item["requires_thumbnail"] = True  # Flag for video thumbnail generation
                             except:
                                 pass
                         
@@ -348,3 +337,51 @@ class InstagramParser(BaseParser):
             parsed_data.confidence_score = 0.1
         
         return parsed_data
+    
+    async def _process_and_store_media(self, media_data: Dict[str, Any]) -> None:
+        """Process and store media (images/videos) with thumbnails"""
+        if media_data.get("images"):
+            try:
+                # Store the primary image/thumbnail
+                primary_image = media_data["images"][0]
+                if primary_image.get("url"):
+                    storage_result = await storage_utils.store_media_from_url(
+                        primary_image["url"],
+                        recipe_id=None  # Will be set later when recipe is saved
+                    )
+                    
+                    if storage_result.get("success"):
+                        # Add stored media info to media_data
+                        media_data["stored_media"] = {
+                            "media_id": storage_result["media_id"],
+                            "thumbnails": {
+                                "small": storage_utils.get_thumbnail_url(storage_result["media_id"], "small"),
+                                "medium": storage_utils.get_thumbnail_url(storage_result["media_id"], "medium"),
+                                "large": storage_utils.get_thumbnail_url(storage_result["media_id"], "large")
+                            },
+                            "original": storage_utils.get_original_url(storage_result["media_id"])
+                        }
+            except Exception as e:
+                print(f"Failed to store media for Instagram post: {e}")
+    
+    async def _generate_video_thumbnails(self, video_url: str) -> Optional[Dict[str, Any]]:
+        """Generate thumbnails for video posts"""
+        try:
+            # Use media_utils to process video and generate thumbnails
+            video_result = await media_utils.process_video_from_url(video_url, create_thumbnails=True)
+            
+            if video_result.get("success") and video_result.get("thumbnails"):
+                return {
+                    "video_metadata": video_result["metadata"],
+                    "thumbnails": {
+                        size: {
+                            "filename": thumb_data["filename"],
+                            "size": thumb_data["size"],
+                            "timestamp": thumb_data["timestamp"]
+                        } for size, thumb_data in video_result["thumbnails"].items()
+                    }
+                }
+            return None
+        except Exception as e:
+            print(f"Failed to generate video thumbnails: {e}")
+            return None

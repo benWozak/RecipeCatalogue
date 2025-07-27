@@ -5,6 +5,12 @@ import os
 import hashlib
 import httpx
 from pathlib import Path
+import tempfile
+import subprocess
+try:
+    import ffmpeg
+except ImportError:
+    ffmpeg = None
 
 
 class MediaUtils:
@@ -20,6 +26,9 @@ class MediaUtils:
     # Supported image formats
     SUPPORTED_FORMATS = {'JPEG', 'PNG', 'WebP', 'GIF'}
     
+    # Supported video formats
+    SUPPORTED_VIDEO_FORMATS = {'MP4', 'WebM', 'MOV', 'AVI', 'MKV'}
+    
     def __init__(self, media_dir: str = "media"):
         """Initialize MediaUtils with media directory"""
         self.media_dir = Path(media_dir)
@@ -28,6 +37,8 @@ class MediaUtils:
         # Create subdirectories
         (self.media_dir / "thumbnails").mkdir(exist_ok=True)
         (self.media_dir / "images").mkdir(exist_ok=True)
+        (self.media_dir / "videos").mkdir(exist_ok=True)
+        (self.media_dir / "video_thumbnails").mkdir(exist_ok=True)
     
     async def download_image(self, url: str) -> Optional[bytes]:
         """Download image from URL"""
@@ -179,6 +190,138 @@ class MediaUtils:
                     print(f"Failed to delete {file_path}: {e}")
         
         return deleted_count
+    
+    def extract_video_thumbnail(self, video_url: str, timestamp: float = 1.0) -> Optional[bytes]:
+        """Extract thumbnail from video at specified timestamp using FFmpeg"""
+        if not ffmpeg:
+            print("FFmpeg not available - cannot extract video thumbnail")
+            return None
+        
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as temp_thumb:
+                temp_thumb_path = temp_thumb.name
+            
+            # Use FFmpeg to extract frame at timestamp
+            (
+                ffmpeg
+                .input(video_url, ss=timestamp)
+                .output(temp_thumb_path, vframes=1, format='image2', vcodec='mjpeg')
+                .overwrite_output()
+                .run(capture_stdout=True, capture_stderr=True)
+            )
+            
+            # Read the generated thumbnail
+            with open(temp_thumb_path, 'rb') as f:
+                thumbnail_data = f.read()
+            
+            # Clean up temp file
+            os.unlink(temp_thumb_path)
+            
+            return thumbnail_data
+            
+        except Exception as e:
+            print(f"Failed to extract video thumbnail: {e}")
+            # Clean up temp file if it exists
+            try:
+                os.unlink(temp_thumb_path)
+            except:
+                pass
+            return None
+    
+    def create_video_thumbnails(self, video_url: str, timestamp: float = 1.0) -> Dict[str, Optional[bytes]]:
+        """Create multiple thumbnail sizes from video"""
+        # First extract a frame from the video
+        video_frame = self.extract_video_thumbnail(video_url, timestamp)
+        if not video_frame:
+            return {size_name: None for size_name in self.THUMBNAIL_SIZES.keys()}
+        
+        # Use existing image thumbnail creation for the extracted frame
+        return self.create_multiple_thumbnails(video_frame)
+    
+    def validate_video(self, video_url: str) -> Dict[str, Any]:
+        """Validate video and return metadata using FFmpeg"""
+        if not ffmpeg:
+            return {"valid": False, "error": "FFmpeg not available"}
+        
+        try:
+            # Probe video file for metadata
+            probe = ffmpeg.probe(video_url)
+            
+            # Find video stream
+            video_stream = next(
+                (stream for stream in probe['streams'] if stream['codec_type'] == 'video'), 
+                None
+            )
+            
+            if not video_stream:
+                return {"valid": False, "error": "No video stream found"}
+            
+            return {
+                "valid": True,
+                "format": probe['format']['format_name'],
+                "duration": float(probe['format'].get('duration', 0)),
+                "width": int(video_stream.get('width', 0)),
+                "height": int(video_stream.get('height', 0)),
+                "codec": video_stream.get('codec_name', ''),
+                "fps": eval(video_stream.get('r_frame_rate', '0/1')),
+                "bitrate": int(probe['format'].get('bit_rate', 0))
+            }
+            
+        except Exception as e:
+            return {"valid": False, "error": str(e)}
+    
+    def is_video_url(self, url: str) -> bool:
+        """Check if URL appears to be a video based on extension or content"""
+        video_extensions = {'.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v', '.flv'}
+        return any(url.lower().endswith(ext) for ext in video_extensions)
+    
+    async def process_media_from_url(self, url: str, create_thumbnails: bool = True) -> Dict[str, Any]:
+        """Process media (image or video) from URL and generate thumbnails"""
+        # Check if this is a video URL
+        if self.is_video_url(url):
+            return await self.process_video_from_url(url, create_thumbnails)
+        else:
+            # Use existing image processing
+            return await self.process_image_from_url(url, create_thumbnails)
+    
+    async def process_video_from_url(self, video_url: str, create_thumbnails: bool = True) -> Dict[str, Any]:
+        """Process video from URL and generate thumbnails"""
+        # Validate video
+        validation = self.validate_video(video_url)
+        if not validation["valid"]:
+            return {"success": False, "error": f"Invalid video: {validation['error']}"}
+        
+        # Generate filename
+        filename = self.generate_filename(video_url, "video")
+        
+        result = {
+            "success": True,
+            "filename": filename,
+            "metadata": validation,
+            "original_url": video_url,
+            "media_type": "video"
+        }
+        
+        # Create thumbnails if requested
+        if create_thumbnails:
+            # Extract thumbnail at 10% of video duration or 1 second, whichever is smaller
+            duration = validation.get('duration', 10)
+            timestamp = min(1.0, duration * 0.1) if duration > 0 else 1.0
+            
+            thumbnails = self.create_video_thumbnails(video_url, timestamp)
+            result["thumbnails"] = {}
+            
+            for size_name, thumbnail_data in thumbnails.items():
+                if thumbnail_data:
+                    thumb_filename = self.generate_filename(video_url, f"video_thumb_{size_name}")
+                    result["thumbnails"][size_name] = {
+                        "filename": thumb_filename,
+                        "data": thumbnail_data,
+                        "size": self.THUMBNAIL_SIZES[size_name],
+                        "timestamp": timestamp
+                    }
+        
+        return result
     
     def optimize_image(self, image_data: bytes, max_size: Tuple[int, int] = (1200, 1200), quality: int = 85) -> bytes:
         """Optimize image for web display"""

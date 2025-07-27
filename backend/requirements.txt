@@ -27,3 +27,6 @@ python-dateutil>=2.8.0
 # spacy>=3.7.0
 cryptography>=41.0.0
 nanoid==2.0.0
+
+# Video processing for thumbnail generation
+ffmpeg-python>=0.2.0
