@@ -21,7 +21,7 @@ export function HeroSection() {
             <div className="flex items-center space-x-2 mb-6">
               <ChefHat className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                Recipe Catalogue
+                Home Chef Companion
               </span>
             </div>
             <div>
@@ -138,14 +138,14 @@ export function HeroSection() {
             <img
               className="object-cover"
               src="https://kitwind.io/assets/kometa/one-girl-phone.png"
-              alt="Person using Recipe Catalogue app on mobile device"
+              alt="Person using Home Chef Companion app on mobile device"
             />
           </div>
           <div className="w-5/12 -ml-16 lg:-ml-32">
             <img
               className="object-cover"
               src="https://kitwind.io/assets/kometa/two-girls-phone.png"
-              alt="Two people sharing recipes using the Recipe Catalogue mobile app"
+              alt="Two people sharing recipes using the Home Chef Companion mobile app"
             />
           </div>
         </div>

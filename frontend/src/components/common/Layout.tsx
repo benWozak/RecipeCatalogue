@@ -34,7 +34,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
               <Link to="/" className="text-xl font-bold text-foreground">
-                Recipe Catalogue
+                Home Chef Companion
               </Link>
 
               {/* Desktop Navigation */}
@@ -71,7 +71,7 @@ export default function Layout({ children }: LayoutProps) {
       <header className="bg-card border-b border-border lg:hidden sticky top-0 z-50">
         <div className="flex items-center justify-between h-16 px-4">
           <Link to="/" className="text-xl font-bold text-foreground">
-            Recipe Catalogue
+            Home Chef Companion
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />

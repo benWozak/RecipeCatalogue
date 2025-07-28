@@ -1,27 +1,31 @@
-# Recipe Catalogue Backend
+# Home Chef Companion Backend
 
 FastAPI backend for the Recipe Management PWA application.
 
 ## Setup
 
 1. Create a virtual environment:
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
 2. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env
 # Edit .env with your actual configuration values
 ```
 
 4. Set up the database:
+
 ```bash
 # Create database migration
 alembic revision --autogenerate -m "Initial migration"
@@ -31,6 +35,7 @@ alembic upgrade head
 ```
 
 5. Run the development server:
+
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -38,6 +43,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## API Documentation
 
 Once the server is running, you can access:
+
 - API Documentation: http://localhost:8000/docs
 - Alternative API docs: http://localhost:8000/redoc
 
@@ -72,12 +78,14 @@ Required environment variables (see `.env.example`):
 - `CLERK_WEBHOOK_SECRET`: Clerk webhook secret
 
 Optional:
+
 - `GOOGLE_CLOUD_VISION_CREDENTIALS`: For OCR functionality
 - `OPENAI_API_KEY`: For AI-powered recipe parsing
 
 ## Database Migrations
 
 To create a new migration after model changes:
+
 ```bash
 alembic revision --autogenerate -m "Description of changes"
 alembic upgrade head

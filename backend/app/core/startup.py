@@ -1,5 +1,5 @@
 """
-Startup validation and checks for the Recipe Catalogue backend
+Startup validation and checks for the Home Chef Companion backend
 """
 
 import logging

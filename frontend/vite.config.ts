@@ -19,7 +19,7 @@ export default defineConfig({
       },
 
       manifest: {
-        name: 'Recipe Catalogue',
+        name: 'Home Chef Companion',
         short_name: 'Recipes',
         description: 'A meal plan builder with a collection of recipes',
         theme_color: '#8b5cf6',

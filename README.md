@@ -1,4 +1,4 @@
-# Recipe Catalogue
+# Home Chef Companion
 
 A comprehensive recipe management Progressive Web App (PWA) that allows users to store, organize, and plan meals with their favorite recipes. Built as a modern full-stack application with recipe parsing capabilities from various sources.
 
@@ -17,6 +17,7 @@ This is a **mono-repo** containing both frontend and backend applications:
 ### Tech Stack
 
 **Frontend (PWA)**
+
 - **Framework**: React 19 + TypeScript
 - **Build Tool**: Vite
 - **PWA**: Service Worker + Offline Support
@@ -25,6 +26,7 @@ This is a **mono-repo** containing both frontend and backend applications:
 - **Authentication**: Clerk (planned)
 
 **Backend (API)**
+
 - **Framework**: FastAPI (Python)
 - **Database**: Neon Postgres
 - **ORM**: SQLAlchemy + Alembic
@@ -33,6 +35,7 @@ This is a **mono-repo** containing both frontend and backend applications:
 - **Security**: Comprehensive security implementation
 
 **External Services**
+
 - **Database**: Neon Postgres (Cloud)
 - **Authentication**: Clerk
 - **Image Processing**: Google Cloud Vision (planned)
@@ -41,6 +44,7 @@ This is a **mono-repo** containing both frontend and backend applications:
 ## ✨ Features
 
 ### 📝 Recipe Management
+
 - **Manual Recipe Entry**: Rich text editor for custom recipes
 - **Recipe Parsing**: Extract recipes from:
   - 🌐 Website URLs (with structured data support)
@@ -50,18 +54,21 @@ This is a **mono-repo** containing both frontend and backend applications:
 - **Rich Media Support**: Multiple images and videos per recipe
 
 ### 🍽️ Meal Planning
+
 - **Weekly/Monthly Planning**: Drag-and-drop meal planning interface
 - **Shopping Lists**: Auto-generate from meal plans
 - **Portion Scaling**: Adjust recipes for different serving sizes
 - **Nutritional Info**: Ingredient-based nutrition calculation (planned)
 
 ### 🔍 Smart Search & Discovery
+
 - **Advanced Search**: Filter by ingredients, cuisine, and prep time
 - **Recipe Recommendations**: AI-powered suggestions (planned)
 - **Collections**: Curated recipe collections
 - **Social Features**: Share recipes with friends (planned)
 
 ### 📱 Progressive Web App
+
 - **Offline Support**: Access recipes without internet
 - **Mobile Optimized**: Native app-like experience
 - **Push Notifications**: Meal reminders and updates (planned)
@@ -78,37 +85,43 @@ This is a **mono-repo** containing both frontend and backend applications:
 ### Backend Setup
 
 1. **Navigate to backend directory:**
+
    ```bash
    cd backend
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Configure environment:**
+
    ```bash
    cp .env.example .env
    # Edit .env with your database URL and secrets
    ```
 
 4. **Generate secure secret key:**
+
    ```bash
    python generate_secret_key.py
    # Follow prompts and update .env with generated key
    ```
 
 5. **Set up database:**
+
    ```bash
    # Create initial migration
    alembic revision --autogenerate -m "Initial schema"
-   
+
    # Apply migration
    alembic upgrade head
    ```
 
 6. **Start development server:**
+
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
@@ -120,16 +133,19 @@ This is a **mono-repo** containing both frontend and backend applications:
 ### Frontend Setup
 
 1. **Navigate to frontend directory:**
+
    ```bash
    cd frontend
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Start development server:**
+
    ```bash
    npm run dev
    ```
@@ -186,6 +202,7 @@ See [Security Guide](backend/SECURITY.md) for detailed security information.
 ### Available Scripts
 
 **Backend:**
+
 ```bash
 # Development
 uvicorn app.main:app --reload
@@ -204,6 +221,7 @@ python generate_secret_key.py
 ```
 
 **Frontend:**
+
 ```bash
 # Development
 npm run dev
@@ -262,6 +280,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🎯 Roadmap
 
 ### Phase 1: Core Features ✅
+
 - [x] Backend API with authentication
 - [x] Database schema and migrations
 - [x] Security implementation
@@ -269,24 +288,28 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Meal planning functionality
 
 ### Phase 2: Frontend Foundation (In Progress)
+
 - [ ] React PWA setup
 - [ ] Clerk authentication integration
 - [ ] Recipe management interface
 - [ ] Meal planning calendar
 
 ### Phase 3: Enhanced Features
+
 - [ ] Recipe parsing from URLs
 - [ ] Image-based recipe extraction (OCR)
 - [ ] Instagram recipe parsing
 - [ ] Advanced search and filtering
 
 ### Phase 4: Social & AI Features
+
 - [ ] Recipe sharing and collections
 - [ ] AI-powered recipe recommendations
 - [ ] Nutritional analysis
 - [ ] Smart shopping lists
 
 ### Phase 5: Mobile & Offline
+
 - [ ] Enhanced PWA features
 - [ ] Offline recipe access
 - [ ] Push notifications

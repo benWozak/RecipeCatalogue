@@ -11,7 +11,7 @@ export default function LandingPage() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Recipe Catalogue",
+    name: "Home Chef Companion",
     description:
       "Organize all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface. No more losing your place to jumping ads and slow recipe sites.",
     url: "https://recipecatalogue.app",
@@ -23,19 +23,21 @@ export default function LandingPage() {
         name: "Free Tier",
         price: "0",
         priceCurrency: "USD",
-        description: "Maximum 20 recipes, 10 URL/Instagram parsing uses per month, 1 week meal planning"
+        description:
+          "Maximum 20 recipes, 10 URL/Instagram parsing uses per month, 1 week meal planning",
       },
       {
         "@type": "Offer",
         name: "Premium Tier",
         price: "5",
         priceCurrency: "USD",
-        description: "Unlimited recipes, unlimited parsing, unlimited meal planning with save functionality, full OCR access"
-      }
+        description:
+          "Unlimited recipes, unlimited parsing, unlimited meal planning with save functionality, full OCR access",
+      },
     ],
     author: {
       "@type": "Organization",
-      name: "Recipe Catalogue",
+      name: "Home Chef Companion",
       url: "https://recipecatalogue.app",
     },
     featureList: [
@@ -54,8 +56,8 @@ export default function LandingPage() {
     <>
       <SEO
         structuredData={structuredData}
-        title="Recipe Catalogue - All Your Recipes In One Place"
-        description="Stop losing your place to jumping ads and slow recipe sites. Recipe Catalogue organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface."
+        title="Home Chef Companion - All Your Recipes In One Place"
+        description="Stop losing your place to jumping ads and slow recipe sites. Home Chef Companion organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface."
         keywords="recipe organizer, meal planning, recipe collection, cooking app, recipe manager, ad-free recipes, recipe storage, instagram recipes, photo scanning"
       />
       <article className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">

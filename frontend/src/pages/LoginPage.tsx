@@ -12,7 +12,7 @@ export default function LoginPage() {
           <Link to="/" className="flex items-center space-x-2">
             <ChefHat className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-              Recipe Catalogue
+              Home Chef Companion
             </span>
           </Link>
           <Link to="/">

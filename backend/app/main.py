@@ -15,7 +15,7 @@ from app.api.collections import collections_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Recipe Catalogue API",
+    title="Home Chef Companion API",
     description="Backend API for Recipe Management PWA",
     version="1.0.0"
 )
@@ -46,7 +46,7 @@ if os.path.exists(media_dir):
 
 @app.get("/")
 async def root():
-    return {"message": "Recipe Catalogue API"}
+    return {"message": "Home Chef Companion API"}
 
 @app.get("/health")
 async def health_check():
