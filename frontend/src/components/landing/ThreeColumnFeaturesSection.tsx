@@ -99,6 +99,7 @@ const FeatureCard = ({ feature }: { feature: FeatureItem }) => {
   return (
     <div>
       <Card
+        id="details"
         className={cn(
           "relative rounded-2xl px-4 pt-4 pb-4 text-sm border-0",
           "ring-muted ring-1 hover:bg-background/80 transition-all duration-300",

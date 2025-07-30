@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router";
+// import { Link } from "react-router";
 import { ChefHat } from "lucide-react";
 
 export function CTASection() {
@@ -20,12 +20,14 @@ export function CTASection() {
           <Button
             size="lg"
             className="text-lg px-12 py-6 shadow-lg hover:shadow-xl transition-all duration-300"
-            asChild
+            // asChild
+            disabled={true}
           >
-            <Link to="/login">
-              <ChefHat className="mr-2 h-5 w-5" />
-              Join The Open Beta Today
-            </Link>
+            {/* <Link to="/login"> */}
+            <ChefHat className="mr-2 h-5 w-5" />
+            {/* Join The Open Beta  */}
+            Coming Soon
+            {/* </Link> */}
           </Button>
         </div>
       </div>
