@@ -180,9 +180,7 @@ export default function HomePage() {
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
             Welcome Back!
           </h1>
-          <p className="text-muted-foreground">
-            What would you like to cook today?
-          </p>
+          <p className="text-muted-foreground">What are we cooking today?</p>
         </div>
 
         {/* Quick Actions Grid */}

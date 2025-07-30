@@ -1,6 +1,6 @@
-# Security Guide - Home Chef Companion Backend
+# Security Guide - HomeChef Companion Backend
 
-This document outlines the security implementation and best practices for the Home Chef Companion backend application.
+This document outlines the security implementation and best practices for the HomeChef Companion backend application.
 
 ## 🔐 Secret Key Management
 

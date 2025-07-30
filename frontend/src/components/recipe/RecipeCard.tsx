@@ -20,7 +20,12 @@ interface RecipeCardProps {
   onUpdate?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardProps) {
+export function RecipeCard({
+  recipe,
+  onEdit,
+  onDelete,
+  onUpdate,
+}: RecipeCardProps) {
   const formatTime = (minutes?: number) => {
     if (!minutes) return null;
     if (minutes < 60) return `${minutes}m`;
@@ -72,7 +77,7 @@ export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardPro
 
   return (
     <Link to={`/recipes/${recipe.id}`}>
-      <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden md:h-56">
+      <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden md:h-56 pt-0">
         {/* Recipe Image/Thumbnail */}
         {thumbnailImage && (
           <div className="relative aspect-video overflow-hidden">
@@ -118,7 +123,7 @@ export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardPro
           </div>
         )}
 
-        <CardHeader>
+        <CardHeader className={`${!thumbnailImage ? "pt-4" : ""}`}>
           <div className="flex justify-between items-start">
             <div className="flex-1 min-w-0 h-24">
               <h3 className="block hover:text-primary transition-colors font-semibold text-lg leading-tight truncate mb-1 text-wrap">
@@ -180,7 +185,10 @@ export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardPro
           {/* Collection Badge */}
           {recipe.collection && (
             <div className="mb-2">
-              <Badge variant="outline" className="text-xs text-primary border-primary/30">
+              <Badge
+                variant="outline"
+                className="text-xs text-primary border-primary/30"
+              >
                 📁 {recipe.collection.name}
               </Badge>
             </div>
@@ -213,10 +221,10 @@ export function RecipeCard({ recipe, onEdit, onDelete, onUpdate }: RecipeCardPro
             </span>
             <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
           </div>
-          
+
           {/* Collection Assignment */}
-          <CollectionAssignment 
-            recipe={recipe} 
+          <CollectionAssignment
+            recipe={recipe}
             onUpdate={onUpdate}
             variant="inline"
           />

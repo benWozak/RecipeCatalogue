@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Secure Secret Key Generator for Home Chef Companion Backend
+Secure Secret Key Generator for HomeChef Companion Backend
 
 This script generates cryptographically secure secret keys for JWT signing
 and other security purposes in your FastAPI application.
@@ -122,7 +122,7 @@ class SecretKeyGenerator:
 
 def interactive_key_generation():
     """Interactive key generation with user choices"""
-    print("🔐 Home Chef Companion Secret Key Generator")
+    print("🔐 HomeChef Companion Secret Key Generator")
     print("=" * 50)
     
     print("\nAvailable key generation methods:")

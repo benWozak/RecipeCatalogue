@@ -1,4 +1,5 @@
 import SEO from "@/components/SEO";
+import { DarkModeWrapper } from "@/components/common/DarkModeWrapper";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 // import { DetailedFeaturesSection } from "@/components/landing/DetailedFeaturesSection";
@@ -11,7 +12,7 @@ export default function LandingPage() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Home Chef Companion",
+    name: "HomeChef Companion",
     description:
       "Organize all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface. No more losing your place to jumping ads and slow recipe sites.",
     url: "https://recipecatalogue.app",
@@ -37,7 +38,7 @@ export default function LandingPage() {
     ],
     author: {
       "@type": "Organization",
-      name: "Home Chef Companion",
+      name: "HomeChef Companion",
       url: "https://recipecatalogue.app",
     },
     featureList: [
@@ -53,11 +54,11 @@ export default function LandingPage() {
   };
 
   return (
-    <>
+    <DarkModeWrapper>
       <SEO
         structuredData={structuredData}
-        title="Home Chef Companion - All Your Recipes In One Place"
-        description="Stop losing your place to jumping ads and slow recipe sites. Home Chef Companion organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface."
+        title="HomeChef Companion - All Your Recipes In One Place"
+        description="Stop losing your place to jumping ads and slow recipe sites. HomeChef Companion organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface."
         keywords="recipe organizer, meal planning, recipe collection, cooking app, recipe manager, ad-free recipes, recipe storage, instagram recipes, photo scanning"
       />
       <article className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -67,6 +68,6 @@ export default function LandingPage() {
         <PricingSection />
         <CTASection />
       </article>
-    </>
+    </DarkModeWrapper>
   );
 }

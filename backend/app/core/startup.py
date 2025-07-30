@@ -1,5 +1,5 @@
 """
-Startup validation and checks for the Home Chef Companion backend
+Startup validation and checks for the HomeChef Companion backend
 """
 
 import logging

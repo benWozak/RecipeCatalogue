@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+Polska:wght@100..400&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -198,6 +199,11 @@ body {
   /* Better touch targets for mobile */
   .touch-manipulation {
     touch-action: manipulation;
+  }
+  
+  /* Custom font for HomeChef Companion brand name */
+  .font-brand {
+    font-family: "Playwrite Polska", cursive;
   }
   
   /* Aurora Text Animation */

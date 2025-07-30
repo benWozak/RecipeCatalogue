@@ -12,9 +12,9 @@ interface SEOProps {
 }
 
 const defaultProps: SEOProps = {
-  title: "Home Chef Companion - All Your Recipes In One Place",
+  title: "HomeChef Companion - All Your Recipes In One Place",
   description:
-    "Stop losing your place to jumping ads and slow recipe sites. Home Chef Companion organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface.",
+    "Stop losing your place to jumping ads and slow recipe sites. HomeChef Companion organizes all your recipes from any website, Instagram posts, and photos in one clean, ad-free interface.",
   canonical: "https://recipecatalogue.app",
   ogImage: "https://recipecatalogue.app/og-image.png",
   ogType: "website",
@@ -51,9 +51,9 @@ export default function SEO(props: SEOProps) {
       <meta property="og:image" content={ogImage} />
       <meta
         property="og:image:alt"
-        content="Home Chef Companion - Organize all your recipes in one place"
+        content="HomeChef Companion - Organize all your recipes in one place"
       />
-      <meta property="og:site_name" content="Home Chef Companion" />
+      <meta property="og:site_name" content="HomeChef Companion" />
       <meta property="og:locale" content="en_US" />
 
       {/* Twitter Card Meta Tags */}
@@ -63,7 +63,7 @@ export default function SEO(props: SEOProps) {
       <meta name="twitter:image" content={ogImage} />
       <meta
         name="twitter:image:alt"
-        content="Home Chef Companion - Organize all your recipes in one place"
+        content="HomeChef Companion - Organize all your recipes in one place"
       />
 
       {/* Additional Meta Tags for SEO */}
@@ -71,7 +71,7 @@ export default function SEO(props: SEOProps) {
         name="robots"
         content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
       />
-      <meta name="author" content="Home Chef Companion" />
+      <meta name="author" content="HomeChef Companion" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta httpEquiv="Content-Language" content="en" />
 
@@ -79,8 +79,8 @@ export default function SEO(props: SEOProps) {
       <meta name="theme-color" content="#8b5cf6" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="apple-mobile-web-app-title" content="Home Chef Companion" />
-      <meta name="application-name" content="Home Chef Companion" />
+      <meta name="apple-mobile-web-app-title" content="HomeChef Companion" />
+      <meta name="application-name" content="HomeChef Companion" />
 
       {/* Structured Data */}
       {structuredData && (

@@ -1,4 +1,4 @@
-# Home Chef Companion Backend
+# HomeChef Companion Backend
 
 FastAPI backend for the Recipe Management PWA application.
 

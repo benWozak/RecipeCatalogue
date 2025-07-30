@@ -1,4 +1,4 @@
-# Home Chef Companion
+# HomeChef Companion
 
 A comprehensive recipe management Progressive Web App (PWA) that allows users to store, organize, and plan meals with their favorite recipes. Built as a modern full-stack application with recipe parsing capabilities from various sources.
 

@@ -1,6 +1,6 @@
 import { SignIn } from "@clerk/clerk-react";
 import { Link } from "react-router";
-import { ChefHat, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
@@ -10,9 +10,8 @@ export default function LoginPage() {
       <header className="px-4 py-6 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8">
         <div className="flex flex-col items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <ChefHat className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-              Home Chef Companion
+            <span className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent font-brand">
+              HomeChef Companion
             </span>
           </Link>
           <Link to="/">
