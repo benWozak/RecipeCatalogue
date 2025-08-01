@@ -12,13 +12,13 @@
   - Set up proper environment variable handling
   - Configure secret rotation procedures
 
-- [ ] **Webhook Security**
+- [x] **Webhook Security**
 
   - Implement Clerk webhook signature verification in `backend/app/api/auth/auth.py`
   - Add request validation and sanitization
   - Set up proper error handling
 
-- [ ] **CORS & Security Headers**
+- [x] **CORS & Security Headers**
 
   - Fix CORS misconfiguration in `backend/app/main.py`
   - Restrict origins to production domains only

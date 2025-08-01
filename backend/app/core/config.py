@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # CORS Configuration - must be set via environment variable
     ALLOWED_ORIGINS: Union[List[str], str] = []
     
+    # Production domains (add your production URLs here)
+    PRODUCTION_ORIGINS: Union[List[str], str] = []
+    
     # External API Keys
     GOOGLE_CLOUD_VISION_CREDENTIALS: str = ""
     OPENAI_API_KEY: str = ""
@@ -25,6 +28,13 @@ class Settings(BaseSettings):
     @field_validator('ALLOWED_ORIGINS', mode='before')
     @classmethod
     def parse_cors_origins(cls, v):
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(',')]
+        return v
+    
+    @field_validator('PRODUCTION_ORIGINS', mode='before')
+    @classmethod
+    def parse_production_origins(cls, v):
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(',')]
         return v

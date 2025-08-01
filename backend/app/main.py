@@ -11,6 +11,7 @@ from app.api.meal_plans import meal_plans_router
 from app.api.users import users_router
 from app.api.parsing import parsing_router
 from app.api.collections import collections_router
+from app.middleware.security import SecurityHeadersMiddleware
 
 Base.metadata.create_all(bind=engine)
 
@@ -23,12 +24,15 @@ app = FastAPI(
 # Add startup event handler
 app.add_event_handler("startup", startup_event)
 
+# Add security headers middleware (should be added before CORS)
+app.add_middleware(SecurityHeadersMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
 )
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
