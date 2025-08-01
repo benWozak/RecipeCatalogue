@@ -10,37 +10,52 @@ router = APIRouter()
 
 async def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     authorization: str = request.headers.get("Authorization")
+    
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing"
+            detail="Authorization header missing",
+            headers={"WWW-Authenticate": "Bearer"}
         )
     
     try:
-        scheme, token = authorization.split()
+        # Parse authorization header
+        auth_parts = authorization.split()
+        if len(auth_parts) != 2:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authorization header format",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+        
+        scheme, token = auth_parts
         if scheme.lower() != "bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication scheme"
+                detail="Invalid authentication scheme",
+                headers={"WWW-Authenticate": "Bearer"}
             )
         
         # Verify token with Clerk
         clerk_data = await verify_clerk_token(token)
         clerk_user_id = clerk_data.get("user_id")
         
-        if not clerk_user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
-            )
-        
-        # Get or create user
+        # Get or create user in database
         user = db.query(User).filter(User.clerk_user_id == clerk_user_id).first()
         if not user:
             # Auto-create user if they don't exist
             payload = clerk_data.get("payload", {})
-            email = payload.get("email") or f"{clerk_user_id}@clerk.local"
-            name = payload.get("name") or "Unknown User"
+            
+            # Extract user info from verified JWT claims
+            email = payload.get("email") or payload.get("email_addresses", [{}])[0].get("email_address")
+            if not email:
+                email = f"{clerk_user_id}@clerk.local"  # Fallback email
+            
+            # Extract name from various possible claim locations
+            name = (payload.get("name") or 
+                   payload.get("full_name") or 
+                   f"{payload.get('given_name', '')} {payload.get('family_name', '')}".strip() or
+                   "Unknown User")
             
             user = User(
                 clerk_user_id=clerk_user_id,
@@ -53,10 +68,18 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> U
         
         return user
     
-    except ValueError:
+    except HTTPException:
+        # Re-raise HTTP exceptions from token validation
+        raise
+    except Exception as e:
+        # Log unexpected errors but don't expose details
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unexpected authentication error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format"
+            detail="Authentication failed",
+            headers={"WWW-Authenticate": "Bearer"}
         )
 
 @router.post("/webhook")
