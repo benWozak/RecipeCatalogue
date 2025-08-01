@@ -2,43 +2,67 @@
 
 FastAPI backend for the Recipe Management PWA application.
 
-## Setup
+## 🚀 Quick Start
 
-1. Create a virtual environment:
+### Prerequisites
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+- **Python 3.8+**
+- **PostgreSQL** (Neon account recommended)
 
-2. Install dependencies:
+### Installation & Setup
 
-```bash
-pip install -r requirements.txt
-```
+1. **Navigate to backend directory:**
 
-3. Set up environment variables:
+   ```bash
+   cd backend
+   ```
 
-```bash
-cp .env.example .env
-# Edit .env with your actual configuration values
-```
+2. **Create a virtual environment:**
 
-4. Set up the database:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-```bash
-# Create database migration
-alembic revision --autogenerate -m "Initial migration"
+3. **Install dependencies:**
 
-# Run migrations
-alembic upgrade head
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-5. Run the development server:
+4. **Configure environment:**
 
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+   ```bash
+   cp .env.example .env
+   # Edit .env with your database URL and secrets
+   ```
+
+5. **Generate secure secret key:**
+
+   ```bash
+   python generate_secret_key.py
+   # Follow prompts and update .env with generated key
+   ```
+
+6. **Set up database:**
+
+   ```bash
+   # Create initial migration
+   alembic revision --autogenerate -m "Initial schema"
+
+   # Apply migration
+   alembic upgrade head
+   ```
+
+7. **Start development server:**
+
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+8. **Visit API documentation:**
+   - Swagger UI: http://localhost:8000/docs
+   - ReDoc: http://localhost:8000/redoc
 
 ## API Documentation
 

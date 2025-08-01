@@ -2,6 +2,31 @@
 
 A comprehensive recipe management Progressive Web App (PWA) that allows users to store, organize, and plan meals with their favorite recipes. Built as a modern full-stack application with recipe parsing capabilities from various sources.
 
+## Table of Contents
+
+- [🏗️ Architecture](#️-architecture)
+  - [Tech Stack](#tech-stack)
+- [✨ Features](#-features)
+  - [📝 Recipe Management](#-recipe-management)
+  - [🍽️ Meal Planning](#️-meal-planning)
+  - [🔍 Smart Search & Discovery](#-smart-search--discovery)
+  - [📱 Progressive Web App](#-progressive-web-app)
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup Instructions](#setup-instructions)
+  - [Quick Development Start](#quick-development-start)
+- [📚 Documentation](#-documentation)
+- [🔐 Security](#-security)
+- [🏗️ Development](#️-development)
+  - [Project Structure](#project-structure)
+  - [Available Scripts](#available-scripts)
+- [🤝 Contributing](#-contributing)
+  - [Development Guidelines](#development-guidelines)
+- [📄 License](#-license)
+- [🎯 Roadmap](#-roadmap)
+- [🆘 Support](#-support)
+- [📧 Contact](#-contact)
+
 ## 🏗️ Architecture
 
 This is a **mono-repo** containing both frontend and backend applications:
@@ -82,76 +107,17 @@ This is a **mono-repo** containing both frontend and backend applications:
 - **Node.js 18+** (for frontend)
 - **PostgreSQL** (Neon account recommended)
 
-### Backend Setup
+### Setup Instructions
 
-1. **Navigate to backend directory:**
+For detailed setup instructions, please refer to the specific README files:
 
-   ```bash
-   cd backend
-   ```
+- **[Backend Setup Guide](backend/README.md)** - Complete FastAPI backend setup with database configuration
+- **[Frontend Setup Guide](frontend/README.md)** - React PWA setup with authentication and environment configuration
 
-2. **Install dependencies:**
+### Quick Development Start
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure environment:**
-
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database URL and secrets
-   ```
-
-4. **Generate secure secret key:**
-
-   ```bash
-   python generate_secret_key.py
-   # Follow prompts and update .env with generated key
-   ```
-
-5. **Set up database:**
-
-   ```bash
-   # Create initial migration
-   alembic revision --autogenerate -m "Initial schema"
-
-   # Apply migration
-   alembic upgrade head
-   ```
-
-6. **Start development server:**
-
-   ```bash
-   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-7. **Visit API documentation:**
-   - Swagger UI: http://localhost:8000/docs
-   - ReDoc: http://localhost:8000/redoc
-
-### Frontend Setup
-
-1. **Navigate to frontend directory:**
-
-   ```bash
-   cd frontend
-   ```
-
-2. **Install dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-3. **Start development server:**
-
-   ```bash
-   npm run dev
-   ```
-
-4. **Visit application:**
-   - Local: http://localhost:5173
+1. **Backend**: Follow the [Backend Setup Guide](backend/README.md) to get the API running on `http://localhost:8000`
+2. **Frontend**: Follow the [Frontend Setup Guide](frontend/README.md) to get the PWA running on `http://localhost:5173`
 
 ## 📚 Documentation
 
@@ -234,30 +200,6 @@ npm run lint
 npm run preview
 ```
 
-## 🚀 Deployment
-
-### Backend Deployment Options
-
-- **Railway**: Direct FastAPI deployment
-- **Vercel**: Serverless Python functions
-- **DigitalOcean**: App Platform deployment
-- **Docker**: Containerized deployment
-- **Heroku**: Traditional PaaS deployment
-
-### Frontend Deployment Options
-
-- **Vercel**: Recommended for React PWAs
-- **Netlify**: JAMstack deployment
-- **GitHub Pages**: Static site hosting
-- **Firebase Hosting**: Google Cloud integration
-
-### Database
-
-- **Neon Postgres**: Recommended cloud PostgreSQL
-- **Supabase**: Alternative PostgreSQL with real-time features
-- **AWS RDS**: Enterprise PostgreSQL
-- **Google Cloud SQL**: Google Cloud PostgreSQL
-
 ## 🤝 Contributing
 
 1. **Fork the repository**
@@ -310,6 +252,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Frontend QA & Auth environment configuration
 - [ ] Unit Testing coverage
 - [ ] Backend deployment & monitoring
+- [ ] Write API Documentation
 
 ### Phase 5: Post MVP Feature Updates
 

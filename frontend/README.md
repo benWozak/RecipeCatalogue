@@ -9,17 +9,21 @@ A modern Progressive Web App (PWA) built with React 19, TypeScript, and Tailwind
 - **Node.js 18+** 
 - **npm or yarn**
 
-### Installation
+### Installation & Setup
 
-1. **Install dependencies:**
+1. **Navigate to frontend directory:**
+
+   ```bash
+   cd frontend
+   ```
+
+2. **Install dependencies:**
 
    ```bash
    npm install
-   # or
-   yarn install
    ```
 
-2. **Configure environment variables:**
+3. **Configure environment variables:**
 
    Create a `.env.local` file in the frontend directory:
 
@@ -31,13 +35,13 @@ A modern Progressive Web App (PWA) built with React 19, TypeScript, and Tailwind
    VITE_API_URL=http://localhost:8000
    ```
 
-3. **Start development server:**
+4. **Start development server:**
 
    ```bash
    npm run dev
    ```
 
-4. **Visit the application:**
+5. **Visit the application:**
    - Local: http://localhost:5173
 
 ## 🏗️ Tech Stack
