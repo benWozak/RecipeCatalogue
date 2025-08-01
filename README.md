@@ -36,7 +36,6 @@ This is a **mono-repo** containing both frontend and backend applications:
 ├── 📱 frontend/          # React + TypeScript PWA
 ├── 🔧 backend/           # FastAPI + PostgreSQL API
 ├── 📚 docs/             # Documentation (coming soon)
-└── 🚀 deployment/       # Deployment configurations (coming soon)
 ```
 
 ### Tech Stack
