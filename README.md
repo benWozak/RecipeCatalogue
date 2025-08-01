@@ -4,38 +4,38 @@ A comprehensive recipe management Progressive Web App (PWA) that allows users to
 
 ## Table of Contents
 
-- [🏗️ Architecture](#️-architecture)
+- [Architecture](#architecture)
   - [Tech Stack](#tech-stack)
-- [✨ Features](#-features)
-  - [📝 Recipe Management](#-recipe-management)
-  - [🍽️ Meal Planning](#️-meal-planning)
-  - [🔍 Smart Search & Discovery](#-smart-search--discovery)
-  - [📱 Progressive Web App](#-progressive-web-app)
-- [🚀 Quick Start](#-quick-start)
+- [Features](#features)
+  - [Recipe Management](#recipe-management)
+  - [Meal Planning](#meal-planning)
+  - [Smart Search & Discovery](#smart-search--discovery)
+  - [Progressive Web App](#progressive-web-app)
+- [Quick Start](#quick-start)
   - [Prerequisites](#prerequisites)
   - [Setup Instructions](#setup-instructions)
   - [Quick Development Start](#quick-development-start)
-- [📚 Documentation](#-documentation)
-- [🔐 Security](#-security)
-- [🏗️ Development](#️-development)
+- [Documentation](#documentation)
+- [Security](#security)
+- [Development](#development)
   - [Project Structure](#project-structure)
   - [Available Scripts](#available-scripts)
-- [🤝 Contributing](#-contributing)
+- [Contributing](#contributing)
   - [Development Guidelines](#development-guidelines)
-- [📄 License](#-license)
-- [🎯 Roadmap](#-roadmap)
-- [🆘 Support](#-support)
-- [📧 Contact](#-contact)
+- [License](#license)
+- [Roadmap](#roadmap)
+- [Support](#support)
+- [Contact](#contact)
 
-## 🏗️ Architecture
+## Architecture
 
 This is a **mono-repo** containing both frontend and backend applications:
 
 ```
-📁 RecipeCatalogue/
-├── 📱 frontend/          # React + TypeScript PWA
-├── 🔧 backend/           # FastAPI + PostgreSQL API
-├── 📚 docs/             # Documentation (coming soon)
+RecipeCatalogue/
+├── frontend/          # React + TypeScript PWA
+├── backend/           # FastAPI + PostgreSQL API
+├── docs/             # Documentation (coming soon)
 ```
 
 ### Tech Stack
@@ -65,40 +65,40 @@ This is a **mono-repo** containing both frontend and backend applications:
 - **Image Processing**: Google Cloud Vision (planned)
 - **Recipe Parsing**: Custom parsers + OpenAI (planned)
 
-## ✨ Features
+## Features
 
-### 📝 Recipe Management
+### Recipe Management
 
 - **Manual Recipe Entry**: Rich text editor for custom recipes
 - **Recipe Parsing**: Extract recipes from:
-  - 🌐 Website URLs (with structured data support)
-  - 📷 Images (OCR-powered)
-  - 📱 Instagram posts
+  - Website URLs (with structured data support)
+  - Images (OCR-powered)
+  - Instagram posts
 - **Recipe Organization**: Tags and categories
 - **Rich Media Support**: Multiple images and videos per recipe
 
-### 🍽️ Meal Planning
+### Meal Planning
 
 - **Weekly/Monthly Planning**: Drag-and-drop meal planning interface
 - **Shopping Lists**: Auto-generate from meal plans
 - **Portion Scaling**: Adjust recipes for different serving sizes
 - **Nutritional Info**: Ingredient-based nutrition calculation (planned)
 
-### 🔍 Smart Search & Discovery
+### Smart Search & Discovery
 
 - **Advanced Search**: Filter by ingredients, cuisine, and prep time
 - **Recipe Recommendations**: AI-powered suggestions (planned)
 - **Collections**: Curated recipe collections
 - **Social Features**: Share recipes with friends (planned)
 
-### 📱 Progressive Web App
+### Progressive Web App
 
 - **Offline Support**: Access recipes without internet
 - **Mobile Optimized**: Native app-like experience
 - **Push Notifications**: Meal reminders and updates (planned)
 - **Cross-Platform**: Works on iOS, Android, and Desktop
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -118,50 +118,50 @@ For detailed setup instructions, please refer to the specific README files:
 1. **Backend**: Follow the [Backend Setup Guide](backend/README.md) to get the API running on `http://localhost:8000`
 2. **Frontend**: Follow the [Frontend Setup Guide](frontend/README.md) to get the PWA running on `http://localhost:5173`
 
-## 📚 Documentation
+## Documentation
 
 - **[Backend Setup Guide](backend/README.md)** - Detailed backend configuration
 - **[Database Setup](backend/DATABASE_SETUP.md)** - Neon Postgres configuration
 - **[Security Guide](backend/SECURITY.md)** - Security implementation details
 - **[API Documentation](http://localhost:8000/docs)** - Interactive API docs (when running)
 
-## 🔐 Security
+## Security
 
 This application implements enterprise-grade security:
 
-- **🔑 Secret Key Management**: 688-bit entropy keys with rotation procedures
-- **🛡️ JWT Authentication**: Secure token-based authentication
-- **🔒 Database Security**: SSL-encrypted connections with input validation
-- **🚨 Startup Validation**: Automatic security checks on application start
-- **📝 Audit Logging**: Comprehensive security event logging
+- **Secret Key Management**: 688-bit entropy keys with rotation procedures
+- **JWT Authentication**: Secure token-based authentication
+- **Database Security**: SSL-encrypted connections with input validation
+- **Startup Validation**: Automatic security checks on application start
+- **Audit Logging**: Comprehensive security event logging
 
 See [Security Guide](backend/SECURITY.md) for detailed security information.
 
-## 🏗️ Development
+## Development
 
 ### Project Structure
 
 ```
-📁 backend/
-├── 📱 app/
-│   ├── 🔧 api/          # API route handlers
-│   ├── ⚙️ core/         # Core configuration & database
-│   ├── 📊 models/       # SQLAlchemy database models
-│   ├── 📋 schemas/      # Pydantic request/response schemas
-│   ├── 🔄 services/     # Business logic layer
-│   └── 🧹 utils/        # Helper functions
-├── 🗃️ alembic/         # Database migrations
-└── 🧪 tests/           # Test suite
+backend/
+├── app/
+│   ├── api/          # API route handlers
+│   ├── core/         # Core configuration & database
+│   ├── models/       # SQLAlchemy database models
+│   ├── schemas/      # Pydantic request/response schemas
+│   ├── services/     # Business logic layer
+│   └── utils/        # Helper functions
+├── alembic/         # Database migrations
+└── tests/           # Test suite
 
-📁 frontend/
-├── 📱 src/
-│   ├── 🧩 components/   # React components
-│   ├── 📄 pages/        # Route components
-│   ├── 🔗 hooks/        # Custom React hooks
-│   ├── 🗄️ stores/       # State management
-│   ├── 🌐 services/     # API service layer
-│   └── 🎨 assets/       # Static assets
-└── 📦 public/          # Public assets
+frontend/
+├── src/
+│   ├── components/   # React components
+│   ├── pages/        # Route components
+│   ├── hooks/        # Custom React hooks
+│   ├── stores/       # State management
+│   ├── services/     # API service layer
+│   └── assets/       # Static assets
+└── public/          # Public assets
 ```
 
 ### Available Scripts
@@ -199,7 +199,7 @@ npm run lint
 npm run preview
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
@@ -214,13 +214,13 @@ npm run preview
 - **Security**: Run security validation before commits
 - **Database**: Always create migrations for schema changes
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🎯 Roadmap
+## Roadmap
 
-### Phase 1: Core Features ✅
+### Phase 1: Core Features (Completed)
 
 - [x] Backend API with authentication
 - [x] Database schema and migrations
@@ -228,7 +228,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Recipe CRUD operations
 - [x] Meal planning functionality
 
-### Phase 2: Frontend Foundation ✅
+### Phase 2: Frontend Foundation (Completed)
 
 - [x] React PWA setup
 - [x] Clerk authentication integration
@@ -237,7 +237,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Tailwind CSS styling
 - [x] Zustand state management
 
-### Phase 3: Enhanced Features ✅
+### Phase 3: Enhanced Features (Completed)
 
 - [x] Recipe parsing from URLs
 - [x] Image-based recipe extraction (OCR)
@@ -245,7 +245,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Advanced search and filtering
 - [x] Collections and recipe organization
 
-### Phase 4: Production Ready Beta MVP 🚧
+### Phase 4: Production Ready Beta MVP (In Progress)
 
 - [ ] backend security and infrastructure review
 - [ ] Frontend QA & Auth environment configuration
@@ -265,14 +265,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Submit to Google Play store
 - [ ] Submit to Apple Store
 
-## 🆘 Support
+## Support
 
 - **Documentation**: Check the `/docs` directory and README files
 - **Issues**: Report bugs via GitHub Issues
 - **Security**: See [Security Guide](backend/SECURITY.md) for security-related questions
 - **API**: Use http://localhost:8000/docs for interactive API documentation
 
-## 📧 Contact
+## Contact
 
 For questions or support, please open an issue on GitHub or contact me via https://benwozak.dev/contact
 
