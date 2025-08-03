@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
-from jose import JWTError, jwt, jwk
+import jwt
+from jwt import PyJWTError
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
+import json
 from app.core.config import settings
 import httpx
 import logging
@@ -12,6 +16,77 @@ logger = logging.getLogger(__name__)
 
 # Cache for Clerk's public keys
 _clerk_jwks_cache = {"keys": None, "expires_at": None}
+
+def _construct_public_key_from_jwk(key_data: Dict[str, Any]):
+    """
+    Construct a public key from JWK data for PyJWT compatibility.
+    
+    Args:
+        key_data: JWK key data dictionary
+        
+    Returns:
+        Public key object compatible with PyJWT
+    """
+    import base64
+    from cryptography.hazmat.primitives.asymmetric import rsa, ec
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.backends import default_backend
+    
+    kty = key_data.get('kty')
+    
+    if kty == 'RSA':
+        # RSA key
+        n = key_data.get('n')
+        e = key_data.get('e')
+        
+        if not n or not e:
+            raise ValueError("Invalid RSA key data")
+        
+        # Decode base64url values
+        n_bytes = base64.urlsafe_b64decode(n + '==')
+        e_bytes = base64.urlsafe_b64decode(e + '==')
+        
+        # Convert to integers
+        n_int = int.from_bytes(n_bytes, 'big')
+        e_int = int.from_bytes(e_bytes, 'big')
+        
+        # Create RSA public key
+        public_numbers = rsa.RSAPublicNumbers(e_int, n_int)
+        return public_numbers.public_key(default_backend())
+    
+    elif kty == 'EC':
+        # Elliptic Curve key
+        crv = key_data.get('crv')
+        x = key_data.get('x')
+        y = key_data.get('y')
+        
+        if not crv or not x or not y:
+            raise ValueError("Invalid EC key data")
+        
+        # Decode base64url values
+        x_bytes = base64.urlsafe_b64decode(x + '==')
+        y_bytes = base64.urlsafe_b64decode(y + '==')
+        
+        # Convert to integers
+        x_int = int.from_bytes(x_bytes, 'big')
+        y_int = int.from_bytes(y_bytes, 'big')
+        
+        # Determine curve
+        if crv == 'P-256':
+            curve = ec.SECP256R1()
+        elif crv == 'P-384':
+            curve = ec.SECP384R1()
+        elif crv == 'P-521':
+            curve = ec.SECP521R1()
+        else:
+            raise ValueError(f"Unsupported curve: {crv}")
+        
+        # Create EC public key
+        public_numbers = ec.EllipticCurvePublicNumbers(x_int, y_int, curve)
+        return public_numbers.public_key(default_backend())
+    
+    else:
+        raise ValueError(f"Unsupported key type: {kty}")
 
 async def get_clerk_public_keys() -> Dict[str, Any]:
     """
@@ -129,7 +204,7 @@ async def verify_clerk_token(token: str) -> Dict[str, Any]:
         public_key = None
         for key_data in jwks_data.get('keys', []):
             if key_data.get('kid') == kid:
-                public_key = jwk.construct(key_data)
+                public_key = _construct_public_key_from_jwk(key_data)
                 break
         
         if not public_key:
@@ -213,7 +288,7 @@ async def verify_clerk_token(token: str) -> Dict[str, Any]:
         
     except HTTPException:
         raise
-    except JWTError as e:
+    except PyJWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"

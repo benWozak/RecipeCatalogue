@@ -36,7 +36,7 @@
   - Add comprehensive file validation and sandboxing
   - Fix command injection vulnerability in `backend/app/utils/media_utils.py`
 
-- [ ] **Dependency Security**
+- [x] **Dependency Security**
   - Update vulnerable dependencies (python-jose, requests, uvicorn)
   - Run security audit on all packages
   - Pin secure versions in requirements.txt
@@ -68,8 +68,6 @@
   - Check logout functionality and session cleanup
 
 - [ ] **Mobile & Performance Testing**
-  - Test responsive design across all screen sizes
-  - Validate touch interactions and mobile UX
   - Analyze bundle size and implement lazy loading
   - Optimize images and implement caching strategies
 
