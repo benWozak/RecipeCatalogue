@@ -54,10 +54,10 @@ describe('SafeHtmlRenderer', () => {
   })
 
   it('handles empty content', () => {
-    render(<SafeHtmlRenderer content="" />)
+    const { container } = render(<SafeHtmlRenderer content="" />)
     
     // Should render without crashing
-    expect(screen.getByRole('generic')).toBeInTheDocument()
+    expect(container.firstChild).toBeInTheDocument()
   })
 
   it('preserves text content when tags are stripped', () => {
