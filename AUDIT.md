@@ -55,22 +55,6 @@
   - Validate form submissions and input sanitization
   - Check routing edge cases and protected routes
 
-- [ ] **PWA Functionality Verification**
-
-  - Test offline capabilities and service worker functionality
-  - Validate PWA manifest configuration
-  - Check mobile installation and app-like behavior
-
-- [ ] **Authentication Flow Testing**
-
-  - Test complete Clerk integration flow
-  - Validate token handling and refresh mechanisms
-  - Check logout functionality and session cleanup
-
-- [ ] **Mobile & Performance Testing**
-  - Analyze bundle size and implement lazy loading
-  - Optimize images and implement caching strategies
-
 **Production Deployment**
 
 - [ ] **Backend Deployment**
