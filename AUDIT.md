@@ -24,7 +24,7 @@
   - Restrict origins to production domains only
   - Add security headers middleware (HSTS, CSP, X-Frame-Options)
 
-- [ ] **Rate Limiting & DoS Protection**
+- [x] **Rate Limiting & DoS Protection**
 
   - Implement slowapi middleware across all endpoints
   - Add per-endpoint rate limits

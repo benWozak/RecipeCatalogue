@@ -5,6 +5,7 @@ from app.core.security import verify_clerk_token
 from app.core.config import settings
 from app.models.user import User
 from app.schemas.user import User as UserSchema
+from app.middleware.rate_limit import limiter
 import json
 import hmac
 import hashlib
@@ -120,6 +121,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> U
         )
 
 @router.post("/webhook")
+@limiter.limit(settings.AUTH_RATE_LIMIT)
 async def clerk_webhook(request: Request, db: Session = Depends(get_db)):
     payload = await request.body()
     

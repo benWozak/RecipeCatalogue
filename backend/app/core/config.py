@@ -25,6 +25,27 @@ class Settings(BaseSettings):
     # JWT Validation Settings
     JWT_CLOCK_SKEW_TOLERANCE_SECONDS: int = 5
     
+    # Rate Limiting Configuration
+    RATE_LIMIT_ENABLED: bool = True
+    
+    # Default rate limits (requests per minute)
+    DEFAULT_RATE_LIMIT: str = "100/minute"
+    
+    # Critical endpoint rate limits (more restrictive)
+    AUTH_RATE_LIMIT: str = "10/minute"
+    PARSING_RATE_LIMIT: str = "5/minute"
+    FILE_UPLOAD_RATE_LIMIT: str = "3/minute"
+    INSTAGRAM_BATCH_RATE_LIMIT: str = "2/hour"
+    
+    # Standard endpoint rate limits
+    RECIPE_RATE_LIMIT: str = "60/minute"
+    COLLECTION_RATE_LIMIT: str = "30/minute"
+    USER_RATE_LIMIT: str = "20/minute"
+    
+    # Request size limits (in bytes)
+    MAX_REQUEST_SIZE: int = 10 * 1024 * 1024  # 10MB
+    MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024   # 10MB
+    
     @field_validator('ALLOWED_ORIGINS', mode='before')
     @classmethod
     def parse_cors_origins(cls, v):

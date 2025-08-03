@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
@@ -6,6 +6,7 @@ import uuid
 import asyncio
 import json
 from app.core.database import get_db
+from app.core.config import settings
 from app.api.auth.auth import get_current_user
 from app.models.user import User
 from app.schemas.recipe import RecipeCreate
@@ -13,6 +14,7 @@ from app.services.parsing_service import ParsingService
 from app.services.parsers import ValidationPipeline, ValidationStatus
 from app.services.parsers.url_parser import WebsiteProtectionError
 from app.services.parsers.progress_events import progress_stream, ProgressPhase, ProgressStatus
+from app.middleware.rate_limit import limiter
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -51,14 +53,16 @@ class URLParseStreamRequest(BaseModel):
     collection_id: Optional[str] = None
 
 @router.post("/url")
+@limiter.limit(settings.PARSING_RATE_LIMIT)
 async def parse_recipe_from_url(
-    request: URLParseRequest,
+    url_request: URLParseRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     parsing_service = ParsingService(db)
     try:
-        recipe_data = await parsing_service.parse_from_url(request.url, current_user.id, request.collection_id)
+        recipe_data = await parsing_service.parse_from_url(url_request.url, current_user.id, url_request.collection_id)
         return recipe_data
     except WebsiteProtectionError as e:
         raise HTTPException(
@@ -81,8 +85,10 @@ async def parse_recipe_from_url(
         )
 
 @router.post("/url/stream")
+@limiter.limit(settings.PARSING_RATE_LIMIT)
 async def parse_recipe_from_url_stream(
-    request: URLParseStreamRequest,
+    stream_request: URLParseStreamRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -92,11 +98,11 @@ async def parse_recipe_from_url_stream(
     async def event_stream():
         try:
             # Create progress tracking session
-            progress_emitter = progress_stream.create_session(request.url, session_id)
+            progress_emitter = progress_stream.create_session(stream_request.url, session_id)
             
             # Start parsing in background task
             parsing_task = asyncio.create_task(
-                parse_recipe_with_progress(request, current_user, db, progress_emitter)
+                parse_recipe_with_progress(stream_request, current_user, db, progress_emitter)
             )
             
             # Stream progress events
@@ -195,14 +201,16 @@ async def parse_recipe_with_progress(
         )
 
 @router.post("/instagram")
+@limiter.limit(settings.PARSING_RATE_LIMIT)
 async def parse_recipe_from_instagram(
-    request: InstagramParseRequest,
+    instagram_request: InstagramParseRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     parsing_service = ParsingService(db)
     try:
-        recipe_data = await parsing_service.parse_from_instagram(request.url, current_user.id, request.collection_id)
+        recipe_data = await parsing_service.parse_from_instagram(instagram_request.url, current_user.id, instagram_request.collection_id)
         return recipe_data
     except Exception as e:
         raise HTTPException(
@@ -211,8 +219,10 @@ async def parse_recipe_from_instagram(
         )
 
 @router.post("/instagram/batch")
+@limiter.limit(settings.INSTAGRAM_BATCH_RATE_LIMIT)
 async def parse_batch_instagram_urls(
-    request: BatchInstagramRequest,
+    batch_request: BatchInstagramRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -221,15 +231,15 @@ async def parse_batch_instagram_urls(
     results = []
     errors = []
     
-    for url in request.urls[:request.max_results]:
+    for url in batch_request.urls[:batch_request.max_results]:
         try:
-            recipe_data = await parsing_service.parse_from_instagram(url, current_user.id, request.collection_id)
+            recipe_data = await parsing_service.parse_from_instagram(url, current_user.id, batch_request.collection_id)
             results.append({"url": url, "status": "success", "data": recipe_data})
         except Exception as e:
             errors.append({"url": url, "status": "error", "error": str(e)})
     
     return {
-        "total_processed": len(request.urls[:request.max_results]),
+        "total_processed": len(batch_request.urls[:batch_request.max_results]),
         "successful": len(results),
         "failed": len(errors),
         "results": results,
@@ -237,8 +247,10 @@ async def parse_batch_instagram_urls(
     }
 
 @router.post("/instagram/profile")
+@limiter.limit(settings.INSTAGRAM_BATCH_RATE_LIMIT)
 async def parse_instagram_profile(
-    request: ProfileParseRequest,
+    profile_request: ProfileParseRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -246,8 +258,8 @@ async def parse_instagram_profile(
     parsing_service = ParsingService(db)
     try:
         recipes = parsing_service.instagram_parser.parse_instagram_profile(
-            request.username, 
-            request.max_posts
+            profile_request.username, 
+            profile_request.max_posts
         )
         
         # Convert to legacy format
@@ -257,7 +269,7 @@ async def parse_instagram_profile(
             recipe_data.append(data)
         
         return {
-            "username": request.username,
+            "username": profile_request.username,
             "recipes_found": len(recipe_data),
             "recipes": recipe_data
         }
@@ -268,8 +280,10 @@ async def parse_instagram_profile(
         )
 
 @router.post("/instagram/hashtag")
+@limiter.limit(settings.INSTAGRAM_BATCH_RATE_LIMIT)
 async def search_recipes_by_hashtag(
-    request: HashtagSearchRequest,
+    hashtag_request: HashtagSearchRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -277,8 +291,8 @@ async def search_recipes_by_hashtag(
     parsing_service = ParsingService(db)
     try:
         recipes = parsing_service.instagram_parser.search_recipe_hashtags(
-            request.hashtag, 
-            request.max_posts
+            hashtag_request.hashtag, 
+            hashtag_request.max_posts
         )
         
         # Convert to legacy format
@@ -288,7 +302,7 @@ async def search_recipes_by_hashtag(
             recipe_data.append(data)
         
         return {
-            "hashtag": request.hashtag,
+            "hashtag": hashtag_request.hashtag,
             "recipes_found": len(recipe_data),
             "recipes": recipe_data
         }
@@ -299,7 +313,9 @@ async def search_recipes_by_hashtag(
         )
 
 @router.post("/image")
+@limiter.limit(settings.FILE_UPLOAD_RATE_LIMIT)
 async def parse_recipe_from_image(
+    request: Request,
     file: UploadFile = File(...),
     collection_id: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
@@ -413,9 +429,11 @@ async def get_validation_detail(
         )
 
 @router.post("/validation/{validation_id}/approve")
+@limiter.limit(settings.PARSING_RATE_LIMIT)
 async def approve_validation(
     validation_id: str,
-    request: ValidationApprovalRequest,
+    approval_request: ValidationApprovalRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -424,7 +442,7 @@ async def approve_validation(
     try:
         validation_result = validation_pipeline.approve_recipe(
             validation_id, 
-            request.user_edits
+            approval_request.user_edits
         )
         
         return {
@@ -449,9 +467,11 @@ async def approve_validation(
         )
 
 @router.post("/validation/{validation_id}/reject")
+@limiter.limit(settings.PARSING_RATE_LIMIT)
 async def reject_validation(
     validation_id: str,
-    request: ValidationRejectionRequest,
+    rejection_request: ValidationRejectionRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -460,13 +480,13 @@ async def reject_validation(
     try:
         validation_result = validation_pipeline.reject_recipe(
             validation_id, 
-            request.reason
+            rejection_request.reason
         )
         
         return {
             "status": "rejected",
             "validation_id": validation_id,
-            "reason": request.reason,
+            "reason": rejection_request.reason,
             "message": "Recipe rejected successfully"
         }
     except ValueError as e:

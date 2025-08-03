@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import engine
 from app.core.startup import startup_event
@@ -12,6 +13,8 @@ from app.api.users import users_router
 from app.api.parsing import parsing_router
 from app.api.collections import collections_router
 from app.middleware.security import SecurityHeadersMiddleware
+from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler, create_rate_limit_middleware
+from app.middleware.request_limits import create_request_limit_middleware
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,11 +24,24 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Configure rate limiting
+if settings.RATE_LIMIT_ENABLED:
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
 # Add startup event handler
 app.add_event_handler("startup", startup_event)
 
 # Add security headers middleware (should be added before CORS)
 app.add_middleware(SecurityHeadersMiddleware)
+
+# Add request size limiting middleware
+app.add_middleware(create_request_limit_middleware())
+
+# Add rate limiting middleware if enabled
+rate_limit_middleware = create_rate_limit_middleware()
+if rate_limit_middleware:
+    app.add_middleware(rate_limit_middleware)
 
 app.add_middleware(
     CORSMiddleware,

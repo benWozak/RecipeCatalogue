@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.database import get_db
+from app.core.config import settings
 from app.api.auth.auth import get_current_user
 from app.models.user import User
 from app.schemas.meal_plan import MealPlan as MealPlanSchema, MealPlanCreate, MealPlanUpdate, MealPlanWithRecipeDetails
 from app.services.meal_plan_service import MealPlanService
+from app.middleware.rate_limit import limiter
 
 router = APIRouter()
 
@@ -24,8 +26,10 @@ async def get_meal_plans(
     )
 
 @router.post("/", response_model=MealPlanSchema)
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def create_meal_plan(
     meal_plan: MealPlanCreate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -62,9 +66,11 @@ async def get_meal_plan(
     return meal_plan
 
 @router.put("/{meal_plan_id}", response_model=MealPlanSchema)
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def update_meal_plan(
     meal_plan_id: str,
     meal_plan_update: MealPlanUpdate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -78,8 +84,10 @@ async def update_meal_plan(
     return meal_plan
 
 @router.delete("/{meal_plan_id}")
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def delete_meal_plan(
     meal_plan_id: str,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -93,8 +101,10 @@ async def delete_meal_plan(
     return {"message": "Meal plan deleted successfully"}
 
 @router.put("/{meal_plan_id}/set-active", response_model=MealPlanSchema)
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def set_active_meal_plan(
     meal_plan_id: str,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):

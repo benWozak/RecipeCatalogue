@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.core.database import get_db
+from app.core.config import settings
 from app.api.auth.auth import get_current_user
 from app.models.user import User
 from app.models.recipe import Recipe, Tag
 from app.schemas.recipe import Recipe as RecipeSchema, RecipeCreate, RecipeUpdate
 from app.services.recipe_service import RecipeService
+from app.middleware.rate_limit import limiter
 
 router = APIRouter()
 
@@ -31,8 +33,10 @@ async def get_recipes(
     )
 
 @router.post("/", response_model=RecipeSchema)
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def create_recipe(
     recipe: RecipeCreate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -55,9 +59,11 @@ async def get_recipe(
     return recipe
 
 @router.put("/{recipe_id}", response_model=RecipeSchema)
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def update_recipe(
     recipe_id: str,
     recipe_update: RecipeUpdate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -71,8 +77,10 @@ async def update_recipe(
     return recipe
 
 @router.delete("/{recipe_id}")
+@limiter.limit(settings.RECIPE_RATE_LIMIT)
 async def delete_recipe(
     recipe_id: str,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
