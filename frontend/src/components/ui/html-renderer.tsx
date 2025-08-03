@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import DOMPurify from 'dompurify'
 
 interface HtmlRendererProps {
   content: string
@@ -6,11 +7,15 @@ interface HtmlRendererProps {
 }
 
 export function HtmlRenderer({ content, className }: HtmlRendererProps) {
-  // Basic HTML sanitization - in production, consider using a library like DOMPurify
+  // Sanitize HTML using DOMPurify to prevent XSS attacks
   const sanitizeHtml = (html: string): string => {
-    // For now, we trust our own HTML since it comes from our controlled rich text editor
-    // In production, you might want to add DOMPurify for additional security
-    return html
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'br', 'span'],
+      ALLOWED_ATTR: ['class'],
+      KEEP_CONTENT: true,
+      RETURN_DOM: false,
+      RETURN_DOM_FRAGMENT: false,
+    })
   }
 
   const sanitizedContent = sanitizeHtml(content)
@@ -50,18 +55,18 @@ export function SafeHtmlRenderer({
   className,
   allowedTags = ['p', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'br']
 }: SafeHtmlRendererProps) {
-  // This is a basic implementation - in production, use a proper HTML sanitizer
-  const stripDisallowedTags = (html: string): string => {
-    // Simple regex-based cleaning (not comprehensive - use DOMPurify in production)
-    const allowedTagsRegex = new RegExp(`</?(?:${allowedTags.join('|')})[^>]*>`, 'gi')
-    const cleanHtml = html.replace(/<[^>]*>/g, (match) => {
-      return allowedTagsRegex.test(match) ? match : ''
+  // Use DOMPurify for comprehensive HTML sanitization
+  const sanitizeWithCustomTags = (html: string): string => {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: allowedTags,
+      ALLOWED_ATTR: ['class'],
+      KEEP_CONTENT: true,
+      RETURN_DOM: false,
+      RETURN_DOM_FRAGMENT: false,
     })
-    
-    return cleanHtml
   }
 
-  const cleanContent = stripDisallowedTags(content)
+  const cleanContent = sanitizeWithCustomTags(content)
 
   return (
     <div

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "@/components/theme-provider";
 import { RouteErrorBoundary } from "@/components/error";
 import Layout from "./components/common/Layout";
@@ -25,8 +26,9 @@ import PWABadge from "./PWABadge.tsx";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="recipe-catalogue-theme">
-      <Router>
+    <HelmetProvider>
+      <ThemeProvider defaultTheme="system" storageKey="recipe-catalogue-theme">
+        <Router>
         <div className="min-h-screen bg-background text-foreground">
           <SignedOut>
             <Routes>
@@ -154,8 +156,9 @@ function App() {
 
           <PWABadge />
         </div>
-      </Router>
-    </ThemeProvider>
+        </Router>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 

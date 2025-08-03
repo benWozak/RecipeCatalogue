@@ -66,7 +66,7 @@ export function RecipeSelectionDialog({
       } else {
         setError(response.error || 'Failed to load recipes');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load recipes');
     } finally {
       setLoading(false);

@@ -90,7 +90,7 @@ export function useCollections() {
 
       try {
         await collectionsPromise;
-      } catch (err) {
+      } catch {
         // Error already handled above
       }
     };
@@ -182,7 +182,7 @@ export function useCollectionsWithStats() {
 
       try {
         await statsPromise;
-      } catch (err) {
+      } catch {
         // Error already handled above
       }
     };
