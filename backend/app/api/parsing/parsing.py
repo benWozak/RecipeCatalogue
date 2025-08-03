@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any
 import uuid
 import asyncio
 import json
+import logging
 from app.core.database import get_db
 from app.core.config import settings
 from app.api.auth.auth import get_current_user
@@ -15,6 +16,8 @@ from app.services.parsers import ValidationPipeline, ValidationStatus
 from app.services.parsers.url_parser import WebsiteProtectionError
 from app.services.parsers.progress_events import progress_stream, ProgressPhase, ProgressStatus
 from app.middleware.rate_limit import limiter
+from app.middleware.file_security import file_security_validator
+from app.utils.security_logger import security_logger
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -321,18 +324,104 @@ async def parse_recipe_from_image(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if not file.content_type.startswith('image/'):
+    """
+    Parse recipe from uploaded image with comprehensive security validation
+    """
+    logger = logging.getLogger(__name__)
+    
+    # Read file data
+    try:
+        file_data = await file.read()
+    except Exception as e:
+        logger.error(f"Failed to read uploaded file: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File must be an image"
+            detail="Failed to read uploaded file"
         )
     
+    # Comprehensive file validation
+    validation_result = file_security_validator.validate_file_upload(
+        file_data=file_data,
+        filename=file.filename or "unknown",
+        declared_mime_type=file.content_type or "application/octet-stream"
+    )
+    
+    # Log upload attempt
+    security_logger.log_file_upload_attempt(
+        user_id=current_user.id,
+        filename=file.filename or "unknown",
+        file_size=len(file_data),
+        mime_type=file.content_type or "application/octet-stream",
+        validation_result=validation_result
+    )
+    
+    # Check validation results
+    if not validation_result['valid']:
+        # Log security violation
+        security_logger.log_file_validation_failure(
+            user_id=current_user.id,
+            filename=file.filename or "unknown",
+            validation_errors=validation_result['errors'],
+            security_score=validation_result['security_score']
+        )
+        
+        # Return detailed error for debugging (in production, consider generic message)
+        error_messages = [error['message'] for error in validation_result['errors']]
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "File validation failed",
+                "details": error_messages,
+                "security_score": validation_result['security_score']
+            }
+        )
+    
+    # Check security score threshold
+    if validation_result['security_score'] < settings.MIN_FILE_SECURITY_SCORE:
+        security_logger.log_suspicious_file_upload(
+            user_id=current_user.id,
+            filename=file.filename or "unknown",
+            suspicious_indicators=validation_result.get('warnings', []),
+            security_score=validation_result['security_score']
+        )
+        
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "File failed security screening",
+                "security_score": validation_result['security_score'],
+                "required_score": settings.MIN_FILE_SECURITY_SCORE
+            }
+        )
+    
+    # Process the validated image
     parsing_service = ParsingService(db)
     try:
-        image_data = await file.read()
-        recipe_data = await parsing_service.parse_from_image(image_data, current_user.id, collection_id)
+        recipe_data = await parsing_service.parse_from_image(
+            file_data, 
+            current_user.id, 
+            collection_id,
+            validation_metadata=validation_result['metadata']
+        )
+        
+        # Log successful processing
+        security_logger.log_file_upload_success(
+            user_id=current_user.id,
+            original_filename=file.filename or "unknown",
+            processed_filename=recipe_data.get('media', {}).get('filename', 'unknown'),
+            processing_metadata=validation_result['metadata']
+        )
+        
         return recipe_data
     except Exception as e:
+        # Log processing error
+        security_logger.log_file_processing_error(
+            user_id=current_user.id,
+            filename=file.filename or "unknown",
+            error_details=str(e)
+        )
+        
+        logger.error(f"Failed to parse recipe from validated image: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to parse recipe from image: {str(e)}"

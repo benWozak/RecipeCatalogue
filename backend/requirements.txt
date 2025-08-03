@@ -33,3 +33,6 @@ slowapi==0.1.9
 
 # Video processing for thumbnail generation
 ffmpeg-python>=0.2.0
+
+# File security and validation
+python-magic>=0.4.27

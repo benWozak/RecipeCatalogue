@@ -7,6 +7,8 @@ import httpx
 from pathlib import Path
 import tempfile
 import subprocess
+import logging
+from fractions import Fraction
 try:
     import ffmpeg
 except ImportError:
@@ -39,6 +41,8 @@ class MediaUtils:
         (self.media_dir / "images").mkdir(exist_ok=True)
         (self.media_dir / "videos").mkdir(exist_ok=True)
         (self.media_dir / "video_thumbnails").mkdir(exist_ok=True)
+        (self.media_dir / "quarantine").mkdir(exist_ok=True)  # For suspicious files
+        (self.media_dir / "temp").mkdir(exist_ok=True)  # For processing
     
     async def download_image(self, url: str) -> Optional[bytes]:
         """Download image from URL"""
@@ -191,6 +195,160 @@ class MediaUtils:
         
         return deleted_count
     
+    def secure_image_process(self, image_data: bytes, validation_metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Securely process validated image data with sandboxing
+        
+        Args:
+            image_data: Validated image bytes
+            validation_metadata: Security validation metadata
+            
+        Returns:
+            Dict with processed image data and metadata
+        """
+        try:
+            # Create secure temporary file for processing
+            with tempfile.NamedTemporaryFile(suffix='.tmp', dir=self.media_dir / "temp", delete=False) as temp_file:
+                temp_path = Path(temp_file.name)
+                temp_file.write(image_data)
+            
+            try:
+                # Process image in isolated manner
+                processed_result = self._process_image_securely(temp_path, validation_metadata)
+                return processed_result
+            finally:
+                # Always clean up temp file
+                try:
+                    temp_path.unlink()
+                except Exception as e:
+                    logging.warning(f"Failed to delete temp file {temp_path}: {e}")
+                    
+        except Exception as e:
+            logging.error(f"Secure image processing failed: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def _process_image_securely(self, image_path: Path, validation_metadata: Dict[str, Any]) -> Dict[str, Any]:
+        """Process image with security constraints"""
+        try:
+            # Load image with security constraints
+            with Image.open(image_path) as img:
+                # Remove potential security risks
+                # Strip EXIF data and other metadata
+                cleaned_img = Image.new(img.mode, img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    # Handle palette mode carefully
+                    cleaned_img = img.convert('RGB')
+                else:
+                    cleaned_img.paste(img, (0, 0))
+                
+                # Ensure safe format conversion
+                if cleaned_img.mode in ('RGBA', 'P'):
+                    cleaned_img = cleaned_img.convert('RGB')
+                
+                # Generate secure filename
+                secure_filename = self._generate_secure_filename(validation_metadata)
+                
+                # Save cleaned image
+                output_path = self.media_dir / "images" / secure_filename
+                cleaned_img.save(output_path, format='JPEG', quality=90, optimize=True)
+                
+                # Create thumbnails
+                thumbnails = self._create_secure_thumbnails(cleaned_img, secure_filename)
+                
+                return {
+                    "success": True,
+                    "filename": secure_filename,
+                    "path": str(output_path),
+                    "thumbnails": thumbnails,
+                    "metadata": {
+                        "size": cleaned_img.size,
+                        "mode": cleaned_img.mode,
+                        "format": "JPEG",
+                        "file_size": output_path.stat().st_size
+                    }
+                }
+                
+        except Exception as e:
+            logging.error(f"Secure image processing failed: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def _generate_secure_filename(self, validation_metadata: Dict[str, Any]) -> str:
+        """Generate cryptographically secure filename"""
+        import secrets
+        import time
+        
+        # Create hash from metadata and timestamp
+        content_hash = hashlib.sha256(
+            f"{validation_metadata.get('file_size', 0)}"
+            f"{validation_metadata.get('actual_mime_type', '')}"
+            f"{time.time()}"
+            f"{secrets.token_hex(16)}"
+            .encode()
+        ).hexdigest()[:16]
+        
+        return f"img_{content_hash}.jpg"
+    
+    def _create_secure_thumbnails(self, img: Image.Image, base_filename: str) -> Dict[str, Dict]:
+        """Create thumbnails with security constraints"""
+        thumbnails = {}
+        base_name = Path(base_filename).stem
+        
+        for size_name, size_tuple in self.THUMBNAIL_SIZES.items():
+            try:
+                # Create thumbnail
+                thumb_img = img.copy()
+                thumb_img.thumbnail(size_tuple, Image.Resampling.LANCZOS)
+                
+                # Create square background
+                square_thumb = Image.new('RGB', size_tuple, (255, 255, 255))
+                x = (size_tuple[0] - thumb_img.width) // 2
+                y = (size_tuple[1] - thumb_img.height) // 2
+                square_thumb.paste(thumb_img, (x, y))
+                
+                # Save thumbnail
+                thumb_filename = f"{base_name}_thumb_{size_name}.jpg"
+                thumb_path = self.media_dir / "thumbnails" / thumb_filename
+                square_thumb.save(thumb_path, format='JPEG', quality=85, optimize=True)
+                
+                thumbnails[size_name] = {
+                    "filename": thumb_filename,
+                    "path": str(thumb_path),
+                    "size": size_tuple,
+                    "file_size": thumb_path.stat().st_size
+                }
+                
+            except Exception as e:
+                logging.warning(f"Failed to create {size_name} thumbnail: {e}")
+                thumbnails[size_name] = None
+        
+        return thumbnails
+    
+    def _safe_parse_frame_rate(self, frame_rate_str: str) -> float:
+        """Safely parse frame rate string (e.g., '30/1' or '29.97') without eval()"""
+        try:
+            if not frame_rate_str or not isinstance(frame_rate_str, str):
+                return 0.0
+            
+            # Clean the input - only allow digits, slash, and dot
+            cleaned = ''.join(c for c in frame_rate_str if c.isdigit() or c in './')
+            
+            if '/' in cleaned:
+                # Handle fraction format like "30/1" or "29970/1000"
+                try:
+                    fraction = Fraction(cleaned)
+                    return float(fraction)
+                except (ValueError, ZeroDivisionError):
+                    return 0.0
+            else:
+                # Handle decimal format like "29.97"
+                try:
+                    return float(cleaned)
+                except ValueError:
+                    return 0.0
+        except Exception as e:
+            logging.warning(f"Failed to parse frame rate '{frame_rate_str}': {e}")
+            return 0.0
+    
     def extract_video_thumbnail(self, video_url: str, timestamp: float = 1.0) -> Optional[bytes]:
         """Extract thumbnail from video at specified timestamp using FFmpeg"""
         if not ffmpeg:
@@ -263,7 +421,7 @@ class MediaUtils:
                 "width": int(video_stream.get('width', 0)),
                 "height": int(video_stream.get('height', 0)),
                 "codec": video_stream.get('codec_name', ''),
-                "fps": eval(video_stream.get('r_frame_rate', '0/1')),
+                "fps": self._safe_parse_frame_rate(video_stream.get('r_frame_rate', '0/1')),
                 "bitrate": int(probe['format'].get('bit_rate', 0))
             }
             

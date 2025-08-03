@@ -3,6 +3,9 @@ from pydantic import field_validator
 from typing import List, Union
 
 class Settings(BaseSettings):
+    # Application Secret Key - must be set via environment variable
+    SECRET_KEY: str = ""
+    
     # Database Configuration - must be set via environment variable
     DATABASE_URL: str = ""
     
@@ -45,6 +48,17 @@ class Settings(BaseSettings):
     # Request size limits (in bytes)
     MAX_REQUEST_SIZE: int = 10 * 1024 * 1024  # 10MB
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024   # 10MB
+    
+    # File Upload Security Settings
+    MIN_FILE_SECURITY_SCORE: int = 70  # Minimum security score (0-100) for file uploads
+    MAX_FILE_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB max per file
+    ALLOWED_IMAGE_FORMATS: List[str] = ["JPEG", "PNG", "WebP", "GIF"]
+    MAX_IMAGE_DIMENSIONS: tuple = (4096, 4096)  # 4K max resolution
+    
+    # Security Logging
+    SECURITY_LOG_LEVEL: str = "INFO"
+    LOG_SECURITY_EVENTS: bool = True
+    LOG_FILE_UPLOADS: bool = True
     
     @field_validator('ALLOWED_ORIGINS', mode='before')
     @classmethod

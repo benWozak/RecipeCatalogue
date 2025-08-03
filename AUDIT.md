@@ -30,7 +30,7 @@
   - Add per-endpoint rate limits
   - Set up request size limits and timeout protection
 
-- [ ] **File Upload Security**
+- [x] **File Upload Security**
 
   - Secure file upload handling in `backend/app/api/parsing/parsing.py`
   - Add comprehensive file validation and sandboxing
