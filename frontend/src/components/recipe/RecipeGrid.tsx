@@ -2,6 +2,7 @@ import { Recipe } from '@/types/recipe';
 import { RecipeCard } from './RecipeCard';
 import { useRecipeActions } from '@/hooks/useRecipes';
 import { useNavigate } from 'react-router';
+import { useAlert } from '@/hooks/useAlert';
 
 interface RecipeGridProps {
   recipes: Recipe[];
@@ -12,6 +13,7 @@ interface RecipeGridProps {
 export function RecipeGrid({ recipes, isLoading, onDeleteRecipe }: RecipeGridProps) {
   const navigate = useNavigate();
   const { deleteRecipe } = useRecipeActions();
+  const { showConfirm } = useAlert();
 
   const handleEdit = (recipe: Recipe) => {
     navigate(`/recipes/${recipe.id}/edit`);
@@ -22,9 +24,16 @@ export function RecipeGrid({ recipes, isLoading, onDeleteRecipe }: RecipeGridPro
       onDeleteRecipe(recipe);
     } else {
       // Default delete behavior
-      if (window.confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
-        deleteRecipe(recipe.id);
-      }
+      showConfirm({
+        type: 'warning',
+        title: 'Delete Recipe',
+        message: `Are you sure you want to delete "${recipe.title}"?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        onConfirm: () => {
+          deleteRecipe(recipe.id);
+        }
+      });
     }
   };
 

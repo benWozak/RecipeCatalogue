@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/carousel";
 import { useRecipe, useDeleteRecipe } from "@/hooks/useRecipes";
 import { useRecipeStore } from "@/stores/recipeStore";
+import { useAlert } from "@/hooks/useAlert";
 import { Recipe, Tag } from "@/types/recipe";
 
 export default function RecipeDetailPage() {
@@ -30,6 +31,7 @@ export default function RecipeDetailPage() {
   const { selectedRecipe, error } = useRecipeStore();
   const { data: recipe, isLoading, error: queryError } = useRecipe(id!);
   const deleteRecipe = useDeleteRecipe();
+  const { showConfirm } = useAlert();
   const [activeTab, setActiveTab] = useState<"ingredients" | "instructions">(
     "ingredients"
   );
@@ -65,17 +67,20 @@ export default function RecipeDetailPage() {
   const handleDelete = async () => {
     if (!currentRecipe) return;
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${currentRecipe.title}"? This action cannot be undone.`
-    );
-
-    if (confirmed) {
-      deleteRecipe.mutate(currentRecipe.id, {
-        onSuccess: () => {
-          navigate("/recipes");
-        },
-      });
-    }
+    showConfirm({
+      type: 'warning',
+      title: 'Delete Recipe',
+      message: `Are you sure you want to delete "${currentRecipe.title}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: () => {
+        deleteRecipe.mutate(currentRecipe.id, {
+          onSuccess: () => {
+            navigate("/recipes");
+          },
+        });
+      }
+    });
   };
 
   const formatTime = (minutes?: number) => {

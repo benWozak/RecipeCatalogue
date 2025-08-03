@@ -10,6 +10,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Badge } from '@/components/ui/badge';
 import { useRecipe, useCreateRecipe, useUpdateRecipe } from '@/hooks/useRecipes';
 import { useCollections, useCreateCollection } from '@/hooks/useCollections';
+import { useAlert } from '@/hooks/useAlert';
 import { Tag, RecipeCreate, RecipeUpdate, Collection } from '@/types/recipe';
 import { ParsedRecipe } from '@/services/parsingService';
 import { CollectionCombobox } from '@/components/ui/collection-combobox';
@@ -55,6 +56,7 @@ export default function RecipeFormPage() {
   const updateRecipeMutation = useUpdateRecipe();
   const { collections } = useCollections();
   const { createCollection } = useCreateCollection();
+  const { showAlert } = useAlert();
   
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -177,7 +179,10 @@ export default function RecipeFormPage() {
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      alert('Please enter a recipe title');
+      showAlert({
+        type: 'warning',
+        message: 'Please enter a recipe title'
+      });
       return;
     }
 
@@ -205,7 +210,10 @@ export default function RecipeFormPage() {
           navigate(`/recipes/${updatedRecipe.id}`);
         },
         onError: (error) => {
-          alert(`Failed to update recipe: ${error.message}`);
+          showAlert({
+            type: 'error',
+            message: `Failed to update recipe: ${error.message}`
+          });
         }
       });
     } else {
@@ -215,7 +223,10 @@ export default function RecipeFormPage() {
           navigate(`/recipes/${newRecipe.id}`);
         },
         onError: (error) => {
-          alert(`Failed to create recipe: ${error.message}`);
+          showAlert({
+            type: 'error',
+            message: `Failed to create recipe: ${error.message}`
+          });
         }
       });
     }

@@ -5,9 +5,11 @@ import { Plus, Calendar, Loader2 } from "lucide-react";
 import { MealPlan } from "@/types/mealPlan";
 import { MealPlanCard } from "@/components/meal-plan";
 import { mealPlanService } from "@/services/mealPlanService";
+import { useAlert } from "@/hooks/useAlert";
 
 export default function MealPlansPage() {
   const { getToken } = useAuth();
+  const { showAlert } = useAlert();
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,11 +61,17 @@ export default function MealPlansPage() {
       if (response.success) {
         setMealPlans((prev) => prev.filter((mp) => mp.id !== mealPlan.id));
       } else {
-        alert("Failed to delete meal plan");
+        showAlert({
+          type: 'error',
+          message: 'Failed to delete meal plan'
+        });
       }
     } catch (err) {
       console.error("Error deleting meal plan:", err);
-      alert("Failed to delete meal plan");
+      showAlert({
+        type: 'error',
+        message: 'Failed to delete meal plan'
+      });
     }
   };
 
@@ -80,11 +88,17 @@ export default function MealPlansPage() {
           is_active: mp.id === mealPlan.id // Only the selected plan is active
         })));
       } else {
-        alert("Failed to set active meal plan");
+        showAlert({
+          type: 'error',
+          message: 'Failed to set active meal plan'
+        });
       }
     } catch (err) {
       console.error("Error setting active meal plan:", err);
-      alert("Failed to set active meal plan");
+      showAlert({
+        type: 'error',
+        message: 'Failed to set active meal plan'
+      });
     }
   };
 
