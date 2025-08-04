@@ -38,6 +38,7 @@ export function PricingSection() {
       cta: "Get Started Free",
       ctaVariant: "outline" as const,
       popular: false,
+      disabled: false,
       color: chartColors[1],
     },
     {
@@ -65,7 +66,8 @@ export function PricingSection() {
       ],
       cta: "Start Premium",
       ctaVariant: "default" as const,
-      popular: true,
+      popular: false,
+      disabled: true,
       color: chartColors[4],
     },
   ];
@@ -154,19 +156,29 @@ export function PricingSection() {
 
                 <Button
                   size="lg"
+                  disabled={tier.disabled}
                   variant={tier.ctaVariant}
-                  className="w-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
+                  className={`w-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground ${
+                    tier.disabled ? "opacity-50 cursor-default" : ""
+                  }`}
                   style={
-                    tier.ctaVariant === "default"
+                    tier.ctaVariant === "default" && !tier.disabled
                       ? {
                           backgroundColor: tier.color,
                           color: "white",
                         }
-                      : { borderColor: tier.color, color: tier.color }
+                      : {
+                          borderColor: tier.color,
+                          color: tier.color,
+                        }
                   }
                   asChild
                 >
-                  <Link to="/login">{tier.cta}</Link>
+                  {tier.disabled ? (
+                    <span>Coming Soon</span>
+                  ) : (
+                    <Link to="/login">{tier.cta}</Link>
+                  )}
                 </Button>
               </CardContent>
 

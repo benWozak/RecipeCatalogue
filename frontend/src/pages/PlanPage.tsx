@@ -1,18 +1,42 @@
-import { useSubscriptionStatus, useUsageStats, useCreateCheckoutSession, useCreateBillingPortalSession, useIsPremium, useSubscriptionLimits } from "@/hooks/useSubscription";
+import {
+  useSubscriptionStatus,
+  useUsageStats,
+  useCreateCheckoutSession,
+  useCreateBillingPortalSession,
+  useIsPremium,
+  useSubscriptionLimits,
+} from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { Check, X, Crown, Settings, Calendar, BookOpen, Camera, AlertTriangle } from "lucide-react";
+import {
+  Check,
+  X,
+  Crown,
+  Settings,
+  Calendar,
+  BookOpen,
+  Camera,
+  AlertTriangle,
+} from "lucide-react";
 import { Link } from "react-router";
 
 export default function PlanPage() {
-  const { data: subscriptionStatus, isLoading: statusLoading } = useSubscriptionStatus();
+  const { data: subscriptionStatus, isLoading: statusLoading } =
+    useSubscriptionStatus();
   const { data: usageStats, isLoading: usageLoading } = useUsageStats();
   const isPremium = useIsPremium();
-  const { isAtRecipeLimit, isAtParsingLimit, recipeUsage, parsingUsage } = useSubscriptionLimits();
-  
+  const { isAtRecipeLimit, isAtParsingLimit, recipeUsage, parsingUsage } =
+    useSubscriptionLimits();
+
   const createCheckoutSession = useCreateCheckoutSession();
   const createBillingPortalSession = useCreateBillingPortalSession();
 
@@ -49,6 +73,7 @@ export default function PlanPage() {
       cta: "Current Plan",
       ctaVariant: "outline" as const,
       popular: false,
+      disabled: false,
       color: chartColors[1],
       isCurrent: !isPremium,
     },
@@ -76,8 +101,9 @@ export default function PlanPage() {
         },
       ],
       cta: isPremium ? "Current Plan" : "Upgrade to Chef",
-      ctaVariant: isPremium ? "outline" as const : "default" as const,
-      popular: true,
+      ctaVariant: isPremium ? ("outline" as const) : ("default" as const),
+      popular: false,
+      disabled: true,
       color: chartColors[4],
       isCurrent: isPremium,
     },
@@ -85,17 +111,17 @@ export default function PlanPage() {
 
   const handleUpgrade = async () => {
     if (isPremium) return;
-    
+
     const currentUrl = window.location.href;
     const successUrl = `${window.location.origin}/profile/plan?session_status=success`;
     const cancelUrl = currentUrl;
-    
+
     createCheckoutSession.mutate({ successUrl, cancelUrl });
   };
 
   const handleManageBilling = async () => {
     if (!isPremium) return;
-    
+
     const returnUrl = window.location.href;
     createBillingPortalSession.mutate({ returnUrl });
   };
@@ -125,8 +151,12 @@ export default function PlanPage() {
     <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Subscription Plan</h1>
-          <p className="text-muted-foreground">Manage your subscription and view usage statistics</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Subscription Plan
+          </h1>
+          <p className="text-muted-foreground">
+            Manage your subscription and view usage statistics
+          </p>
         </div>
         <Button variant="outline" asChild>
           <Link to="/profile" className="flex items-center gap-2">
@@ -140,7 +170,11 @@ export default function PlanPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            {isPremium ? <Crown className="text-yellow-500" size={20} /> : <BookOpen size={20} />}
+            {isPremium ? (
+              <Crown className="text-yellow-500" size={20} />
+            ) : (
+              <BookOpen size={20} />
+            )}
             Current Subscription
           </CardTitle>
           <CardDescription>
@@ -152,21 +186,29 @@ export default function PlanPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-semibold">
-                  {subscriptionStatus?.tier === 'PREMIUM' ? 'Chef Plan' : 'Casual Plan'}
+                  {subscriptionStatus?.tier === "PREMIUM"
+                    ? "Chef Plan"
+                    : "Casual Plan"}
                 </span>
-                <Badge variant={isPremium ? "default" : "secondary"} className="text-xs">
-                  {subscriptionStatus?.tier || 'FREE'}
+                <Badge
+                  variant={isPremium ? "default" : "secondary"}
+                  className="text-xs"
+                >
+                  {subscriptionStatus?.tier || "FREE"}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {isPremium ? '$5.00/month' : 'Free forever'}
+                {isPremium ? "$5.00/month" : "Free forever"}
               </p>
               {subscriptionStatus?.current_period_end && (
                 <p className="text-xs text-muted-foreground">
-                  {subscriptionStatus.cancel_at_period_end 
-                    ? `Expires on ${new Date(subscriptionStatus.current_period_end).toLocaleDateString()}`
-                    : `Renews on ${new Date(subscriptionStatus.current_period_end).toLocaleDateString()}`
-                  }
+                  {subscriptionStatus.cancel_at_period_end
+                    ? `Expires on ${new Date(
+                        subscriptionStatus.current_period_end
+                      ).toLocaleDateString()}`
+                    : `Renews on ${new Date(
+                        subscriptionStatus.current_period_end
+                      ).toLocaleDateString()}`}
                 </p>
               )}
             </div>
@@ -179,7 +221,9 @@ export default function PlanPage() {
                   className="flex items-center gap-2"
                 >
                   <Settings size={16} />
-                  {createBillingPortalSession.isPending ? "Loading..." : "Manage Billing"}
+                  {createBillingPortalSession.isPending
+                    ? "Loading..."
+                    : "Manage Billing"}
                 </Button>
               ) : (
                 <Button
@@ -188,7 +232,9 @@ export default function PlanPage() {
                   className="flex items-center gap-2"
                 >
                   <Crown size={16} />
-                  {createCheckoutSession.isPending ? "Loading..." : "Upgrade to Chef"}
+                  {createCheckoutSession.isPending
+                    ? "Loading..."
+                    : "Upgrade to Chef"}
                 </Button>
               )}
             </div>
@@ -205,7 +251,9 @@ export default function PlanPage() {
               Usage This Month
             </CardTitle>
             <CardDescription>
-              Your current usage for {new Date(usageStats.period_start).toLocaleDateString()} - {new Date(usageStats.period_end).toLocaleDateString()}
+              Your current usage for{" "}
+              {new Date(usageStats.period_start).toLocaleDateString()} -{" "}
+              {new Date(usageStats.period_end).toLocaleDateString()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -216,16 +264,22 @@ export default function PlanPage() {
                   <div className="flex items-center gap-2">
                     <BookOpen size={16} className="text-primary" />
                     <span className="font-medium">Recipes</span>
-                    {isAtRecipeLimit && <AlertTriangle size={14} className="text-orange-500" />}
+                    {isAtRecipeLimit && (
+                      <AlertTriangle size={14} className="text-orange-500" />
+                    )}
                   </div>
                   <span className="text-sm text-muted-foreground">
                     {recipeUsage?.current || 0} / {recipeUsage?.limit || 0}
                   </span>
                 </div>
-                <Progress value={recipeUsage?.percentage || 0} className="h-2" />
+                <Progress
+                  value={recipeUsage?.percentage || 0}
+                  className="h-2"
+                />
                 {isAtRecipeLimit && (
                   <p className="text-xs text-orange-600">
-                    You've reached your recipe limit. Upgrade to add unlimited recipes.
+                    You've reached your recipe limit. Upgrade to add unlimited
+                    recipes.
                   </p>
                 )}
               </div>
@@ -236,16 +290,22 @@ export default function PlanPage() {
                   <div className="flex items-center gap-2">
                     <Camera size={16} className="text-primary" />
                     <span className="font-medium">Parsing Uses</span>
-                    {isAtParsingLimit && <AlertTriangle size={14} className="text-orange-500" />}
+                    {isAtParsingLimit && (
+                      <AlertTriangle size={14} className="text-orange-500" />
+                    )}
                   </div>
                   <span className="text-sm text-muted-foreground">
                     {parsingUsage?.current || 0} / {parsingUsage?.limit || 0}
                   </span>
                 </div>
-                <Progress value={parsingUsage?.percentage || 0} className="h-2" />
+                <Progress
+                  value={parsingUsage?.percentage || 0}
+                  className="h-2"
+                />
                 {isAtParsingLimit && (
                   <p className="text-xs text-orange-600">
-                    You've reached your parsing limit. Upgrade for unlimited parsing.
+                    You've reached your parsing limit. Upgrade for unlimited
+                    parsing.
                   </p>
                 )}
               </div>
@@ -261,10 +321,9 @@ export default function PlanPage() {
             {isPremium ? "Your Plan" : "Upgrade Your Plan"}
           </h2>
           <p className="text-muted-foreground">
-            {isPremium 
+            {isPremium
               ? "You're on the Chef plan with unlimited access to all features"
-              : "Choose the plan that works best for your cooking needs"
-            }
+              : "Choose the plan that works best for your cooking needs"}
           </p>
         </div>
 
@@ -273,11 +332,11 @@ export default function PlanPage() {
             <Card
               key={index}
               className={`relative group hover:shadow-lg transition-all duration-300 border-0 backdrop-blur-sm hover:bg-background/80 ring-1 ${
-                tier.isCurrent 
-                  ? "ring-primary/50 bg-primary/5" 
-                  : tier.popular 
-                    ? "ring-primary/20" 
-                    : "ring-muted"
+                tier.isCurrent
+                  ? "ring-primary/50 bg-primary/5"
+                  : tier.popular
+                  ? "ring-primary/20"
+                  : "ring-muted"
               }`}
             >
               {tier.popular && (
@@ -353,17 +412,29 @@ export default function PlanPage() {
                           color: "white",
                         }
                       : tier.isCurrent
-                        ? {}
-                        : { borderColor: tier.color, color: tier.color }
+                      ? {}
+                      : { borderColor: tier.color, color: tier.color }
                   }
-                  onClick={tier.isCurrent ? undefined : tier.name === "Chef" ? handleUpgrade : undefined}
-                  disabled={tier.isCurrent || (tier.name === "Chef" && createCheckoutSession.isPending)}
+                  onClick={
+                    tier.isCurrent
+                      ? undefined
+                      : tier.name === "Chef"
+                      ? handleUpgrade
+                      : undefined
+                  }
+                  disabled={
+                    tier.isCurrent ||
+                    (tier.name === "Chef" && createCheckoutSession.isPending) ||
+                    tier.disabled
+                  }
                 >
                   {tier.isCurrent ? (
                     <div className="flex items-center gap-2">
                       <Check size={16} />
                       {tier.cta}
                     </div>
+                  ) : tier.disabled ? (
+                    <span className="cursor-not-allowed">Coming Soon</span>
                   ) : (
                     tier.cta
                   )}
