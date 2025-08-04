@@ -1,16 +1,38 @@
 import { useUser, useUserStats } from "@/hooks/useUser";
+import { useSubscriptionStatus, useIsPremium } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, Calendar, BookOpen, UtensilsCrossed, Camera, Key } from "lucide-react";
+import { SubscriptionBadge } from "@/components/subscription";
+import {
+  User,
+  Mail,
+  Calendar,
+  BookOpen,
+  UtensilsCrossed,
+  Camera,
+  Key,
+  Crown,
+  CreditCard,
+} from "lucide-react";
 import { useClerk } from "@clerk/clerk-react";
+import { Link } from "react-router";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const { data: userStats, isLoading: statsLoading } = useUserStats();
+  const { data: subscriptionStatus, isLoading: subscriptionLoading } =
+    useSubscriptionStatus();
+  const isPremium = useIsPremium();
   const { openUserProfile } = useClerk();
 
   if (!isLoaded) {
@@ -42,21 +64,28 @@ export default function ProfilePage() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Profile Not Found</h1>
-          <p className="text-muted-foreground">Please sign in to view your profile.</p>
+          <h1 className="text-2xl font-bold text-foreground">
+            Profile Not Found
+          </h1>
+          <p className="text-muted-foreground">
+            Please sign in to view your profile.
+          </p>
         </div>
       </div>
     );
   }
 
-  const userInitials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || user.username?.[0]?.toUpperCase() || 'U';
+  const userInitials =
+    `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase() ||
+    user.username?.[0]?.toUpperCase() ||
+    "U";
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => openUserProfile()}
           className="flex items-center gap-2"
         >
@@ -80,7 +109,10 @@ export default function ProfilePage() {
           <div className="flex items-center space-x-6">
             <div className="relative">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user.imageUrl} alt={user.fullName || "Profile"} />
+                <AvatarImage
+                  src={user.imageUrl}
+                  alt={user.fullName || "Profile"}
+                />
                 <AvatarFallback className="text-lg font-semibold">
                   {userInitials}
                 </AvatarFallback>
@@ -96,12 +128,31 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <div>
-                <Label className="text-sm text-muted-foreground">Full Name</Label>
-                <p className="text-lg font-medium">{user.fullName || "Not provided"}</p>
+                <Label className="text-sm text-muted-foreground">
+                  Full Name
+                </Label>
+                <p className="text-lg font-medium">
+                  {user.fullName || "Not provided"}
+                </p>
               </div>
               <div>
-                <Label className="text-sm text-muted-foreground">Username</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Username
+                </Label>
                 <p className="text-sm">{user.username || "Not set"}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">
+                  Subscription Plan
+                </Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <SubscriptionBadge size="sm" />
+                  {!subscriptionLoading && subscriptionStatus && (
+                    <span className="text-xs text-muted-foreground">
+                      {isPremium ? "$5.00/month" : "Free forever"}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -115,7 +166,8 @@ export default function ProfilePage() {
               <p className="text-sm font-medium">
                 {user.primaryEmailAddress?.emailAddress || "No email"}
               </p>
-              {user.primaryEmailAddress?.verification?.status === "verified" && (
+              {user.primaryEmailAddress?.verification?.status ===
+                "verified" && (
                 <Badge variant="secondary" className="text-xs">
                   Verified
                 </Badge>
@@ -141,9 +193,7 @@ export default function ProfilePage() {
             <BookOpen size={20} />
             Account Statistics
           </CardTitle>
-          <CardDescription>
-            Your activity and content summary
-          </CardDescription>
+          <CardDescription>Your activity and content summary</CardDescription>
         </CardHeader>
         <CardContent>
           {statsLoading ? (
@@ -179,7 +229,10 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-center gap-2">
                   <Calendar size={16} className="text-primary" />
                   <span className="text-2xl font-bold text-primary">
-                    {Math.floor((Date.now() - (user.createdAt?.getTime() || Date.now())) / (1000 * 60 * 60 * 24))}
+                    {Math.floor(
+                      (Date.now() - (user.createdAt?.getTime() || Date.now())) /
+                        (1000 * 60 * 60 * 24)
+                    )}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">Days as Member</p>
@@ -198,30 +251,49 @@ export default function ProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button 
-              variant="outline" 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Button
+              variant="outline"
               onClick={() => openUserProfile()}
               className="justify-start h-auto p-4"
             >
               <div className="text-left">
                 <div className="font-medium">Update Profile</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground text-wrap">
                   Change your name, email, or profile picture
                 </div>
               </div>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => openUserProfile()}
               className="justify-start h-auto p-4"
             >
               <div className="text-left">
                 <div className="font-medium">Change Password</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground text-wrap">
                   Update your account password or security settings
                 </div>
               </div>
+            </Button>
+            <Button
+              variant="outline"
+              asChild
+              className="justify-start h-auto p-4"
+            >
+              <Link to="/profile/plan">
+                <div className="text-left">
+                  <div className="font-medium flex items-center gap-2">
+                    {isPremium ? <CreditCard size={16} /> : <Crown size={16} />}
+                    {isPremium ? "Manage Plan" : "Upgrade Plan"}
+                  </div>
+                  <div className="text-sm text-muted-foreground text-wrap">
+                    {isPremium
+                      ? "View billing and manage your subscription"
+                      : "Unlock unlimited recipes and features"}
+                  </div>
+                </div>
+              </Link>
             </Button>
           </div>
         </CardContent>

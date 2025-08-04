@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     GOOGLE_CLOUD_VISION_CREDENTIALS: str = ""
     OPENAI_API_KEY: str = ""
     
+    # Stripe Configuration
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PRICE_ID_PREMIUM: str = ""  # Price ID for premium subscription
+    
     # JWT Validation Settings
     JWT_CLOCK_SKEW_TOLERANCE_SECONDS: int = 5
     

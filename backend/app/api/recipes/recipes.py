@@ -9,6 +9,7 @@ from app.models.recipe import Recipe, Tag
 from app.schemas.recipe import Recipe as RecipeSchema, RecipeCreate, RecipeUpdate
 from app.services.recipe_service import RecipeService
 from app.middleware.rate_limit import limiter
+from app.core.tier_enforcement import check_recipe_limit
 
 router = APIRouter()
 
@@ -34,6 +35,7 @@ async def get_recipes(
 
 @router.post("/", response_model=RecipeSchema)
 @limiter.limit(settings.RECIPE_RATE_LIMIT)
+@check_recipe_limit
 async def create_recipe(
     recipe: RecipeCreate,
     request: Request,

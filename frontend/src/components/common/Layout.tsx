@@ -3,6 +3,7 @@ import { UserButton } from "@clerk/clerk-react";
 import { Home, BookOpen, FolderOpen, Calendar, User } from "lucide-react";
 import MobileBottomNav from "./MobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { SubscriptionBadge } from "@/components/subscription";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -60,6 +61,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
 
             <div className="flex items-center gap-2">
+              <SubscriptionBadge size="sm" />
               <ThemeToggle />
               <UserButton />
             </div>
@@ -74,6 +76,7 @@ export default function Layout({ children }: LayoutProps) {
             HomeChef Companion
           </Link>
           <div className="flex items-center gap-2">
+            <SubscriptionBadge size="sm" />
             <ThemeToggle />
             <UserButton />
           </div>

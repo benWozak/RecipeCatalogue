@@ -21,6 +21,7 @@ import MealPlansPage from "./pages/MealPlansPage";
 import NewMealPlanPage from "./pages/NewMealPlanPage";
 import MealPlanDetailPage from "./pages/MealPlanDetailPage";
 import ProfilePage from "./pages/ProfilePage";
+import PlanPage from "./pages/PlanPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PWABadge from "./PWABadge.tsx";
 
@@ -146,6 +147,12 @@ function App() {
                 <Route path="/profile" element={
                   <RouteErrorBoundary routeName="Profile">
                     <ProfilePage />
+                  </RouteErrorBoundary>
+                } />
+                
+                <Route path="/profile/plan" element={
+                  <RouteErrorBoundary routeName="Plan">
+                    <PlanPage />
                   </RouteErrorBoundary>
                 } />
                 

@@ -18,6 +18,8 @@ from app.services.parsers.progress_events import progress_stream, ProgressPhase,
 from app.middleware.rate_limit import limiter
 from app.middleware.file_security import file_security_validator
 from app.utils.security_logger import security_logger
+from app.core.tier_enforcement import require_premium, check_parsing_limit
+from app.services.usage_tracking_service import UsageTrackingService
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -57,6 +59,7 @@ class URLParseStreamRequest(BaseModel):
 
 @router.post("/url")
 @limiter.limit(settings.PARSING_RATE_LIMIT)
+@check_parsing_limit
 async def parse_recipe_from_url(
     url_request: URLParseRequest,
     request: Request,
@@ -89,6 +92,7 @@ async def parse_recipe_from_url(
 
 @router.post("/url/stream")
 @limiter.limit(settings.PARSING_RATE_LIMIT)
+@check_parsing_limit
 async def parse_recipe_from_url_stream(
     stream_request: URLParseStreamRequest,
     request: Request,
@@ -205,6 +209,7 @@ async def parse_recipe_with_progress(
 
 @router.post("/instagram")
 @limiter.limit(settings.PARSING_RATE_LIMIT)
+@check_parsing_limit
 async def parse_recipe_from_instagram(
     instagram_request: InstagramParseRequest,
     request: Request,
@@ -317,6 +322,7 @@ async def search_recipes_by_hashtag(
 
 @router.post("/image")
 @limiter.limit(settings.FILE_UPLOAD_RATE_LIMIT)
+@require_premium
 async def parse_recipe_from_image(
     request: Request,
     file: UploadFile = File(...),

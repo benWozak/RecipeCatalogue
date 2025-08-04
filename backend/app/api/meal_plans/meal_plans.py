@@ -8,6 +8,7 @@ from app.models.user import User
 from app.schemas.meal_plan import MealPlan as MealPlanSchema, MealPlanCreate, MealPlanUpdate, MealPlanWithRecipeDetails
 from app.services.meal_plan_service import MealPlanService
 from app.middleware.rate_limit import limiter
+from app.core.tier_enforcement import check_meal_plan_save
 
 router = APIRouter()
 
@@ -27,6 +28,7 @@ async def get_meal_plans(
 
 @router.post("/", response_model=MealPlanSchema)
 @limiter.limit(settings.RECIPE_RATE_LIMIT)
+@check_meal_plan_save
 async def create_meal_plan(
     meal_plan: MealPlanCreate,
     request: Request,

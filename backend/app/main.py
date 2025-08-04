@@ -12,6 +12,7 @@ from app.api.meal_plans import meal_plans_router
 from app.api.users import users_router
 from app.api.parsing import parsing_router
 from app.api.collections import collections_router
+from app.api.subscriptions.subscriptions import router as subscriptions_router
 from app.middleware.security import SecurityHeadersMiddleware
 from app.middleware.rate_limit import limiter, rate_limit_exceeded_handler, create_rate_limit_middleware
 from app.middleware.request_limits import create_request_limit_middleware
@@ -57,6 +58,7 @@ app.include_router(meal_plans_router, prefix="/api/meal-plans", tags=["meal-plan
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(parsing_router, prefix="/api/parse", tags=["parsing"])
 app.include_router(collections_router, prefix="/api/collections", tags=["collections"])
+app.include_router(subscriptions_router, prefix="/api/subscriptions", tags=["subscriptions"])
 
 # Mount static files for media serving
 import os

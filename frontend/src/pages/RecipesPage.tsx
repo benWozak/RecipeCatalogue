@@ -6,6 +6,8 @@ import { RecipeGrid, RecipeSearch } from "@/components/recipe";
 import { useRecipes } from "@/hooks/useRecipes";
 import { useCollections } from "@/hooks/useCollections";
 import { useRecipeStore, useRecipeSelectors } from "@/stores/recipeStore";
+import { useSubscriptionLimits, useIsPremium } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/subscription";
 import { RecipeFilters } from "@/types/recipe";
 
 export default function RecipesPage() {
@@ -16,6 +18,8 @@ export default function RecipesPage() {
   const { setLoading, setError } = useRecipeStore();
   const { allTags } = useRecipeSelectors();
   const { collections } = useCollections();
+  const { isAtRecipeLimit, recipeUsage } = useSubscriptionLimits();
+  const isPremium = useIsPremium();
 
   // Build the filters for the API call
   const apiFilters: RecipeFilters = {
@@ -65,6 +69,23 @@ export default function RecipesPage() {
             Add Recipe
           </Button>
         </div>
+
+        {/* Upgrade Prompt for Free Users Near Recipe Limit */}
+        {!isPremium && recipeUsage && recipeUsage.percentage >= 75 && (
+          <div className="mb-6">
+            <UpgradePrompt
+              title={isAtRecipeLimit ? "Recipe Limit Reached" : "Recipe Limit Warning"}
+              description={
+                isAtRecipeLimit
+                  ? `You've reached your limit of ${recipeUsage.limit} recipes. Upgrade to Chef plan for unlimited recipes.`
+                  : `You're using ${recipeUsage.current} of ${recipeUsage.limit} recipes (${Math.round(recipeUsage.percentage)}%). Upgrade soon for unlimited access.`
+              }
+              features={["Unlimited recipes", "Unlimited parsing", "Image OCR access", "Advanced meal planning"]}
+              compact={true}
+              dismissible={!isAtRecipeLimit}
+            />
+          </div>
+        )}
 
         {/* Search and Filters */}
         <div className="mb-8">
