@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@/test/test-utils";
+import { renderApp, screen, waitFor } from "@/test/test-utils";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Link } from "react-router";
 import App from "../App";
@@ -76,21 +76,21 @@ describe("Routing Edge Cases and Navigation", () => {
 
   describe("URL Parameter Validation", () => {
     it("handles valid recipe IDs", () => {
-      render(<App />, { initialEntries: ["/recipes/abc123"] });
+      renderApp(<App />, { initialEntries: ["/recipes/abc123"] });
 
       expect(screen.getByTestId("recipe-detail-page")).toBeInTheDocument();
       expect(screen.getByText(/recipe detail: abc123/i)).toBeInTheDocument();
     });
 
     it("handles numeric recipe IDs", () => {
-      render(<App />, { initialEntries: ["/recipes/123456"] });
+      renderApp(<App />, { initialEntries: ["/recipes/123456"] });
 
       expect(screen.getByTestId("recipe-detail-page")).toBeInTheDocument();
     });
 
     it("handles UUID-style recipe IDs", () => {
       const uuid = "550e8400-e29b-41d4-a716-446655440000";
-      render(<App />, { initialEntries: [`/recipes/${uuid}`] });
+      renderApp(<App />, { initialEntries: [`/recipes/${uuid}`] });
 
       expect(screen.getByTestId("recipe-detail-page")).toBeInTheDocument();
     });
@@ -107,7 +107,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       dangerousIds.forEach((id) => {
-        const { unmount } = render(<App />, {
+        const { unmount } = renderApp(<App />, {
           initialEntries: [`/recipes/${encodeURIComponent(id)}`],
         });
 
@@ -121,7 +121,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
     it("handles extremely long IDs", () => {
       const longId = "a".repeat(1000);
-      render(<App />, { initialEntries: [`/recipes/${longId}`] });
+      renderApp(<App />, { initialEntries: [`/recipes/${longId}`] });
 
       // Should handle gracefully without crashing
       expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -138,7 +138,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       specialIds.forEach((id) => {
-        const { unmount } = render(<App />, {
+        const { unmount } = renderApp(<App />, {
           initialEntries: [`/recipes/${encodeURIComponent(id)}`],
         });
 
@@ -151,7 +151,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
   describe("Deep Linking", () => {
     it("handles direct navigation to nested routes", () => {
-      render(<App />, { initialEntries: ["/recipes/123/edit"] });
+      renderApp(<App />, { initialEntries: ["/recipes/123/edit"] });
 
       // Should show the edit form for recipe 123
       expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe("Routing Edge Cases and Navigation", () => {
     });
 
     it("preserves query parameters in URLs", () => {
-      render(<App />, {
+      renderApp(<App />, {
         initialEntries: ["/recipes?search=pasta&category=italian"],
       });
 
@@ -168,7 +168,7 @@ describe("Routing Edge Cases and Navigation", () => {
     });
 
     it("handles hash fragments in URLs", () => {
-      render(<App />, {
+      renderApp(<App />, {
         initialEntries: ["/recipes/123#ingredients"],
       });
 
@@ -177,7 +177,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
     it("handles encoded URLs correctly", () => {
       const encodedPath = "/recipes/%E2%9C%93";
-      render(<App />, { initialEntries: [encodedPath] });
+      renderApp(<App />, { initialEntries: [encodedPath] });
 
       expect(screen.getByTestId("layout")).toBeInTheDocument();
     });
@@ -186,7 +186,7 @@ describe("Routing Edge Cases and Navigation", () => {
   describe("Browser Navigation", () => {
     it("handles back button navigation", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       // Navigate to recipes page
       await user.click(screen.getByTestId("recipes-link"));
@@ -199,7 +199,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
     it("handles forward button navigation", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       await user.click(screen.getByTestId("forward-button"));
       expect(window.history.forward).toHaveBeenCalled();
@@ -207,7 +207,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
     it("handles rapid navigation clicks", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       const recipesLink = screen.getByTestId("recipes-link");
       const homeLink = screen.getByTestId("home-link");
@@ -228,7 +228,7 @@ describe("Routing Edge Cases and Navigation", () => {
       // Mock scrollTo
       window.scrollTo = vi.fn();
 
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       await user.click(screen.getByTestId("recipes-link"));
 
@@ -239,7 +239,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
   describe("Invalid Routes and 404 Handling", () => {
     it("shows 404 for completely invalid routes", () => {
-      render(<App />, { initialEntries: ["/this-route-does-not-exist"] });
+      renderApp(<App />, { initialEntries: ["/this-route-does-not-exist"] });
 
       expect(screen.getByTestId("not-found-page")).toBeInTheDocument();
     });
@@ -253,7 +253,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       malformedRoutes.forEach((route) => {
-        const { unmount } = render(<App />, { initialEntries: [route] });
+        const { unmount } = renderApp(<App />, { initialEntries: [route] });
 
         // Should either show 404 or handle gracefully
         expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -270,7 +270,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       caseSensitiveRoutes.forEach((route) => {
-        const { unmount } = render(<App />, { initialEntries: [route] });
+        const { unmount } = renderApp(<App />, { initialEntries: [route] });
 
         // Should show 404 for case mismatches
         expect(screen.getByTestId("not-found-page")).toBeInTheDocument();
@@ -287,7 +287,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       trailingSlashRoutes.forEach((route) => {
-        const { unmount } = render(<App />, { initialEntries: [route] });
+        const { unmount } = renderApp(<App />, { initialEntries: [route] });
 
         // Should handle trailing slashes consistently
         expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -300,7 +300,7 @@ describe("Routing Edge Cases and Navigation", () => {
   describe("Route Transitions and Loading States", () => {
     it("handles route transitions without flickering", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       expect(screen.getByTestId("home-page")).toBeInTheDocument();
 
@@ -314,7 +314,7 @@ describe("Routing Edge Cases and Navigation", () => {
 
     it("maintains layout during route changes", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       const layout = screen.getByTestId("layout");
       expect(layout).toBeInTheDocument();
@@ -330,7 +330,7 @@ describe("Routing Edge Cases and Navigation", () => {
   describe("Memory and Performance", () => {
     it("handles many route changes without memory leaks", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/"] });
+      renderApp(<App />, { initialEntries: ["/"] });
 
       // Simulate many navigation events
       for (let i = 0; i < 10; i++) {
@@ -343,7 +343,7 @@ describe("Routing Edge Cases and Navigation", () => {
     });
 
     it("cleans up properly on unmount", () => {
-      const { unmount } = render(<App />, { initialEntries: ["/recipes"] });
+      const { unmount } = renderApp(<App />, { initialEntries: ["/recipes"] });
 
       expect(screen.getByTestId("recipes-page")).toBeInTheDocument();
 
@@ -361,7 +361,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       traversalAttempts.forEach((path) => {
-        const { unmount } = render(<App />, { initialEntries: [path] });
+        const { unmount } = renderApp(<App />, { initialEntries: [path] });
 
         // Should not navigate outside the app structure
         expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -378,7 +378,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       xssAttempts.forEach((path) => {
-        const { unmount } = render(<App />, { initialEntries: [path] });
+        const { unmount } = renderApp(<App />, { initialEntries: [path] });
 
         // Should render safely without executing scripts
         expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -397,7 +397,7 @@ describe("Routing Edge Cases and Navigation", () => {
       ];
 
       protocolAttempts.forEach((path) => {
-        const { unmount } = render(<App />, { initialEntries: [path] });
+        const { unmount } = renderApp(<App />, { initialEntries: [path] });
 
         // Should show 404 or handle safely
         expect(screen.getByTestId("layout")).toBeInTheDocument();
@@ -410,7 +410,7 @@ describe("Routing Edge Cases and Navigation", () => {
   describe("Route State Management", () => {
     it("preserves component state during route parameters changes", async () => {
       const user = userEvent.setup();
-      render(<App />, { initialEntries: ["/recipes/123"] });
+      renderApp(<App />, { initialEntries: ["/recipes/123"] });
 
       expect(screen.getByTestId("recipe-detail-page")).toBeInTheDocument();
 
@@ -422,7 +422,7 @@ describe("Routing Edge Cases and Navigation", () => {
     });
 
     it("handles location state correctly", () => {
-      render(<App />, {
+      renderApp(<App />, {
         initialEntries: ["/recipes"],
       });
 

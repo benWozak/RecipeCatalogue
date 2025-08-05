@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter, MemoryRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -16,12 +16,16 @@ interface AllTheProvidersProps {
   children: React.ReactNode;
   queryClient?: QueryClient;
   useRealClerk?: boolean;
+  initialEntries?: string[];
+  skipRouter?: boolean;
 }
 
 const AllTheProviders = ({
   children,
   queryClient: customQueryClient,
   useRealClerk = false,
+  initialEntries,
+  skipRouter = false,
 }: AllTheProvidersProps) => {
   // Create a fresh query client for each test to avoid state leakage
   const defaultQueryClient = new QueryClient({
@@ -38,7 +42,11 @@ const AllTheProviders = ({
 
   const queryClient = customQueryClient || defaultQueryClient;
 
-  return (
+  // Use MemoryRouter when initialEntries is provided and not skipping router
+  const Router = !skipRouter && initialEntries ? MemoryRouter : BrowserRouter;
+  const routerProps = !skipRouter && initialEntries ? { initialEntries } : {};
+
+  const providersContent = (
     <>
       {useRealClerk ? (
         <ClerkProvider 
@@ -48,7 +56,7 @@ const AllTheProviders = ({
         >
           <QueryClientProvider client={queryClient}>
             <ThemeProvider defaultTheme="light" storageKey="test-theme">
-              <BrowserRouter>{children}</BrowserRouter>
+              {children}
             </ThemeProvider>
           </QueryClientProvider>
         </ClerkProvider>
@@ -56,13 +64,19 @@ const AllTheProviders = ({
         <MockClerkProvider>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider defaultTheme="light" storageKey="test-theme">
-              <BrowserRouter>{children}</BrowserRouter>
+              {children}
             </ThemeProvider>
           </QueryClientProvider>
         </MockClerkProvider>
       )}
     </>
   );
+
+  if (skipRouter) {
+    return providersContent;
+  }
+
+  return <Router {...routerProps}>{providersContent}</Router>;
 };
 
 // Custom render function that includes all providers
@@ -71,9 +85,11 @@ const customRender = (
   options?: Omit<RenderOptions, "wrapper"> & {
     queryClient?: QueryClient;
     useRealClerk?: boolean;
+    initialEntries?: string[];
+    skipRouter?: boolean;
   }
 ) => {
-  const { queryClient, useRealClerk, ...renderOptions } =
+  const { queryClient, useRealClerk, initialEntries, skipRouter, ...renderOptions } =
     options || {};
 
   return render(ui, {
@@ -81,6 +97,63 @@ const customRender = (
       <AllTheProviders
         queryClient={queryClient}
         useRealClerk={useRealClerk}
+        initialEntries={initialEntries}
+        skipRouter={skipRouter}
+      >
+        {children}
+      </AllTheProviders>
+    ),
+    ...renderOptions,
+  });
+};
+
+// Special render function for the App component (which has its own router)
+const renderApp = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, "wrapper"> & {
+    queryClient?: QueryClient;
+    useRealClerk?: boolean;
+    initialEntries?: string[];
+  }
+) => {
+  const { queryClient, useRealClerk, initialEntries, ...renderOptions } =
+    options || {};
+
+  // For App component testing, we skip the router wrapper and use initialEntries differently
+  if (initialEntries) {
+    // Mock the history for the App's internal router
+    const originalPushState = window.history.pushState;
+    const originalReplaceState = window.history.replaceState;
+    
+    // Set initial URL
+    window.history.replaceState(null, "", initialEntries[0]);
+    
+    const result = render(ui, {
+      wrapper: ({ children }) => (
+        <AllTheProviders
+          queryClient={queryClient}
+          useRealClerk={useRealClerk}
+          skipRouter={true}
+        >
+          {children}
+        </AllTheProviders>
+      ),
+      ...renderOptions,
+    });
+
+    // Restore original methods
+    window.history.pushState = originalPushState;
+    window.history.replaceState = originalReplaceState;
+    
+    return result;
+  }
+
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <AllTheProviders
+        queryClient={queryClient}
+        useRealClerk={useRealClerk}
+        skipRouter={true}
       >
         {children}
       </AllTheProviders>
@@ -263,4 +336,4 @@ export const apiMocks = {
 export * from "@testing-library/react";
 
 // Override render method
-export { customRender as render };
+export { customRender as render, renderApp };

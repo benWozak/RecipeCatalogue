@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@/test/test-utils'
+import { renderApp, screen, waitFor } from '@/test/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import App from '../App'
 import { mockAuth } from '@/test/test-utils'
@@ -46,21 +46,21 @@ describe('App - Authentication and Routing', () => {
     })
 
     it('shows landing page for unauthenticated users on root path', () => {
-      render(<App />, { initialEntries: ['/'] })
+      renderApp(<App />, { initialEntries: ['/'] })
       
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
       expect(screen.queryByTestId('authenticated-layout')).not.toBeInTheDocument()
     })
 
     it('shows login page for unauthenticated users on /login', () => {
-      render(<App />, { initialEntries: ['/login'] })
+      renderApp(<App />, { initialEntries: ['/login'] })
       
       expect(screen.getByTestId('login-page')).toBeInTheDocument()
       expect(screen.queryByTestId('authenticated-layout')).not.toBeInTheDocument()
     })
 
     it('shows not found page for unauthenticated users on protected routes', () => {
-      render(<App />, { initialEntries: ['/recipes'] })
+      renderApp(<App />, { initialEntries: ['/recipes'] })
       
       expect(screen.getByTestId('not-found-page')).toBeInTheDocument()
       expect(screen.queryByTestId('recipes-page')).not.toBeInTheDocument()
@@ -78,7 +78,7 @@ describe('App - Authentication and Routing', () => {
       ]
 
       protectedRoutes.forEach(route => {
-        const { unmount } = render(<App />, { initialEntries: [route] })
+        const { unmount } = renderApp(<App />, { initialEntries: [route] })
         
         expect(screen.getByTestId('not-found-page')).toBeInTheDocument()
         expect(screen.queryByTestId('authenticated-layout')).not.toBeInTheDocument()
@@ -88,7 +88,7 @@ describe('App - Authentication and Routing', () => {
     })
 
     it('renders PWA badge for unauthenticated users', () => {
-      render(<App />, { initialEntries: ['/'] })
+      renderApp(<App />, { initialEntries: ['/'] })
       
       expect(screen.getByTestId('pwa-badge')).toBeInTheDocument()
     })
@@ -100,7 +100,7 @@ describe('App - Authentication and Routing', () => {
     })
 
     it('redirects authenticated users from landing page to home', async () => {
-      render(<App />, { initialEntries: ['/'] })
+      renderApp(<App />, { initialEntries: ['/'] })
       
       await waitFor(() => {
         expect(screen.getByTestId('home-page')).toBeInTheDocument()
@@ -109,14 +109,14 @@ describe('App - Authentication and Routing', () => {
     })
 
     it('allows access to protected routes for authenticated users', () => {
-      render(<App />, { initialEntries: ['/recipes'] })
+      renderApp(<App />, { initialEntries: ['/recipes'] })
       
       expect(screen.getByTestId('recipes-page')).toBeInTheDocument()
       expect(screen.getByTestId('authenticated-layout')).toBeInTheDocument()
     })
 
     it('wraps authenticated routes with Layout component', () => {
-      render(<App />, { initialEntries: ['/recipes'] })
+      renderApp(<App />, { initialEntries: ['/recipes'] })
       
       expect(screen.getByTestId('authenticated-layout')).toBeInTheDocument()
     })
@@ -141,11 +141,8 @@ describe('App - Authentication and Routing', () => {
         { path: '/profile', testId: 'profile-page' },
       ]
 
-      authenticatedRoutes.forEach(({ path, testId }) => {
-        // Mock the specific page component for this test
-        const mockComponent = vi.fn(() => <div data-testid={testId}>Mock Page</div>)
-        
-        const { unmount } = render(<App />, { initialEntries: [path] })
+      authenticatedRoutes.forEach(({ path }) => {        
+        const { unmount } = renderApp(<App />, { initialEntries: [path] })
         
         expect(screen.getByTestId('authenticated-layout')).toBeInTheDocument()
         
@@ -154,14 +151,14 @@ describe('App - Authentication and Routing', () => {
     })
 
     it('shows not found page for invalid authenticated routes', () => {
-      render(<App />, { initialEntries: ['/invalid-route'] })
+      renderApp(<App />, { initialEntries: ['/invalid-route'] })
       
       expect(screen.getByTestId('not-found-page')).toBeInTheDocument()
       expect(screen.getByTestId('authenticated-layout')).toBeInTheDocument()
     })
 
     it('renders PWA badge for authenticated users', () => {
-      render(<App />, { initialEntries: ['/'] })
+      renderApp(<App />, { initialEntries: ['/'] })
       
       expect(screen.getByTestId('pwa-badge')).toBeInTheDocument()
     })
@@ -180,7 +177,7 @@ describe('App - Authentication and Routing', () => {
         }
       }))
 
-      render(<App />, { initialEntries: ['/'] })
+      renderApp(<App />, { initialEntries: ['/'] })
       
       // Should show error boundary instead of crashing
       expect(screen.getByText(/page unavailable/i)).toBeInTheDocument()
@@ -189,7 +186,7 @@ describe('App - Authentication and Routing', () => {
     it('provides route-specific error context', () => {
       // This would be tested with more specific error boundary behavior
       // For now, we verify that error boundaries are present
-      render(<App />, { initialEntries: ['/recipes'] })
+      renderApp(<App />, { initialEntries: ['/recipes'] })
       
       // Verify that the route is wrapped (no error means boundary is working)
       expect(screen.getByTestId('recipes-page')).toBeInTheDocument()
@@ -198,7 +195,7 @@ describe('App - Authentication and Routing', () => {
 
   describe('Theme and Providers', () => {
     it('wraps app with ThemeProvider', () => {
-      render(<App />)
+      renderApp(<App />)
       
       // Theme provider should be applied (check for theme-related elements)
       const appContainer = document.querySelector('.min-h-screen')
@@ -206,7 +203,7 @@ describe('App - Authentication and Routing', () => {
     })
 
     it('wraps app with HelmetProvider for SEO', () => {
-      render(<App />)
+      renderApp(<App />)
       
       // HelmetProvider should be present (hard to test directly, but app should render)
       expect(screen.getByTestId('mock-clerk-provider')).toBeInTheDocument()
@@ -217,7 +214,7 @@ describe('App - Authentication and Routing', () => {
     it('handles authentication state transitions', async () => {
       // Start with unauthenticated
       mockAuth.signedOut()
-      const { rerender } = render(<App />, { initialEntries: ['/'] })
+      const { rerender } = renderApp(<App />, { initialEntries: ['/'] })
       
       expect(screen.getByTestId('landing-page')).toBeInTheDocument()
       
@@ -233,7 +230,7 @@ describe('App - Authentication and Routing', () => {
     it('preserves route when authentication changes', async () => {
       // User tries to access protected route while unauthenticated
       mockAuth.signedOut()
-      const { rerender } = render(<App />, { initialEntries: ['/recipes'] })
+      const { rerender } = renderApp(<App />, { initialEntries: ['/recipes'] })
       
       expect(screen.getByTestId('not-found-page')).toBeInTheDocument()
       
@@ -261,7 +258,7 @@ describe('App - Authentication and Routing', () => {
       ]
 
       dynamicRoutes.forEach(route => {
-        const { unmount } = render(<App />, { initialEntries: [route] })
+        const { unmount } = renderApp(<App />, { initialEntries: [route] })
         
         // Should not show not found page for valid parameterized routes
         expect(screen.queryByTestId('not-found-page')).not.toBeInTheDocument()
@@ -279,7 +276,7 @@ describe('App - Authentication and Routing', () => {
       ]
 
       invalidRoutes.forEach(route => {
-        const { unmount } = render(<App />, { initialEntries: [route] })
+        const { unmount } = renderApp(<App />, { initialEntries: [route] })
         
         // These should either show not found or handle gracefully
         expect(screen.getByTestId('authenticated-layout')).toBeInTheDocument()
